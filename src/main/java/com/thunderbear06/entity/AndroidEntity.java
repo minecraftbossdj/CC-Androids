@@ -16,13 +16,10 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
-import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.world.World;
 
 
 public class AndroidEntity extends BaseAndroidEntity {
-
-    private final DefaultedList<ItemStack> inventory = DefaultedList.ofSize(9, ItemStack.EMPTY);
 
     public AndroidEntity(EntityType<? extends PathAwareEntity> entityType, World world) {
         super(entityType, world);
@@ -58,10 +55,5 @@ public class AndroidEntity extends BaseAndroidEntity {
         }
 
         return ActionResult.CONSUME;
-    }
-
-    @Override
-    public boolean canPickUpLoot() {
-        return true;
     }
 }

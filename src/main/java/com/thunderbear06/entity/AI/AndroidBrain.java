@@ -41,7 +41,7 @@ public class AndroidBrain implements AndroidAccess {
     }
 
     @Override
-    public BaseAndroidEntity getAndroid() {
+    public BaseAndroidEntity getOwner() {
         return this.owner;
     }
 

@@ -17,7 +17,7 @@ import java.util.UUID;
 public interface AndroidAccess {
 
     World getWorld();
-    BaseAndroidEntity getAndroid();
+    BaseAndroidEntity getOwner();
 
     SensorModule getSensorModule();
 

@@ -3,10 +3,12 @@ package com.thunderbear06.entity.AI.modules;
 import com.thunderbear06.entity.BaseAndroidEntity;
 import dan200.computercraft.api.lua.LuaException;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.TargetPredicate;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3i;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -40,7 +42,6 @@ public class SensorModule {
     }
 
     public LivingEntity getClosestMobOfType(@Nullable String type, BaseAndroidEntity android) throws LuaException {
-
         BlockPos pos = android.getBlockPos();
 
         return android.getWorld().getClosestEntity(
@@ -54,6 +55,21 @@ public class SensorModule {
         );
     }
 
+    public List<String> getGroundItems(@Nullable String itemName, int max, BaseAndroidEntity android) {
+        List<ItemEntity> list = android.getWorld().getNonSpectatingEntities(ItemEntity.class, android.getBoundingBox().expand(1));
+
+        List<String> UUIDS = new ArrayList<>();
+
+        for (ItemEntity entity : list) {
+            if (UUIDS.size() >= max)
+                return UUIDS;
+            if (itemName == null || entity.getName().getString().equals(itemName))
+                UUIDS.add(entity.getUuidAsString());
+        }
+
+        return UUIDS;
+    }
+
     private Predicate<LivingEntity> getTypePredicate(BaseAndroidEntity android, @Nullable String type) throws LuaException {
         if (type == null) {
             return (entity -> entity != android && android.canSee(entity));
@@ -64,7 +80,7 @@ public class SensorModule {
                 throw new LuaException("Unknown EntityType: "+type);
             }
 
-            return (entity -> entity != android && android.canSee(entity) && entity.getType().equals(targetType.get()));
+            return (entity -> entity != android && !entity.isSpectator() && android.canSee(entity) && entity.getType().equals(targetType.get()));
         }
     }
 }

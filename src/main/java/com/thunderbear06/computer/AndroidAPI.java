@@ -4,11 +4,17 @@ import dan200.computercraft.api.lua.ILuaAPI;
 import dan200.computercraft.api.lua.LuaException;
 import dan200.computercraft.api.lua.LuaFunction;
 import dan200.computercraft.api.lua.MethodResult;
+import net.fabricmc.fabric.api.entity.FakePlayer;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.HostileEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ItemStack;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -88,33 +94,55 @@ public class AndroidAPI implements ILuaAPI {
         return MethodResult.of();
     }
 
+    @LuaFunction
+    public final MethodResult pickup(String entityUUID) {
+        ServerWorld world = (ServerWorld) this.android.getWorld();
+
+        ItemEntity itemEntity = (ItemEntity) world.getEntity(UUID.fromString(entityUUID));
+
+        if (itemEntity == null)
+            return MethodResult.of("Unknown item or invalid UUID");
+
+        return this.android.getOwner().pickupGroundItem(itemEntity);
+    }
+
+    @LuaFunction
+    public final MethodResult dropHeldItem() {
+        return this.android.getOwner().dropHandItem();
+    }
+
     /*
     * Sensory
     */
 
-    //TODO: Revamp
-
     @LuaFunction
     public final MethodResult getClosestPlayer() {
-        PlayerEntity player = android.getClosestPlayer();
+        PlayerEntity player = this.android.getClosestPlayer();
 
         return MethodResult.of(player == null ? null : player.getUuidAsString());
     }
 
     @LuaFunction
     public final MethodResult getNearbyMobs(Optional<String> type) throws LuaException {
-        return MethodResult.of(android.getNearbyMobs(type.orElse(null)));
+        return MethodResult.of(this.android.getNearbyMobs(type.orElse(null)));
     }
 
     @LuaFunction
     public final MethodResult getClosestMobOfType(Optional<String> type) throws LuaException {
-        LivingEntity entity = android.getClosestMobOfType(type.orElse(null));
+        LivingEntity entity = this.android.getClosestMobOfType(type.orElse(null));
 
         return MethodResult.of(entity == null ? null : entity.getUuidAsString());
     }
 
     @LuaFunction
-    public final MethodResult getMobInfo( String entityUUIDString) {
+    public final MethodResult getGroundItems(Optional<String> targetItemName, Optional<Integer> max) {
+        return MethodResult.of(this.android.getSensorModule().getGroundItems(targetItemName.orElse(null), max.orElse(Integer.MAX_VALUE), this.android.getOwner()));
+    }
+
+    //TODO: Revamp
+
+    @LuaFunction
+    public final MethodResult getMobInfo(String entityUUIDString) {
         ServerWorld world = (ServerWorld) android.getWorld();
 
         LivingEntity entity = (LivingEntity) world.getEntity(UUID.fromString(entityUUIDString));
@@ -134,19 +162,9 @@ public class AndroidAPI implements ILuaAPI {
         return MethodResult.of(infoMap);
     }
 
-//    @LuaFunction
-//    public final MethodResult followTarget(String entityUUIDString) {
-//        return MethodResult.of(android.FollowEntity(entityUUIDString));
-//    }
-//
-//    @LuaFunction
-//    public final MethodResult attackTarget(String entityUUIDString) {
-//        return MethodResult.of(android.AttackEntity(entityUUIDString));
-//    }
-
     @LuaFunction
     public final MethodResult sendChatMessage(String what) {
-        android.sendChatMessage(what);
+        this.android.sendChatMessage(what);
         return MethodResult.of();
     }
 }
