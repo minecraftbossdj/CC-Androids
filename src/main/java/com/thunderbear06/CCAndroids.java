@@ -5,13 +5,7 @@ import com.thunderbear06.computer.AndroidAccess;
 import com.thunderbear06.computer.ComputerComponents;
 import com.thunderbear06.entity.AndroidEntity;
 import dan200.computercraft.api.ComputerCraftAPI;
-import dan200.computercraft.api.turtle.ITurtleAccess;
-import dan200.computercraft.core.metrics.MetricsObserver;
-import dan200.computercraft.shared.turtle.apis.TurtleAPI;
-import dan200.computercraft.shared.turtle.core.TurtleAccessInternal;
-import dan200.computercraft.shared.util.ComponentMap;
 import net.fabricmc.api.ModInitializer;
-
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.SpawnGroup;
@@ -20,8 +14,6 @@ import net.minecraft.registry.Registry;
 import net.minecraft.util.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Objects;
 
 public class CCAndroids implements ModInitializer {
 	public static final String MOD_ID = "cc-androids";

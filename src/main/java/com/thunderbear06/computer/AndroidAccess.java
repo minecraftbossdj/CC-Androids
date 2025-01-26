@@ -1,7 +1,6 @@
 package com.thunderbear06.computer;
 
 import com.thunderbear06.entity.AI.modules.SensorModule;
-import com.thunderbear06.entity.AI.modules.TaskManagerModule;
 import com.thunderbear06.entity.BaseAndroidEntity;
 import dan200.computercraft.api.lua.LuaException;
 import net.minecraft.entity.LivingEntity;
@@ -12,26 +11,35 @@ import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.UUID;
 
 @ApiStatus.NonExtendable
 public interface AndroidAccess {
 
-    World GetWorld();
-    BaseAndroidEntity GetAndroid();
+    World getWorld();
+    BaseAndroidEntity getAndroid();
 
-    SensorModule GetSensorModule();
+    SensorModule getSensorModule();
 
-    TaskManagerModule GetTaskModule();
+    void sendChatMessage(String rawMessage);
 
-    void SendChatMessage(String rawMessage);
+    boolean setTargetBlock(BlockPos pos);
 
-    PlayerEntity GetClosestPlayer();
+    boolean setTargetEntity(UUID entityUUID);
 
-    LivingEntity GetClosestMobOfType(String type) throws LuaException;
+    void setState(String state);
 
-    List<String> GetNearbyMobs(@Nullable String type) throws LuaException;
+    @Nullable LivingEntity getTargetEntity();
 
-    String GetState();
+    @Nullable BlockPos getTargetBlock();
 
-    BlockPos GetPosition();
+    PlayerEntity getClosestPlayer();
+
+    LivingEntity getClosestMobOfType(String type) throws LuaException;
+
+    List<String> getNearbyMobs(@Nullable String type) throws LuaException;
+
+    String getState();
+
+    BlockPos getPosition();
 }

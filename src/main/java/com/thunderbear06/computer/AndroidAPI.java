@@ -1,9 +1,9 @@
 package com.thunderbear06.computer;
 
-import com.thunderbear06.entity.AI.tasks.AttackEntityTask;
-import com.thunderbear06.entity.AI.tasks.WalkToEntityTask;
-import com.thunderbear06.entity.BaseAndroidEntity;
-import dan200.computercraft.api.lua.*;
+import dan200.computercraft.api.lua.ILuaAPI;
+import dan200.computercraft.api.lua.LuaException;
+import dan200.computercraft.api.lua.LuaFunction;
+import dan200.computercraft.api.lua.MethodResult;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.HostileEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -36,7 +36,7 @@ public class AndroidAPI implements ILuaAPI {
 
     @LuaFunction
     public final MethodResult getPosition() {
-        BlockPos blockPos = android.GetPosition();
+        BlockPos blockPos = android.getPosition();
         Map<String, Integer> posMap = new HashMap<>();
         posMap.put("x", blockPos.getX());
         posMap.put("y", blockPos.getY());
@@ -47,21 +47,7 @@ public class AndroidAPI implements ILuaAPI {
 
     @LuaFunction
     public final MethodResult getState() {
-        return MethodResult.of(this.android.GetState());
-    }
-
-    /*
-    * Task
-    */
-
-    @LuaFunction
-    public final MethodResult pushTasks() {
-        return this.android.GetTaskModule().pushQueuedTasks();
-    }
-
-    @LuaFunction
-    public final MethodResult isIdle() {
-        return MethodResult.of(this.android.GetTaskModule().tasksComplete());
+        return MethodResult.of(this.android.getState());
     }
 
     /*
@@ -69,51 +55,67 @@ public class AndroidAPI implements ILuaAPI {
     */
 
     @LuaFunction
-    public final MethodResult addWalkToEntityTask(String entityUUID) {
-        BaseAndroidEntity androidEntity = this.android.GetAndroid();
-        WalkToEntityTask task = new WalkToEntityTask(androidEntity, androidEntity.brain, 0.5, UUID.fromString(entityUUID));
-        if (!task.targetValid())
-            return MethodResult.of("Unknown or invalid entity UUID");
-        return this.android.GetTaskModule().queueTask(task);
+    public final MethodResult attack(String entityUUID) {
+        if (!this.android.setTargetEntity(UUID.fromString(entityUUID))) {
+            return MethodResult.of("Unknown entity or invalid UUID");
+        }
+
+        this.android.setState("attacking");
+        return MethodResult.of();
+    }
+
+    @LuaFunction
+    public final MethodResult follow(String entityUUID) {
+        if (!this.android.setTargetEntity(UUID.fromString(entityUUID))) {
+            return MethodResult.of("Unknown entity or invalid UUID");
+        }
+
+        this.android.setState("following");
+        return MethodResult.of();
+    }
+
+    @LuaFunction
+    public final MethodResult moveTo(int x, int y, int z) {
+        this.android.setTargetBlock(new BlockPos(x,y,z));
+        this.android.setState("movingToBlock");
+        return MethodResult.of();
+    }
+
+    @LuaFunction
+    public final MethodResult mineBlock(int x, int y, int z) {
+        this.android.setTargetBlock(new BlockPos(x,y,z));
+        this.android.setState("miningBlock");
+        return MethodResult.of();
     }
 
     /*
-    * Combat
+    * Sensory
     */
-
-    @LuaFunction
-    public final MethodResult addAttackTask(String entityUUID) {
-        BaseAndroidEntity androidEntity = this.android.GetAndroid();
-        AttackEntityTask task = new AttackEntityTask(androidEntity, androidEntity.brain, UUID.fromString(entityUUID), false);
-        if (!task.targetValid())
-            return MethodResult.of("Unknown or invalid entity UUID");
-        return this.android.GetTaskModule().queueTask(task);
-    }
 
     //TODO: Revamp
 
     @LuaFunction
     public final MethodResult getClosestPlayer() {
-        PlayerEntity player = android.GetClosestPlayer();
+        PlayerEntity player = android.getClosestPlayer();
 
         return MethodResult.of(player == null ? null : player.getUuidAsString());
     }
 
     @LuaFunction
     public final MethodResult getNearbyMobs(Optional<String> type) throws LuaException {
-        return MethodResult.of(android.GetNearbyMobs(type.orElse(null)));
+        return MethodResult.of(android.getNearbyMobs(type.orElse(null)));
     }
 
     @LuaFunction
     public final MethodResult getClosestMobOfType(Optional<String> type) throws LuaException {
-        LivingEntity entity = android.GetClosestMobOfType(type.orElse(null));
+        LivingEntity entity = android.getClosestMobOfType(type.orElse(null));
 
         return MethodResult.of(entity == null ? null : entity.getUuidAsString());
     }
 
     @LuaFunction
     public final MethodResult getMobInfo( String entityUUIDString) {
-        ServerWorld world = (ServerWorld) android.GetWorld();
+        ServerWorld world = (ServerWorld) android.getWorld();
 
         LivingEntity entity = (LivingEntity) world.getEntity(UUID.fromString(entityUUIDString));
 
@@ -144,7 +146,7 @@ public class AndroidAPI implements ILuaAPI {
 
     @LuaFunction
     public final MethodResult sendChatMessage(String what) {
-        android.SendChatMessage(what);
+        android.sendChatMessage(what);
         return MethodResult.of();
     }
 }

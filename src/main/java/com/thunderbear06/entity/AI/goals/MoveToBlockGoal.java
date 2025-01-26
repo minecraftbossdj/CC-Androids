@@ -2,22 +2,24 @@ package com.thunderbear06.entity.AI.goals;
 
 import com.thunderbear06.entity.AI.AndroidBrain;
 import com.thunderbear06.entity.AndroidEntity;
+import net.minecraft.util.math.BlockPos;
 
-import java.util.Objects;
+public class MoveToBlockGoal extends BaseAndroidGoal {
 
-public class FollowTargetGoal extends BaseAndroidGoal {
-    public FollowTargetGoal(AndroidEntity android, AndroidBrain brain) {
+    public MoveToBlockGoal(AndroidEntity android, AndroidBrain brain) {
         super(android, brain);
     }
 
     @Override
     public boolean canStart() {
-        return Objects.equals(this.brain.state, "following") && this.brain.targetEntity != null;
+        return this.brain.state.equals("movingToBlock") && this.brain.targetBlock != null;
     }
 
     @Override
-    public void tick() {
-        this.android.getNavigation().startMovingTo(this.brain.targetEntity, 0.5);
+    public void start() {
+        BlockPos pos = this.brain.targetBlock;
+
+        this.android.getNavigation().startMovingTo(pos.getX(), pos.getY(), pos.getZ(), 1.0);
     }
 
     @Override
@@ -29,6 +31,6 @@ public class FollowTargetGoal extends BaseAndroidGoal {
     public void stop() {
         super.stop();
         this.android.getNavigation().stop();
-        this.brain.targetEntity = null;
+        this.brain.targetBlock = null;
     }
 }

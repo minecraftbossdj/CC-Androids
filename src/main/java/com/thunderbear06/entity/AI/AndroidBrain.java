@@ -2,10 +2,8 @@ package com.thunderbear06.entity.AI;
 
 import com.thunderbear06.computer.AndroidAccess;
 import com.thunderbear06.entity.AI.modules.SensorModule;
-import com.thunderbear06.entity.AI.modules.TaskManagerModule;
 import com.thunderbear06.entity.BaseAndroidEntity;
 import dan200.computercraft.api.lua.LuaException;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.message.MessageType;
@@ -22,45 +20,38 @@ import java.util.UUID;
 public class AndroidBrain implements AndroidAccess {
     protected final BaseAndroidEntity owner;
     protected final SensorModule sensor;
-    protected final TaskManagerModule taskManager;
 
     @Nullable
     public LivingEntity targetEntity;
+    @Nullable
+    public BlockPos targetBlock;
+
+    public String state = "idle";
 
     private long lastChatMessageTime = 0;
 
     public AndroidBrain(BaseAndroidEntity android) {
         this.owner = android;
         this.sensor = new SensorModule(10);
-        this.taskManager = new TaskManagerModule(6000);
-    }
-
-    public void tickTasks() {
-        this.taskManager.tick(this.owner.getWorld().getTime());
     }
 
     @Override
-    public World GetWorld() {
+    public World getWorld() {
         return this.owner.getWorld();
     }
 
     @Override
-    public BaseAndroidEntity GetAndroid() {
+    public BaseAndroidEntity getAndroid() {
         return this.owner;
     }
 
     @Override
-    public SensorModule GetSensorModule() {
+    public SensorModule getSensorModule() {
         return this.sensor;
     }
 
     @Override
-    public TaskManagerModule GetTaskModule() {
-        return this.taskManager;
-    }
-
-    @Override
-    public void SendChatMessage(String rawMessage) {
+    public void sendChatMessage(String rawMessage) {
         ServerWorld world = (ServerWorld) this.owner.getWorld();
 
         long time = this.owner.getWorld().getTime();
@@ -77,27 +68,59 @@ public class AndroidBrain implements AndroidAccess {
     }
 
     @Override
-    public PlayerEntity GetClosestPlayer() {
-        return this.sensor.GetClosestPlayer(this.owner);
+    public boolean setTargetBlock(BlockPos pos) {
+        if (!this.owner.getWorld().isInBuildLimit(pos))
+            return false;
+        this.targetBlock = pos;
+        return true;
     }
 
     @Override
-    public LivingEntity GetClosestMobOfType(String type) throws LuaException {
-        return this.sensor.GetClosestMobOfType(type, this.owner);
+    public boolean setTargetEntity(UUID entityUUID) {
+        ServerWorld world = (ServerWorld) this.owner.getWorld();
+
+        this.targetEntity = (LivingEntity) world.getEntity(entityUUID);
+
+        return this.targetEntity != null && !this.targetEntity.isDead();
     }
 
     @Override
-    public List<String> GetNearbyMobs(@Nullable String type) throws LuaException {
-        return this.sensor.GetMobs(type, this.owner);
+    public void setState(String state) {
+        this.state = state;
     }
 
     @Override
-    public String GetState() {
-        return this.GetTaskModule().getStatus();
+    public @Nullable LivingEntity getTargetEntity() {
+        return this.targetEntity;
     }
 
     @Override
-    public BlockPos GetPosition() {
+    public @Nullable BlockPos getTargetBlock() {
+        return this.targetBlock;
+    }
+
+    @Override
+    public PlayerEntity getClosestPlayer() {
+        return this.sensor.getClosestPlayer(this.owner);
+    }
+
+    @Override
+    public LivingEntity getClosestMobOfType(String type) throws LuaException {
+        return this.sensor.getClosestMobOfType(type, this.owner);
+    }
+
+    @Override
+    public List<String> getNearbyMobs(@Nullable String type) throws LuaException {
+        return this.sensor.getMobs(type, this.owner);
+    }
+
+    @Override
+    public String getState() {
+        return this.state;
+    }
+
+    @Override
+    public BlockPos getPosition() {
         return this.owner.getBlockPos();
     }
 

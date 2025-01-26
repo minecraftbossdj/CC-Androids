@@ -23,13 +23,13 @@ public class SensorModule {
     }
 
 
-    public PlayerEntity GetClosestPlayer(BaseAndroidEntity android) {
+    public PlayerEntity getClosestPlayer(BaseAndroidEntity android) {
         BlockPos pos = android.getBlockPos();
 
         return android.getWorld().getClosestPlayer(pos.getX(), pos.getY(), pos.getZ(), this.searchRadius, entity -> !entity.isSpectator());
     }
 
-    public List<String> GetMobs(@Nullable String type, BaseAndroidEntity android) throws LuaException {
+    public List<String> getMobs(@Nullable String type, BaseAndroidEntity android) throws LuaException {
         List<String> list = new ArrayList<>();
 
         android.getWorld().getEntitiesByClass(LivingEntity.class, android.getBoundingBox().expand(this.searchRadius), getTypePredicate(android, type)).forEach(entity -> {
@@ -39,7 +39,7 @@ public class SensorModule {
         return list;
     }
 
-    public LivingEntity GetClosestMobOfType(@Nullable String type, BaseAndroidEntity android) throws LuaException {
+    public LivingEntity getClosestMobOfType(@Nullable String type, BaseAndroidEntity android) throws LuaException {
 
         BlockPos pos = android.getBlockPos();
 
@@ -56,7 +56,7 @@ public class SensorModule {
 
     private Predicate<LivingEntity> getTypePredicate(BaseAndroidEntity android, @Nullable String type) throws LuaException {
         if (type == null) {
-            return (entity -> entity != android);
+            return (entity -> entity != android && android.canSee(entity));
         } else {
             Optional<EntityType<?>> targetType = EntityType.get(type);
 
@@ -64,7 +64,7 @@ public class SensorModule {
                 throw new LuaException("Unknown EntityType: "+type);
             }
 
-            return (entity -> entity != android && entity.getType().equals(targetType.get()));
+            return (entity -> entity != android && android.canSee(entity) && entity.getType().equals(targetType.get()));
         }
     }
 }

@@ -3,9 +3,7 @@ package com.thunderbear06.entity;
 import com.thunderbear06.computer.ComputerComponents;
 import com.thunderbear06.computer.EntityComputer;
 import com.thunderbear06.entity.AI.AndroidBrain;
-import com.thunderbear06.entity.AI.modules.TaskManagerModule;
 import dan200.computercraft.api.ComputerCraftAPI;
-import dan200.computercraft.api.lua.MethodResult;
 import dan200.computercraft.shared.ModRegistry;
 import dan200.computercraft.shared.computer.core.ComputerFamily;
 import dan200.computercraft.shared.computer.core.ServerComputer;
@@ -13,16 +11,22 @@ import dan200.computercraft.shared.computer.core.ServerContext;
 import dan200.computercraft.shared.computer.inventory.ComputerMenuWithoutInventory;
 import dan200.computercraft.shared.config.Config;
 import dan200.computercraft.shared.util.ComponentMap;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.DoorBlock;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.ai.pathing.MobNavigation;
+import net.minecraft.entity.ai.pathing.PathNode;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.screen.NamedScreenHandlerFactory;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 import javax.annotation.Nullable;
@@ -30,7 +34,6 @@ import java.util.Objects;
 import java.util.UUID;
 
 public class BaseAndroidEntity extends PathAwareEntity implements NamedScreenHandlerFactory {
-
     @Nullable
     private UUID instanceID = null;
     private int computerID = -1;
@@ -46,6 +49,36 @@ public class BaseAndroidEntity extends PathAwareEntity implements NamedScreenHan
         super(entityType, world);
         this.family = ComputerFamily.NORMAL;
         this.brain = new AndroidBrain(this);
+    }
+
+    @Override
+    public void tickMovement() {
+        super.tickMovement();
+
+        this.openNaNoor();
+    }
+
+    private void handleDoor(PathNode node, boolean open) {
+        BlockPos pos = new BlockPos(node.x, node.y, node.z);
+        BlockState state = this.getWorld().getBlockState(pos);
+
+        if (state.isIn(BlockTags.WOODEN_DOORS)) {
+            DoorBlock door = (DoorBlock) state.getBlock();
+            door.setOpen(this, this.getWorld(), state, pos, open);
+        }
+    }
+
+    private void openNaNoor() {
+        MobNavigation nav = (MobNavigation) this.getNavigation();
+
+        if (nav.isIdle() || nav.getCurrentPath() == null)
+            return;
+        PathNode node = nav.getCurrentPath().getCurrentNode();
+        PathNode lastNode = nav.getCurrentPath().getLastNode();
+
+        handleDoor(node, true);
+        if (lastNode != null && lastNode.previous != null)
+            handleDoor(lastNode.previous, false);
     }
 
     @Override
@@ -77,28 +110,8 @@ public class BaseAndroidEntity extends PathAwareEntity implements NamedScreenHan
                     this.setCustomName(Text.of(this.label));
                     this.setCustomNameVisible(this.label != null && !this.label.isEmpty());
                 }
-
-                TaskManagerModule taskManager = this.brain.GetTaskModule();
-
-                if (computer.isOn()) {
-                    if (taskManager.tasksComplete()) {
-                        computer.queueEvent("tasksComplete");
-                    }
-                } else if (!taskManager.tasksComplete()) {
-                    this.brain.GetTaskModule().clearTasks();
-                }
             }
         }
-    }
-
-    @Override
-    public void tickMovement() {
-        super.tickMovement();
-
-        if (this.getWorld().isClient())
-            return;
-
-        this.brain.tickTasks();
     }
 
     public final ServerComputer createServerComputer() {
@@ -164,5 +177,11 @@ public class BaseAndroidEntity extends PathAwareEntity implements NamedScreenHan
         if (nbt.contains("computer_id"))
             this.computerID = nbt.getInt("computer_id");
         super.readCustomDataFromNbt(nbt);
+    }
+
+    // Robots don't drown now, do they?
+    @Override
+    public int getAir() {
+        return 10;
     }
 }
