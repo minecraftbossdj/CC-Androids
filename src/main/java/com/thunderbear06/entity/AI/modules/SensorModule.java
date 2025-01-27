@@ -1,5 +1,6 @@
 package com.thunderbear06.entity.AI.modules;
 
+import com.thunderbear06.entity.AI.AndroidBrain;
 import com.thunderbear06.entity.BaseAndroidEntity;
 import dan200.computercraft.api.lua.LuaException;
 import net.minecraft.entity.EntityType;
@@ -16,47 +17,48 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 
-public class SensorModule {
+public class SensorModule extends AndroidModule{
 
     private final double searchRadius;
 
-    public SensorModule(double searchRadius) {
+    public SensorModule(BaseAndroidEntity android, AndroidBrain brain, double searchRadius) {
+        super(android, brain);
         this.searchRadius = searchRadius;
     }
 
 
-    public PlayerEntity getClosestPlayer(BaseAndroidEntity android) {
-        BlockPos pos = android.getBlockPos();
+    public PlayerEntity getClosestPlayer() {
+        BlockPos pos = this.owner.getBlockPos();
 
-        return android.getWorld().getClosestPlayer(pos.getX(), pos.getY(), pos.getZ(), this.searchRadius, entity -> !entity.isSpectator());
+        return this.owner.getWorld().getClosestPlayer(pos.getX(), pos.getY(), pos.getZ(), this.searchRadius, entity -> !entity.isSpectator());
     }
 
-    public List<String> getMobs(@Nullable String type, BaseAndroidEntity android) throws LuaException {
+    public List<String> getMobs(@Nullable String type) throws LuaException {
         List<String> list = new ArrayList<>();
 
-        android.getWorld().getEntitiesByClass(LivingEntity.class, android.getBoundingBox().expand(this.searchRadius), getTypePredicate(android, type)).forEach(entity -> {
+        this.owner.getWorld().getEntitiesByClass(LivingEntity.class, this.owner.getBoundingBox().expand(this.searchRadius), getTypePredicate(type)).forEach(entity -> {
             list.add(entity.getUuidAsString());
         });
 
         return list;
     }
 
-    public LivingEntity getClosestMobOfType(@Nullable String type, BaseAndroidEntity android) throws LuaException {
-        BlockPos pos = android.getBlockPos();
+    public LivingEntity getClosestMobOfType(@Nullable String type) throws LuaException {
+        BlockPos pos = this.owner.getBlockPos();
 
-        return android.getWorld().getClosestEntity(
+        return this.owner.getWorld().getClosestEntity(
                 LivingEntity.class,
-                TargetPredicate.DEFAULT.setPredicate(getTypePredicate(android, type)),
-                android,
+                TargetPredicate.DEFAULT.setPredicate(getTypePredicate(type)),
+                this.owner,
                 pos.getX(),
                 pos.getY(),
                 pos.getX(),
-                android.getBoundingBox().expand(this.searchRadius)
+                this.owner.getBoundingBox().expand(this.searchRadius)
         );
     }
 
-    public List<String> getGroundItems(@Nullable String itemName, int max, BaseAndroidEntity android) {
-        List<ItemEntity> list = android.getWorld().getNonSpectatingEntities(ItemEntity.class, android.getBoundingBox().expand(1));
+    public List<String> getGroundItems(@Nullable String itemName, int max) {
+        List<ItemEntity> list = this.owner.getWorld().getNonSpectatingEntities(ItemEntity.class, this.owner.getBoundingBox().expand(1));
 
         List<String> UUIDS = new ArrayList<>();
 
@@ -70,9 +72,9 @@ public class SensorModule {
         return UUIDS;
     }
 
-    private Predicate<LivingEntity> getTypePredicate(BaseAndroidEntity android, @Nullable String type) throws LuaException {
+    private Predicate<LivingEntity> getTypePredicate(@Nullable String type) throws LuaException {
         if (type == null) {
-            return (entity -> entity != android && android.canSee(entity));
+            return (entity -> entity != this.owner && this.owner.canSee(entity));
         } else {
             Optional<EntityType<?>> targetType = EntityType.get(type);
 
@@ -80,7 +82,7 @@ public class SensorModule {
                 throw new LuaException("Unknown EntityType: "+type);
             }
 
-            return (entity -> entity != android && !entity.isSpectator() && android.canSee(entity) && entity.getType().equals(targetType.get()));
+            return (entity -> entity != this.owner && !entity.isSpectator() && this.owner.canSee(entity) && entity.getType().equals(targetType.get()));
         }
     }
 }

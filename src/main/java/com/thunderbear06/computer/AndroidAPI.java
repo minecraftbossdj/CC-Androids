@@ -136,7 +136,7 @@ public class AndroidAPI implements ILuaAPI {
 
     @LuaFunction
     public final MethodResult getGroundItems(Optional<String> targetItemName, Optional<Integer> max) {
-        return MethodResult.of(this.android.getSensorModule().getGroundItems(targetItemName.orElse(null), max.orElse(Integer.MAX_VALUE), this.android.getOwner()));
+        return MethodResult.of(this.android.getSensorModule().getGroundItems(targetItemName.orElse(null), max.orElse(Integer.MAX_VALUE)));
     }
 
     //TODO: Revamp

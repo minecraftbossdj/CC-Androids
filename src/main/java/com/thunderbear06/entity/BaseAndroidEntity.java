@@ -45,25 +45,23 @@ import java.util.Objects;
 import java.util.UUID;
 
 public class BaseAndroidEntity extends PathAwareEntity implements NamedScreenHandlerFactory {
+    public final AndroidBrain brain;
+
+    @Nullable
+    public String label;
+    public boolean on = false;
+
     @Nullable
     private UUID instanceID = null;
     private int computerID = -1;
-    @Nullable String label;
-    private boolean on = false;
-    boolean startOn = false;
+    private boolean startOn = false;
     private boolean fresh = false;
     private final ComputerFamily family;
 
-    public final AndroidBrain brain;
-    public final FakePlayer player;
 
     protected BaseAndroidEntity(EntityType<? extends PathAwareEntity> entityType, World world) {
         super(entityType, world);
 
-        if (world instanceof ServerWorld serverWorld)
-            this.player = FakePlayer.get(serverWorld);
-        else
-            this.player = null;
         this.family = ComputerFamily.NORMAL;
         this.brain = new AndroidBrain(this);
     }

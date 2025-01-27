@@ -14,6 +14,11 @@ public abstract class BaseAndroidGoal extends Goal {
     }
 
     @Override
+    public boolean canStart() {
+        return this.android.on;
+    }
+
+    @Override
     public void stop() {
         this.brain.setState("idle");
     }

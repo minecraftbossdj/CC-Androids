@@ -1,6 +1,7 @@
 package com.thunderbear06.entity.AI;
 
 import com.thunderbear06.computer.AndroidAccess;
+import com.thunderbear06.entity.AI.modules.MiningModule;
 import com.thunderbear06.entity.AI.modules.SensorModule;
 import com.thunderbear06.entity.BaseAndroidEntity;
 import dan200.computercraft.api.lua.LuaException;
@@ -18,8 +19,9 @@ import java.util.List;
 import java.util.UUID;
 
 public class AndroidBrain implements AndroidAccess {
-    protected final BaseAndroidEntity owner;
-    protected final SensorModule sensor;
+    public final BaseAndroidEntity owner;
+    public final SensorModule sensor;
+    public final MiningModule miningModule;
 
     @Nullable
     public LivingEntity targetEntity;
@@ -32,7 +34,8 @@ public class AndroidBrain implements AndroidAccess {
 
     public AndroidBrain(BaseAndroidEntity android) {
         this.owner = android;
-        this.sensor = new SensorModule(10);
+        this.sensor = new SensorModule(this.owner, this, 10);
+        this.miningModule = new MiningModule(this.owner, this);
     }
 
     @Override
@@ -101,17 +104,17 @@ public class AndroidBrain implements AndroidAccess {
 
     @Override
     public PlayerEntity getClosestPlayer() {
-        return this.sensor.getClosestPlayer(this.owner);
+        return this.sensor.getClosestPlayer();
     }
 
     @Override
     public LivingEntity getClosestMobOfType(String type) throws LuaException {
-        return this.sensor.getClosestMobOfType(type, this.owner);
+        return this.sensor.getClosestMobOfType(type);
     }
 
     @Override
     public List<String> getNearbyMobs(@Nullable String type) throws LuaException {
-        return this.sensor.getMobs(type, this.owner);
+        return this.sensor.getMobs(type);
     }
 
     @Override
