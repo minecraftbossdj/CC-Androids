@@ -1,5 +1,6 @@
 package com.thunderbear06.computer;
 
+import com.mojang.authlib.GameProfile;
 import com.thunderbear06.entity.AI.modules.SensorModule;
 import com.thunderbear06.entity.BaseAndroidEntity;
 import dan200.computercraft.api.lua.LuaException;
@@ -14,10 +15,13 @@ import java.util.List;
 import java.util.UUID;
 
 @ApiStatus.NonExtendable
-public interface AndroidAccess {
+public interface IAndroidAccess {
 
     World getWorld();
     BaseAndroidEntity getOwner();
+
+    @Nullable GameProfile getOwningPlayer();
+    void setOwningPlayer(GameProfile player);
 
     SensorModule getSensorModule();
 

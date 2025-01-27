@@ -4,8 +4,6 @@ import dan200.computercraft.api.lua.ILuaAPI;
 import dan200.computercraft.api.lua.LuaException;
 import dan200.computercraft.api.lua.LuaFunction;
 import dan200.computercraft.api.lua.MethodResult;
-import net.fabricmc.fabric.api.entity.FakePlayer;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.HostileEntity;
@@ -14,15 +12,14 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
 public class AndroidAPI implements ILuaAPI {
-    private final AndroidAccess android;
+    private final IAndroidAccess android;
 
-    public AndroidAPI(AndroidAccess android) {
+    public AndroidAPI(IAndroidAccess android) {
         this.android = android;
     }
 
@@ -95,6 +92,17 @@ public class AndroidAPI implements ILuaAPI {
     }
 
     @LuaFunction
+    public final MethodResult useItemOnBlock(int x, int y, int z) {
+        this.android.setTargetBlock(new BlockPos(x,y,z));
+        this.android.setState("usingItemOnBlock");
+        return MethodResult.of();
+    }
+
+    /*
+    * Inventory
+    */
+
+    @LuaFunction
     public final MethodResult pickup(String entityUUID) {
         ServerWorld world = (ServerWorld) this.android.getWorld();
 
@@ -109,6 +117,53 @@ public class AndroidAPI implements ILuaAPI {
     @LuaFunction
     public final MethodResult dropHeldItem() {
         return this.android.getOwner().dropHandItem();
+    }
+
+    @LuaFunction
+    public final MethodResult stashHeldItem(int index) {
+        // Tables in lua start at index 1
+        index--;
+
+        ItemStack itemStack = this.android.getOwner().getMainHandStack();
+
+        if (itemStack.isEmpty())
+            return MethodResult.of("No item in hand to stash");
+
+        MethodResult result = this.android.getOwner().canStash(itemStack, index);
+
+        if (result != null)
+            return result;
+
+        itemStack = this.android.getOwner().stashStack(itemStack, index);
+        this.android.getOwner().setStackInHand(Hand.MAIN_HAND, itemStack);
+
+        return MethodResult.of();
+    }
+
+    @LuaFunction
+    public final MethodResult equipFromStash(int index) {
+        index--;
+
+        ItemStack storedItemstack = this.android.getOwner().getStashItem(index, true);
+
+        if (storedItemstack == null || storedItemstack.isEmpty())
+            return MethodResult.of("Index of stash is empty");
+        if (!this.android.getOwner().getMainHandStack().isEmpty())
+            return MethodResult.of("Cannot equip item while holding an item");
+
+        this.android.getOwner().setStackInHand(Hand.MAIN_HAND, storedItemstack);
+        return MethodResult.of();
+    }
+
+    @LuaFunction
+    public final MethodResult getItemInStash(int index) {
+        index--;
+
+        ItemStack storedStack = this.android.getOwner().getStashItem(index, false);
+
+        if (storedStack.isEmpty())
+            return MethodResult.of("empty");
+        return MethodResult.of(storedStack.getName().getString());
     }
 
     /*

@@ -7,7 +7,7 @@ public abstract class AndroidModule {
     public final BaseAndroidEntity owner;
     public final AndroidBrain brain;
 
-    protected AndroidModule(BaseAndroidEntity owner, AndroidBrain brain) {
+    public AndroidModule(BaseAndroidEntity owner, AndroidBrain brain) {
         this.owner = owner;
         this.brain = brain;
     }

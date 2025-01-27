@@ -5,14 +5,14 @@ import com.thunderbear06.entity.AndroidEntity;
 
 import java.util.Objects;
 
-public class FollowTargetGoal extends BaseAndroidGoal {
-    public FollowTargetGoal(AndroidEntity android, AndroidBrain brain) {
+public class AndroidFollowTargetGoal extends BaseAndroidGoal {
+    public AndroidFollowTargetGoal(AndroidEntity android, AndroidBrain brain) {
         super(android, brain);
     }
 
     @Override
     public boolean canStart() {
-        return Objects.equals(this.brain.state, "following") && this.brain.targetEntity != null;
+        return super.canStart() && Objects.equals(this.brain.state, "following") && this.brain.targetEntity != null;
     }
 
     @Override

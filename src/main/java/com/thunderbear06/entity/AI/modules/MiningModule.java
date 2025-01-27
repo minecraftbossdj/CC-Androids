@@ -2,6 +2,7 @@ package com.thunderbear06.entity.AI.modules;
 
 import com.thunderbear06.entity.AI.AndroidBrain;
 import com.thunderbear06.entity.BaseAndroidEntity;
+import com.thunderbear06.entity.player.AndroidPlayer;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
@@ -25,29 +26,16 @@ public class MiningModule extends AndroidModule{
         this.breakProgress = tickBreakProgress(pos, state, itemStack, this.breakProgress);
 
         if (this.breakProgress >= 10.0f) {
-            breakBlock(pos, state, itemStack);
+            breakBlock(pos);
             this.resetBreakProgress();
         }
     }
 
-    public void breakBlock(BlockPos pos, BlockState state, ItemStack itemStack) {
-        World world = this.owner.getWorld();
-
-        boolean doDrop = !state.isToolRequired() || itemStack.isSuitableFor(state);
-
-        world.breakBlock(pos, false, this.owner);
-        world.addBlockBreakParticles(pos, state);
-
-        // Handled here to support fortune enchant
-        if (doDrop) {
-            BlockEntity blockEntity = state.hasBlockEntity() ? world.getBlockEntity(pos) : null;
-            Block.dropStacks(state, world, pos, blockEntity, this.owner, itemStack);
-        }
-
-        itemStack.damage(1, this.owner.getRandom(), null);
+    public void breakBlock(BlockPos pos) {
+        AndroidPlayer.get(this.brain).player().interactionManager.tryBreakBlock(pos);
     }
 
-    public boolean canMineBlock(BlockPos pos, ItemStack itemStack) {
+    public boolean canMineBlock(BlockPos pos) {
         BlockState state = this.owner.getWorld().getBlockState(pos);
 
         return !state.isAir() && state.getHardness(this.owner.getWorld(), pos) > -1;

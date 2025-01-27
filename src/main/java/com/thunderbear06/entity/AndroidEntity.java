@@ -1,9 +1,6 @@
 package com.thunderbear06.entity;
 
-import com.thunderbear06.entity.AI.goals.AndroidMeleeAttackGoal;
-import com.thunderbear06.entity.AI.goals.FollowTargetGoal;
-import com.thunderbear06.entity.AI.goals.MineBlockGoal;
-import com.thunderbear06.entity.AI.goals.MoveToBlockGoal;
+import com.thunderbear06.entity.AI.goals.*;
 import dan200.computercraft.shared.computer.core.ServerComputer;
 import dan200.computercraft.shared.network.container.ComputerContainerData;
 import net.minecraft.entity.EntityType;
@@ -30,9 +27,10 @@ public class AndroidEntity extends BaseAndroidEntity {
     }
 
     protected void initAndroidGoals() {
-        goalSelector.add(0, new MoveToBlockGoal(this, this.brain));
-        goalSelector.add(0, new MineBlockGoal(this, this.brain));
-        goalSelector.add(0, new FollowTargetGoal(this, this.brain));
+        goalSelector.add(0, new AndroidMoveToBlockGoal(this, this.brain));
+        goalSelector.add(0, new AndroidMineBlockGoal(this, this.brain));
+        goalSelector.add(0, new AndroidUseItemOnBlockGoal(this, this.brain));
+        goalSelector.add(0, new AndroidFollowTargetGoal(this, this.brain));
         goalSelector.add(0, new AndroidMeleeAttackGoal(this));
         goalSelector.add(1, new LookAtEntityGoal(this, PlayerEntity.class, 10));
     }
@@ -43,7 +41,9 @@ public class AndroidEntity extends BaseAndroidEntity {
 
     @Override
     protected ActionResult interactMob(PlayerEntity player, Hand hand) {
-        if (!getWorld().isClient() && this.isUsable(player)) {
+        if (!getWorld().isClient()) {
+            if (this.brain.getOwningPlayer() == null)
+                this.brain.setOwningPlayer(player.getGameProfile());
 
             ServerComputer serverComputer = createServerComputer();
 

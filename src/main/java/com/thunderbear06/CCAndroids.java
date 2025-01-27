@@ -1,7 +1,7 @@
 package com.thunderbear06;
 
 import com.thunderbear06.computer.AndroidAPI;
-import com.thunderbear06.computer.AndroidAccess;
+import com.thunderbear06.computer.IAndroidAccess;
 import com.thunderbear06.computer.ComputerComponents;
 import com.thunderbear06.entity.AndroidEntity;
 import dan200.computercraft.api.ComputerCraftAPI;
@@ -29,7 +29,7 @@ public class CCAndroids implements ModInitializer {
 	@Override
 	public void onInitialize() {
 		ComputerCraftAPI.registerAPIFactory(computer -> {
-			AndroidAccess android = computer.getComponent(ComputerComponents.ANDROID_COMPUTER);
+			IAndroidAccess android = computer.getComponent(ComputerComponents.ANDROID_COMPUTER);
 			return android == null ? null : new AndroidAPI(android);
 		});
 

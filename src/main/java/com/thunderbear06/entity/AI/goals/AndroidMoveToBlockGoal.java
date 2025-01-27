@@ -4,15 +4,15 @@ import com.thunderbear06.entity.AI.AndroidBrain;
 import com.thunderbear06.entity.AndroidEntity;
 import net.minecraft.util.math.BlockPos;
 
-public class MoveToBlockGoal extends BaseAndroidGoal {
+public class AndroidMoveToBlockGoal extends BaseAndroidGoal {
 
-    public MoveToBlockGoal(AndroidEntity android, AndroidBrain brain) {
+    public AndroidMoveToBlockGoal(AndroidEntity android, AndroidBrain brain) {
         super(android, brain);
     }
 
     @Override
     public boolean canStart() {
-        return this.brain.state.equals("movingToBlock") && this.brain.targetBlock != null;
+        return super.canStart() && this.brain.state.equals("movingToBlock") && this.brain.targetBlock != null;
     }
 
     @Override

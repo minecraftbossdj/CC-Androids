@@ -14,7 +14,7 @@ public class AndroidMeleeAttackGoal extends BaseAndroidGoal {
 
     @Override
     public boolean canStart() {
-        return this.brain.state.equals("attacking") && this.brain.targetEntity != null && this.brain.targetEntity.isAlive();
+        return super.canStart() && this.brain.state.equals("attacking") && this.brain.targetEntity != null && this.brain.targetEntity.isAlive();
     }
 
     @Override
@@ -24,14 +24,14 @@ public class AndroidMeleeAttackGoal extends BaseAndroidGoal {
         if (this.attackCooldown > 0)
             this.attackCooldown--;
 
-        if (this.android.isInAttackRange(target)) {
+        if (isInRangeOf(target, true)) {
             if (this.attackCooldown <= 0) {
                 this.android.getLookControl().lookAt(target);
                 this.android.swingHand(Hand.MAIN_HAND);
                 this.android.tryAttack(target);
                 this.attackCooldown = 10;
             }
-        } else {
+        } else if (this.android.getNavigation().isIdle()) {
             this.android.getNavigation().startMovingTo(target, 0.5);
         }
     }
