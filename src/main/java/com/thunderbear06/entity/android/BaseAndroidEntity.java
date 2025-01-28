@@ -63,6 +63,8 @@ public class BaseAndroidEntity extends PathAwareEntity implements NamedScreenHan
     protected BaseAndroidEntity(EntityType<? extends PathAwareEntity> entityType, World world) {
         super(entityType, world);
 
+        ((MobNavigation)this.getNavigation()).setCanPathThroughDoors(true);
+
         this.brain = new AndroidBrain(this);
         this.internalStorage = DefaultedList.ofSize(9, ItemStack.EMPTY);
     }
@@ -85,60 +87,34 @@ public class BaseAndroidEntity extends PathAwareEntity implements NamedScreenHan
         tickHandSwing();
 
         if (!this.getWorld().isClient()) {
-            if (this.computerID >= 0 || this.startOn) {
-                ServerComputer computer = this.createServerComputer();
-
-                if (this.startOn || this.fresh && this.on) {
-                    computer.turnOn();
-                    this.startOn = false;
-                }
-
-                computer.keepAlive();
-                this.fresh = false;
-                this.computerID = computer.getID();
-                boolean newOn = computer.isOn();
-                if (this.on != newOn) {
-                    this.on = newOn;
-                }
-
-                if (!Objects.equals(this.label, computer.getLabel())) {
-                    this.label = computer.getLabel();
-
-                    this.setCustomName(Text.of(this.label));
-                    this.setCustomNameVisible(this.label != null && !this.label.isEmpty());
-                }
-            }
+            tickAndroid();
         }
     }
 
-    @Override
-    protected ActionResult interactMob(PlayerEntity player, Hand hand) {
-        // TODO: debug, don't keep
-        if (player.isSneaking()) {
-            if (this.getFamily() == ComputerFamily.NORMAL)
-                this.setFamily(ComputerFamily.ADVANCED);
-            else if (this.getFamily() == ComputerFamily.ADVANCED)
-                this.setFamily(ComputerFamily.COMMAND);
-            else
-                this.setFamily(ComputerFamily.NORMAL);
-            return ActionResult.CONSUME;
+    public void tickAndroid() {
+        if (this.computerID >= 0 || this.startOn) {
+            ServerComputer computer = this.createServerComputer();
+
+            if (this.startOn || this.fresh && this.on) {
+                computer.turnOn();
+                this.startOn = false;
+            }
+
+            computer.keepAlive();
+            this.fresh = false;
+            this.computerID = computer.getID();
+            boolean newOn = computer.isOn();
+            if (this.on != newOn) {
+                this.on = newOn;
+            }
+
+            if (!Objects.equals(this.label, computer.getLabel())) {
+                this.label = computer.getLabel();
+
+                this.setCustomName(Text.of(this.label));
+                this.setCustomNameVisible(this.label != null && !this.label.isEmpty());
+            }
         }
-
-        if (!getWorld().isClient()) {
-
-            if (this.brain.getOwningPlayer() == null)
-                this.brain.setOwningPlayer(player.getGameProfile());
-
-            ServerComputer serverComputer = createServerComputer();
-
-            serverComputer.turnOn();
-
-            serverComputer.keepAlive();
-
-            (new ComputerContainerData(serverComputer, ItemStack.EMPTY)).open(player, this);
-        }
-
-        return ActionResult.CONSUME;
     }
 
     // Action
@@ -310,17 +286,29 @@ public class BaseAndroidEntity extends PathAwareEntity implements NamedScreenHan
     @Override
     public void writeCustomDataToNbt(NbtCompound nbt) {
         Inventories.writeNbt(nbt, this.internalStorage);
-        nbt.putInt("ComputerID", this.computerID);
-        this.brain.writeNbt(nbt);
+
+        NbtCompound computerCompound = new NbtCompound();
+
+        computerCompound.putInt("ComputerID", this.computerID);
+        computerCompound.putString("ComputerFamily", this.getFamily().toString());
+        this.brain.writeNbt(computerCompound);
+
+        nbt.put("ComputerEntity", computerCompound);
+
         super.writeCustomDataToNbt(nbt);
     }
 
     @Override
     public void readCustomDataFromNbt(NbtCompound nbt) {
         Inventories.readNbt(nbt, this.internalStorage);
-        if (nbt.contains("ComputerID"))
-            this.computerID = nbt.getInt("ComputerID");
-        this.brain.readNbt(nbt);
+
+        if (nbt.contains("ComputerEntity")) {
+            NbtCompound computerCompound = nbt.getCompound("ComputerEntity");
+            this.computerID = computerCompound.getInt("ComputerID");
+            this.setFamily(ComputerFamily.valueOf(computerCompound.getString("ComputerFamily")));
+            this.brain.readNbt(computerCompound);
+        }
+
         super.readCustomDataFromNbt(nbt);
     }
 

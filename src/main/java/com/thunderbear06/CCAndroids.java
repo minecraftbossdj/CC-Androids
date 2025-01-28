@@ -3,13 +3,13 @@ package com.thunderbear06;
 import com.thunderbear06.computer.AndroidAPI;
 import com.thunderbear06.computer.IAndroidAccess;
 import com.thunderbear06.computer.ComputerComponents;
-import com.thunderbear06.entity.android.BaseAndroidEntity;
+import com.thunderbear06.entity.EntityRegistry;
 import com.thunderbear06.entity.android.AndroidEntity;
 import com.thunderbear06.entity.android.RogueDroidEntity;
 import com.thunderbear06.entity.android.UnfinishedAndroidEntity;
+import com.thunderbear06.item.ItemRegistry;
 import dan200.computercraft.api.ComputerCraftAPI;
 import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.SpawnGroup;
 import net.minecraft.registry.Registries;
@@ -47,8 +47,7 @@ public class CCAndroids implements ModInitializer {
 			return android == null ? null : new AndroidAPI(android);
 		});
 
-		FabricDefaultAttributeRegistry.register(ANDROID_ENTITY, BaseAndroidEntity.createAndroidAttributes());
-		FabricDefaultAttributeRegistry.register(ROGUE_ANDROID_ENTITY, BaseAndroidEntity.createAndroidAttributes());
-		FabricDefaultAttributeRegistry.register(UNFINISHED_ANDROID_ENTITY, BaseAndroidEntity.createAndroidAttributes());
+		ItemRegistry.register();
+		EntityRegistry.register();
 	}
 }

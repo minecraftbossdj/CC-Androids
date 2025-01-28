@@ -164,7 +164,7 @@ public class AndroidBrain implements IAndroidAccess {
         return this.owner.getBlockPos();
     }
 
-    public NbtCompound writeNbt(NbtCompound nbt) {
+    public void writeNbt(NbtCompound nbt) {
         if (this.getOwningPlayer() != null) {
             NbtCompound owner = new NbtCompound();
             owner.putString("Name", this.getOwningPlayer().getName());
@@ -172,7 +172,6 @@ public class AndroidBrain implements IAndroidAccess {
             nbt.put("OwningPlayer", owner);
 
         }
-        return nbt;
     }
 
     public void readNbt(NbtCompound nbt) {

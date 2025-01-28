@@ -17,6 +17,7 @@ public class UnfinishedAndroidEntity extends MobEntity {
 
     @Override
     protected ActionResult interactMob(PlayerEntity player, Hand hand) {
+        // TODO: This won't use redstone blocks
         if (player.getMainHandStack().isOf(Items.REDSTONE_BLOCK)) {
             AndroidEntity android = this.convertTo(CCAndroids.ANDROID_ENTITY, false);
             if (android != null)
