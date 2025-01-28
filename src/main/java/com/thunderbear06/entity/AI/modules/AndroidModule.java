@@ -1,7 +1,7 @@
 package com.thunderbear06.entity.AI.modules;
 
 import com.thunderbear06.entity.AI.AndroidBrain;
-import com.thunderbear06.entity.BaseAndroidEntity;
+import com.thunderbear06.entity.android.BaseAndroidEntity;
 
 public abstract class AndroidModule {
     public final BaseAndroidEntity owner;

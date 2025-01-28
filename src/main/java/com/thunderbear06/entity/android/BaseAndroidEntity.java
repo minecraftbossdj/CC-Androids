@@ -1,9 +1,8 @@
-package com.thunderbear06.entity;
+package com.thunderbear06.entity.android;
 
 import com.thunderbear06.computer.ComputerComponents;
 import com.thunderbear06.computer.EntityComputer;
 import com.thunderbear06.entity.AI.AndroidBrain;
-import com.thunderbear06.entity.player.AndroidPlayer;
 import dan200.computercraft.api.ComputerCraftAPI;
 import dan200.computercraft.api.lua.MethodResult;
 import dan200.computercraft.shared.ModRegistry;
@@ -12,6 +11,7 @@ import dan200.computercraft.shared.computer.core.ServerComputer;
 import dan200.computercraft.shared.computer.core.ServerContext;
 import dan200.computercraft.shared.computer.inventory.ComputerMenuWithoutInventory;
 import dan200.computercraft.shared.config.Config;
+import dan200.computercraft.shared.network.container.ComputerContainerData;
 import dan200.computercraft.shared.util.ComponentMap;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.DoorBlock;
@@ -20,20 +20,22 @@ import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.ai.pathing.MobNavigation;
 import net.minecraft.entity.ai.pathing.PathNode;
+import net.minecraft.entity.attribute.DefaultAttributeContainer;
+import net.minecraft.entity.attribute.EntityAttributes;
+import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventories;
-import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtHelper;
 import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.screen.NamedScreenHandlerFactory;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.BlockPos;
@@ -56,14 +58,17 @@ public class BaseAndroidEntity extends PathAwareEntity implements NamedScreenHan
     private int computerID = -1;
     private boolean startOn = false;
     private boolean fresh = false;
-    private final ComputerFamily family;
+    private ComputerFamily family;
 
     protected BaseAndroidEntity(EntityType<? extends PathAwareEntity> entityType, World world) {
         super(entityType, world);
 
-        this.family = ComputerFamily.NORMAL;
         this.brain = new AndroidBrain(this);
         this.internalStorage = DefaultedList.ofSize(9, ItemStack.EMPTY);
+    }
+
+    public static DefaultAttributeContainer.Builder createAndroidAttributes() {
+        return createMobAttributes().add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 1.0);
     }
 
     @Override
@@ -104,6 +109,36 @@ public class BaseAndroidEntity extends PathAwareEntity implements NamedScreenHan
                 }
             }
         }
+    }
+
+    @Override
+    protected ActionResult interactMob(PlayerEntity player, Hand hand) {
+        // TODO: debug, don't keep
+        if (player.isSneaking()) {
+            if (this.getFamily() == ComputerFamily.NORMAL)
+                this.setFamily(ComputerFamily.ADVANCED);
+            else if (this.getFamily() == ComputerFamily.ADVANCED)
+                this.setFamily(ComputerFamily.COMMAND);
+            else
+                this.setFamily(ComputerFamily.NORMAL);
+            return ActionResult.CONSUME;
+        }
+
+        if (!getWorld().isClient()) {
+
+            if (this.brain.getOwningPlayer() == null)
+                this.brain.setOwningPlayer(player.getGameProfile());
+
+            ServerComputer serverComputer = createServerComputer();
+
+            serverComputer.turnOn();
+
+            serverComputer.keepAlive();
+
+            (new ComputerContainerData(serverComputer, ItemStack.EMPTY)).open(player, this);
+        }
+
+        return ActionResult.CONSUME;
     }
 
     // Action
@@ -157,6 +192,10 @@ public class BaseAndroidEntity extends PathAwareEntity implements NamedScreenHan
         return this.family;
     }
 
+    public void setFamily(ComputerFamily family) {
+        this.family = family;
+    }
+
     protected EntityComputer createComputer(int id) {
         return new EntityComputer((ServerWorld)this.getWorld(), this, id, this.label, this.getFamily(), Config.computerTermWidth, Config.computerTermHeight, ComponentMap.builder().add(ComputerComponents.ANDROID_COMPUTER, this.brain).build());
     }
@@ -195,6 +234,18 @@ public class BaseAndroidEntity extends PathAwareEntity implements NamedScreenHan
         this.dropStack(itemStack);
         this.setStackInHand(Hand.MAIN_HAND, ItemStack.EMPTY);
         return MethodResult.of();
+    }
+
+    @Override
+    protected void dropInventory() {
+        for (ItemStack stack : this.internalStorage) {
+            this.dropStack(stack);
+        }
+    }
+
+    @Override
+    public void onDeath(DamageSource damageSource) {
+        super.onDeath(damageSource);
     }
 
     @Override

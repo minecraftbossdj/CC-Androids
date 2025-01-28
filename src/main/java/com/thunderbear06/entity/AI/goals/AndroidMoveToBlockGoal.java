@@ -1,7 +1,7 @@
 package com.thunderbear06.entity.AI.goals;
 
 import com.thunderbear06.entity.AI.AndroidBrain;
-import com.thunderbear06.entity.AndroidEntity;
+import com.thunderbear06.entity.android.AndroidEntity;
 import net.minecraft.util.math.BlockPos;
 
 public class AndroidMoveToBlockGoal extends BaseAndroidGoal {
@@ -12,14 +12,14 @@ public class AndroidMoveToBlockGoal extends BaseAndroidGoal {
 
     @Override
     public boolean canStart() {
-        return super.canStart() && this.brain.state.equals("movingToBlock") && this.brain.targetBlock != null;
+        return super.canStart() && this.brain.getState().equals("movingToBlock") && this.brain.hasTargetBlock();
     }
 
     @Override
     public void start() {
-        BlockPos pos = this.brain.targetBlock;
+        BlockPos pos = this.brain.getTargetBlock();
 
-        this.android.getNavigation().startMovingTo(pos.getX(), pos.getY(), pos.getZ(), 1.0);
+        this.android.getNavigation().startMovingTo(pos.getX(), pos.getY(), pos.getZ(), 0.5);
     }
 
     @Override
@@ -31,6 +31,5 @@ public class AndroidMoveToBlockGoal extends BaseAndroidGoal {
     public void stop() {
         super.stop();
         this.android.getNavigation().stop();
-        this.brain.targetBlock = null;
     }
 }

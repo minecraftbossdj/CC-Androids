@@ -3,7 +3,10 @@ package com.thunderbear06;
 import com.thunderbear06.computer.AndroidAPI;
 import com.thunderbear06.computer.IAndroidAccess;
 import com.thunderbear06.computer.ComputerComponents;
-import com.thunderbear06.entity.AndroidEntity;
+import com.thunderbear06.entity.android.BaseAndroidEntity;
+import com.thunderbear06.entity.android.AndroidEntity;
+import com.thunderbear06.entity.android.RogueDroidEntity;
+import com.thunderbear06.entity.android.UnfinishedAndroidEntity;
 import dan200.computercraft.api.ComputerCraftAPI;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
@@ -20,10 +23,21 @@ public class CCAndroids implements ModInitializer {
 
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
-	public static final EntityType<AndroidEntity> ROBOT_ENTITY = Registry.register(
+	public static final EntityType<AndroidEntity> ANDROID_ENTITY = Registry.register(
 			Registries.ENTITY_TYPE,
-			Identifier.of(CCAndroids.MOD_ID, "robot"),
-			EntityType.Builder.create(AndroidEntity::new, SpawnGroup.MISC).build("robot")
+			Identifier.of(CCAndroids.MOD_ID, "android"),
+			EntityType.Builder.create(AndroidEntity::new, SpawnGroup.MISC).build("android")
+	);
+
+	public static final EntityType<RogueDroidEntity> ROGUE_ANDROID_ENTITY = Registry.register(
+			Registries.ENTITY_TYPE,
+			Identifier.of(CCAndroids.MOD_ID, "rogue_android"),
+			EntityType.Builder.create(RogueDroidEntity::new, SpawnGroup.MISC).build("rogue_android")
+	);
+	public static final EntityType<UnfinishedAndroidEntity> UNFINISHED_ANDROID_ENTITY = Registry.register(
+			Registries.ENTITY_TYPE,
+			Identifier.of(CCAndroids.MOD_ID, "unfinished_android"),
+			EntityType.Builder.create(UnfinishedAndroidEntity::new, SpawnGroup.MISC).build("unfinished_android")
 	);
 
 	@Override
@@ -33,6 +47,8 @@ public class CCAndroids implements ModInitializer {
 			return android == null ? null : new AndroidAPI(android);
 		});
 
-		FabricDefaultAttributeRegistry.register(ROBOT_ENTITY, AndroidEntity.createAndroidAttributes());
+		FabricDefaultAttributeRegistry.register(ANDROID_ENTITY, BaseAndroidEntity.createAndroidAttributes());
+		FabricDefaultAttributeRegistry.register(ROGUE_ANDROID_ENTITY, BaseAndroidEntity.createAndroidAttributes());
+		FabricDefaultAttributeRegistry.register(UNFINISHED_ANDROID_ENTITY, BaseAndroidEntity.createAndroidAttributes());
 	}
 }

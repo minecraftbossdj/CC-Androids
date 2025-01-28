@@ -1,6 +1,6 @@
 package com.thunderbear06.entity.AI.goals;
 
-import com.thunderbear06.entity.BaseAndroidEntity;
+import com.thunderbear06.entity.android.BaseAndroidEntity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.Hand;
 
@@ -14,12 +14,12 @@ public class AndroidMeleeAttackGoal extends BaseAndroidGoal {
 
     @Override
     public boolean canStart() {
-        return super.canStart() && this.brain.state.equals("attacking") && this.brain.targetEntity != null && this.brain.targetEntity.isAlive();
+        return super.canStart() && this.brain.getState().equals("attacking") && this.brain.getTargetEntity() != null && this.brain.getTargetEntity().isAlive();
     }
 
     @Override
     public void tick() {
-        LivingEntity target = this.brain.targetEntity;
+        LivingEntity target = this.brain.getTargetEntity();
 
         if (this.attackCooldown > 0)
             this.attackCooldown--;
@@ -39,6 +39,5 @@ public class AndroidMeleeAttackGoal extends BaseAndroidGoal {
     @Override
     public void stop() {
         super.stop();
-        this.brain.targetEntity = null;
     }
 }

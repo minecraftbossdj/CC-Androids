@@ -5,9 +5,8 @@ import com.thunderbear06.computer.IAndroidAccess;
 import com.thunderbear06.entity.AI.modules.InteractionModule;
 import com.thunderbear06.entity.AI.modules.MiningModule;
 import com.thunderbear06.entity.AI.modules.SensorModule;
-import com.thunderbear06.entity.BaseAndroidEntity;
+import com.thunderbear06.entity.android.BaseAndroidEntity;
 import com.thunderbear06.entity.player.AndroidPlayer;
-import dan200.computercraft.api.lua.LuaException;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
@@ -21,28 +20,28 @@ import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
-import java.util.List;
 import java.util.UUID;
 
 public class AndroidBrain implements IAndroidAccess {
-    public final BaseAndroidEntity owner;
-    public final SensorModule sensor;
-    public final MiningModule miningModule;
-    public final InteractionModule interactionModule;
+    private final BaseAndroidEntity owner;
+    private final SensorModule sensor;
+    private final MiningModule miningModule;
+    private final InteractionModule interactionModule;
 
     @Nullable
-    public GameProfile owningPlayer;
+    private GameProfile owningPlayer;
 
-    public AndroidPlayer fakePlayer;
 
     @Nullable
-    public LivingEntity targetEntity;
+    private LivingEntity targetEntity;
     @Nullable
-    public BlockPos targetBlock;
+    private BlockPos targetBlock;
 
-    public String state = "idle";
-
+    private String state = "idle";
     private long lastChatMessageTime = 0;
+
+    @Deprecated
+    public AndroidPlayer fakePlayer;
 
     public AndroidBrain(BaseAndroidEntity android) {
         this.owner = android;
@@ -51,6 +50,9 @@ public class AndroidBrain implements IAndroidAccess {
         this.interactionModule = new InteractionModule(this.owner, this);
         if (android.getWorld() instanceof ServerWorld)
             this.fakePlayer = AndroidPlayer.get(this);
+        else {
+            this.fakePlayer = null;
+        }
     }
 
     @Override
@@ -63,19 +65,24 @@ public class AndroidBrain implements IAndroidAccess {
         return this.owner;
     }
 
-    @Override
     public @Nullable GameProfile getOwningPlayer() {
         return this.owningPlayer;
     }
 
-    @Override
     public void setOwningPlayer(@NotNull GameProfile player) {
         this.owningPlayer = player;
     }
 
-    @Override
     public SensorModule getSensorModule() {
         return this.sensor;
+    }
+
+    public MiningModule getMiningModule() {
+        return this.miningModule;
+    }
+
+    public InteractionModule getInteractionModule() {
+        return this.interactionModule;
     }
 
     @Override
@@ -97,7 +104,7 @@ public class AndroidBrain implements IAndroidAccess {
 
     @Override
     public boolean setTargetBlock(BlockPos pos) {
-        if (!this.owner.getWorld().isInBuildLimit(pos))
+        if (pos != null && !this.owner.getWorld().isInBuildLimit(pos))
             return false;
         this.targetBlock = pos;
         return true;
@@ -105,11 +112,26 @@ public class AndroidBrain implements IAndroidAccess {
 
     @Override
     public boolean setTargetEntity(UUID entityUUID) {
+        if (entityUUID == null) {
+            this.targetEntity = null;
+            return true;
+        }
+
         ServerWorld world = (ServerWorld) this.owner.getWorld();
 
         this.targetEntity = (LivingEntity) world.getEntity(entityUUID);
 
         return this.targetEntity != null && !this.targetEntity.isDead();
+    }
+
+    @Override
+    public boolean hasTargetEntity() {
+        return this.targetEntity != null && this.targetEntity.isAlive();
+    }
+
+    @Override
+    public boolean hasTargetBlock() {
+        return this.targetBlock != null;
     }
 
     @Override
@@ -130,16 +152,6 @@ public class AndroidBrain implements IAndroidAccess {
     @Override
     public PlayerEntity getClosestPlayer() {
         return this.sensor.getClosestPlayer();
-    }
-
-    @Override
-    public LivingEntity getClosestMobOfType(String type) throws LuaException {
-        return this.sensor.getClosestMobOfType(type);
-    }
-
-    @Override
-    public List<String> getNearbyMobs(@Nullable String type) throws LuaException {
-        return this.sensor.getMobs(type);
     }
 
     @Override

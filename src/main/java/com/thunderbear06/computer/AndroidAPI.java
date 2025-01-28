@@ -1,5 +1,7 @@
 package com.thunderbear06.computer;
 
+import com.thunderbear06.entity.AI.AndroidBrain;
+import com.thunderbear06.entity.AI.modules.SensorModule;
 import dan200.computercraft.api.lua.ILuaAPI;
 import dan200.computercraft.api.lua.LuaException;
 import dan200.computercraft.api.lua.LuaFunction;
@@ -79,22 +81,41 @@ public class AndroidAPI implements ILuaAPI {
 
     @LuaFunction
     public final MethodResult moveTo(int x, int y, int z) {
-        this.android.setTargetBlock(new BlockPos(x,y,z));
+        if (!this.android.setTargetBlock(new BlockPos(x,y,z))) {
+            return MethodResult.of("Block position must be within world build limit");
+        }
+
         this.android.setState("movingToBlock");
         return MethodResult.of();
     }
 
     @LuaFunction
     public final MethodResult mineBlock(int x, int y, int z) {
-        this.android.setTargetBlock(new BlockPos(x,y,z));
+        if (!this.android.setTargetBlock(new BlockPos(x,y,z))) {
+            return MethodResult.of("Block position must be within world build limit");
+        }
+
         this.android.setState("miningBlock");
         return MethodResult.of();
     }
 
     @LuaFunction
     public final MethodResult useItemOnBlock(int x, int y, int z) {
-        this.android.setTargetBlock(new BlockPos(x,y,z));
+        if (!this.android.setTargetBlock(new BlockPos(x,y,z))) {
+            return MethodResult.of("Block position must be within world build limit");
+        }
+
         this.android.setState("usingItemOnBlock");
+        return MethodResult.of();
+    }
+
+    @LuaFunction
+    public final MethodResult useItemOnEntity(String entityUUID) {
+        if (!this.android.setTargetEntity(UUID.fromString(entityUUID))) {
+            return MethodResult.of("Unknown entity or invalid UUID");
+        }
+
+        this.android.setState("usingItemOnEntity");
         return MethodResult.of();
     }
 
@@ -110,6 +131,9 @@ public class AndroidAPI implements ILuaAPI {
 
         if (itemEntity == null)
             return MethodResult.of("Unknown item or invalid UUID");
+
+        if (this.android.getOwner().distanceTo(itemEntity) > 5)
+            return MethodResult.of("Item is too far to pick up");
 
         return this.android.getOwner().pickupGroundItem(itemEntity);
     }
@@ -163,7 +187,7 @@ public class AndroidAPI implements ILuaAPI {
 
         if (storedStack.isEmpty())
             return MethodResult.of("empty");
-        return MethodResult.of(storedStack.getName().getString());
+        return MethodResult.of(storedStack.getItem().getName().getString());
     }
 
     /*
@@ -179,19 +203,32 @@ public class AndroidAPI implements ILuaAPI {
 
     @LuaFunction
     public final MethodResult getNearbyMobs(Optional<String> type) throws LuaException {
-        return MethodResult.of(this.android.getNearbyMobs(type.orElse(null)));
+        AndroidBrain brain = (AndroidBrain) this.android;
+
+        return MethodResult.of(brain.getSensorModule().getMobs(type.orElse(null)));
     }
 
     @LuaFunction
     public final MethodResult getClosestMobOfType(Optional<String> type) throws LuaException {
-        LivingEntity entity = this.android.getClosestMobOfType(type.orElse(null));
+        AndroidBrain brain = (AndroidBrain) this.android;
 
-        return MethodResult.of(entity == null ? null : entity.getUuidAsString());
+        return MethodResult.of(brain.getSensorModule().getClosestMobOfType(type.orElse(null)));
     }
 
     @LuaFunction
-    public final MethodResult getGroundItems(Optional<String> targetItemName, Optional<Integer> max) {
-        return MethodResult.of(this.android.getSensorModule().getGroundItems(targetItemName.orElse(null), max.orElse(Integer.MAX_VALUE)));
+    public final MethodResult getGroundItems(Optional<String> type, Optional<Integer> max) {
+        AndroidBrain brain = (AndroidBrain) this.android;
+        return MethodResult.of(brain.getSensorModule().getGroundItems(type.orElse(null), max.orElse(Integer.MAX_VALUE)));
+    }
+
+    /*
+    * Misc
+    */
+
+    @LuaFunction
+    public final MethodResult sendChatMessage(String what) {
+        this.android.sendChatMessage(what);
+        return MethodResult.of();
     }
 
     //TODO: Revamp
@@ -215,11 +252,5 @@ public class AndroidAPI implements ILuaAPI {
         infoMap.put("posZ", entity.getZ());
 
         return MethodResult.of(infoMap);
-    }
-
-    @LuaFunction
-    public final MethodResult sendChatMessage(String what) {
-        this.android.sendChatMessage(what);
-        return MethodResult.of();
     }
 }

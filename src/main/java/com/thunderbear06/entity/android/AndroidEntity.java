@@ -1,0 +1,33 @@
+package com.thunderbear06.entity.android;
+
+import com.thunderbear06.entity.AI.goals.*;
+import dan200.computercraft.shared.computer.core.ComputerFamily;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.ai.goal.LookAtEntityGoal;
+import net.minecraft.entity.ai.pathing.MobNavigation;
+import net.minecraft.entity.mob.PathAwareEntity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.world.World;
+
+
+public class AndroidEntity extends BaseAndroidEntity {
+
+    public AndroidEntity(EntityType<? extends PathAwareEntity> entityType, World world) {
+        super(entityType, world);
+        this.setFamily(ComputerFamily.NORMAL);
+
+        ((MobNavigation)this.getNavigation()).setCanPathThroughDoors(true);
+
+        initAndroidGoals();
+    }
+
+    protected void initAndroidGoals() {
+        goalSelector.add(0, new AndroidMoveToBlockGoal(this, this.brain));
+        goalSelector.add(0, new AndroidMineBlockGoal(this, this.brain));
+        goalSelector.add(0, new AndroidUseItemOnBlockGoal(this, this.brain));
+        goalSelector.add(0, new AndroidUseItemOnEntityGoal(this, this.brain));
+        goalSelector.add(0, new AndroidFollowTargetGoal(this, this.brain));
+        goalSelector.add(0, new AndroidMeleeAttackGoal(this));
+        goalSelector.add(1, new LookAtEntityGoal(this, PlayerEntity.class, 10));
+    }
+}

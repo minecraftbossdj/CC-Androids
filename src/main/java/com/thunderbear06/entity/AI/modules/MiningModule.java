@@ -1,17 +1,13 @@
 package com.thunderbear06.entity.AI.modules;
 
 import com.thunderbear06.entity.AI.AndroidBrain;
-import com.thunderbear06.entity.BaseAndroidEntity;
+import com.thunderbear06.entity.android.BaseAndroidEntity;
 import com.thunderbear06.entity.player.AndroidPlayer;
-import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.ToolItem;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
 
 public class MiningModule extends AndroidModule{
     private float breakProgress = 0.0f;

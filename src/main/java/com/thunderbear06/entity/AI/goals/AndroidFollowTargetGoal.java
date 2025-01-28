@@ -1,7 +1,7 @@
 package com.thunderbear06.entity.AI.goals;
 
 import com.thunderbear06.entity.AI.AndroidBrain;
-import com.thunderbear06.entity.AndroidEntity;
+import com.thunderbear06.entity.android.AndroidEntity;
 
 import java.util.Objects;
 
@@ -12,12 +12,12 @@ public class AndroidFollowTargetGoal extends BaseAndroidGoal {
 
     @Override
     public boolean canStart() {
-        return super.canStart() && Objects.equals(this.brain.state, "following") && this.brain.targetEntity != null;
+        return super.canStart() && Objects.equals(this.brain.getState(), "following") && this.brain.getTargetEntity() != null;
     }
 
     @Override
     public void tick() {
-        this.android.getNavigation().startMovingTo(this.brain.targetEntity, 0.5);
+        this.android.getNavigation().startMovingTo(this.brain.getTargetEntity(), 0.5);
     }
 
     @Override
@@ -29,6 +29,5 @@ public class AndroidFollowTargetGoal extends BaseAndroidGoal {
     public void stop() {
         super.stop();
         this.android.getNavigation().stop();
-        this.brain.targetEntity = null;
     }
 }

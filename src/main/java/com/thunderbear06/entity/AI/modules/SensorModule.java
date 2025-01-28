@@ -1,18 +1,19 @@
 package com.thunderbear06.entity.AI.modules;
 
 import com.thunderbear06.entity.AI.AndroidBrain;
-import com.thunderbear06.entity.BaseAndroidEntity;
+import com.thunderbear06.entity.android.BaseAndroidEntity;
 import dan200.computercraft.api.lua.LuaException;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.TargetPredicate;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3i;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
@@ -33,20 +34,20 @@ public class SensorModule extends AndroidModule{
         return this.owner.getWorld().getClosestPlayer(pos.getX(), pos.getY(), pos.getZ(), this.searchRadius, entity -> !entity.isSpectator());
     }
 
-    public List<String> getMobs(@Nullable String type) throws LuaException {
-        List<String> list = new ArrayList<>();
+    public List<HashMap<String, Object>> getMobs(@Nullable String type) throws LuaException {
+        List<HashMap<String, Object>> result = new ArrayList<>();
 
         this.owner.getWorld().getEntitiesByClass(LivingEntity.class, this.owner.getBoundingBox().expand(this.searchRadius), getTypePredicate(type)).forEach(entity -> {
-            list.add(entity.getUuidAsString());
+            result.add(collectEntityInfo(entity));
         });
 
-        return list;
+        return result;
     }
 
-    public LivingEntity getClosestMobOfType(@Nullable String type) throws LuaException {
+    public HashMap<String, Object> getClosestMobOfType(@Nullable String type) throws LuaException {
         BlockPos pos = this.owner.getBlockPos();
 
-        return this.owner.getWorld().getClosestEntity(
+        Entity entity = this.owner.getWorld().getClosestEntity(
                 LivingEntity.class,
                 TargetPredicate.DEFAULT.setPredicate(getTypePredicate(type)),
                 this.owner,
@@ -55,21 +56,45 @@ public class SensorModule extends AndroidModule{
                 pos.getX(),
                 this.owner.getBoundingBox().expand(this.searchRadius)
         );
+
+        if (entity == null || entity instanceof LivingEntity livingEntity && livingEntity.isDead())
+            return new HashMap<>();
+
+        HashMap<String, Object> info = new HashMap<>();
+        info.put("UUID", entity.getUuidAsString());
+        info.putAll(collectEntityInfo(entity));
+        return info;
     }
 
-    public List<String> getGroundItems(@Nullable String itemName, int max) {
-        List<ItemEntity> list = this.owner.getWorld().getNonSpectatingEntities(ItemEntity.class, this.owner.getBoundingBox().expand(1));
+    public List<HashMap<String, Object>> getGroundItems(@Nullable String type, int max) {
+        List<ItemEntity> list = this.owner.getWorld().getNonSpectatingEntities(ItemEntity.class, this.owner.getBoundingBox().expand(5));
 
-        List<String> UUIDS = new ArrayList<>();
+        List<HashMap<String, Object>> results = new ArrayList<>();
 
         for (ItemEntity entity : list) {
-            if (UUIDS.size() >= max)
-                return UUIDS;
-            if (itemName == null || entity.getName().getString().equals(itemName))
-                UUIDS.add(entity.getUuidAsString());
+            if (results.size() >= max)
+                break;
+            if (type == null || entity.getStack().getItem().getName().getString().equals(type)) {
+                results.add(collectEntityInfo(entity));
+            }
         }
 
-        return UUIDS;
+        return results;
+    }
+
+    private HashMap<String, Object> collectEntityInfo(Entity entity) {
+        HashMap<String, Object> infoMap = new HashMap<>();
+
+        infoMap.put("uuid", entity.getUuidAsString());
+        infoMap.put("name", entity.getName().getString());
+        infoMap.put("posX", entity.getX());
+        infoMap.put("posY", entity.getY());
+        infoMap.put("posZ", entity.getZ());
+        if (entity instanceof LivingEntity livingEntity) {
+            infoMap.put("health", livingEntity.getHealth());
+        }
+
+        return infoMap;
     }
 
     private Predicate<LivingEntity> getTypePredicate(@Nullable String type) throws LuaException {
