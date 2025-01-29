@@ -1,5 +1,6 @@
 package com.thunderbear06.entity.AI.modules;
 
+import com.thunderbear06.CCAndroids;
 import com.thunderbear06.entity.AI.AndroidBrain;
 import com.thunderbear06.entity.android.BaseAndroidEntity;
 import dan200.computercraft.api.lua.LuaException;
@@ -9,7 +10,11 @@ import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.TargetPredicate;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.registry.Registries;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.RaycastContext;
+import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -20,24 +25,26 @@ import java.util.function.Predicate;
 
 public class SensorModule extends AndroidModule{
 
-    private final double searchRadius;
+    private final double entitySearchRadius;
+    private final int blockSearchRadius;
 
-    public SensorModule(BaseAndroidEntity android, AndroidBrain brain, double searchRadius) {
+    public SensorModule(BaseAndroidEntity android, AndroidBrain brain, double searchRadius, int blockSearchRadius) {
         super(android, brain);
-        this.searchRadius = searchRadius;
+        this.entitySearchRadius = searchRadius;
+        this.blockSearchRadius = blockSearchRadius;
     }
 
 
     public PlayerEntity getClosestPlayer() {
         BlockPos pos = this.owner.getBlockPos();
 
-        return this.owner.getWorld().getClosestPlayer(pos.getX(), pos.getY(), pos.getZ(), this.searchRadius, entity -> !entity.isSpectator());
+        return this.owner.getWorld().getClosestPlayer(pos.getX(), pos.getY(), pos.getZ(), this.entitySearchRadius, entity -> !entity.isSpectator());
     }
 
     public List<HashMap<String, Object>> getMobs(@Nullable String type) throws LuaException {
         List<HashMap<String, Object>> result = new ArrayList<>();
 
-        this.owner.getWorld().getEntitiesByClass(LivingEntity.class, this.owner.getBoundingBox().expand(this.searchRadius), getTypePredicate(type)).forEach(entity -> {
+        this.owner.getWorld().getEntitiesByClass(LivingEntity.class, this.owner.getBoundingBox().expand(this.entitySearchRadius), getTypePredicate(type)).forEach(entity -> {
             result.add(collectEntityInfo(entity));
         });
 
@@ -54,7 +61,7 @@ public class SensorModule extends AndroidModule{
                 pos.getX(),
                 pos.getY(),
                 pos.getX(),
-                this.owner.getBoundingBox().expand(this.searchRadius)
+                this.owner.getBoundingBox().expand(this.entitySearchRadius)
         );
 
         if (entity == null || entity instanceof LivingEntity livingEntity && livingEntity.isDead())
@@ -80,6 +87,22 @@ public class SensorModule extends AndroidModule{
         }
 
         return results;
+    }
+
+    public List<HashMap<String, Integer>> getBlocksOfType(BlockPos origin, Vec3d eyePos, World world, String type) {
+
+        List<HashMap<String, Integer>> blocks = new ArrayList<>();
+
+        for (BlockPos pos : BlockPos.iterateOutwards(origin, this.blockSearchRadius, this.blockSearchRadius, this.blockSearchRadius)) {
+            if (!Registries.BLOCK.getId(world.getBlockState(pos).getBlock()).toString().equals(type))
+                continue;
+            RaycastContext context = new RaycastContext(eyePos, pos.toCenterPos(), RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.ANY, this.owner);
+            if (!world.raycast(context).getBlockPos().equals(pos))
+                continue;
+            blocks.add(new HashMap<>() {{put("x", pos.getX()); put("y", pos.getY()); put("z", pos.getZ());}} );
+        }
+
+        return blocks;
     }
 
     private HashMap<String, Object> collectEntityInfo(Entity entity) {

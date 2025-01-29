@@ -2,11 +2,21 @@ package com.thunderbear06.entity.AI.goals;
 
 import com.thunderbear06.entity.AI.AndroidBrain;
 import com.thunderbear06.entity.android.AndroidEntity;
+import com.thunderbear06.entity.android.BaseAndroidEntity;
+import dan200.computercraft.shared.integration.ExternalModTags;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
+import net.minecraft.registry.Registries;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.Vec3d;
+import org.jetbrains.annotations.Nullable;
 
 public class AndroidMoveToBlockGoal extends BaseAndroidGoal {
 
-    public AndroidMoveToBlockGoal(AndroidEntity android, AndroidBrain brain) {
+    protected BlockPos pos;
+
+    public AndroidMoveToBlockGoal(BaseAndroidEntity android, AndroidBrain brain) {
         super(android, brain);
     }
 
@@ -17,7 +27,7 @@ public class AndroidMoveToBlockGoal extends BaseAndroidGoal {
 
     @Override
     public void start() {
-        BlockPos pos = this.brain.getTargetBlock();
+        this.pos = this.brain.getTargetBlock();
 
         this.android.getNavigation().startMovingTo(pos.getX(), pos.getY(), pos.getZ(), 0.5);
     }

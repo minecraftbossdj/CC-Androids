@@ -23,23 +23,6 @@ public class CCAndroids implements ModInitializer {
 
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
-	public static final EntityType<AndroidEntity> ANDROID_ENTITY = Registry.register(
-			Registries.ENTITY_TYPE,
-			Identifier.of(CCAndroids.MOD_ID, "android"),
-			EntityType.Builder.create(AndroidEntity::new, SpawnGroup.MISC).build("android")
-	);
-
-	public static final EntityType<RogueDroidEntity> ROGUE_ANDROID_ENTITY = Registry.register(
-			Registries.ENTITY_TYPE,
-			Identifier.of(CCAndroids.MOD_ID, "rogue_android"),
-			EntityType.Builder.create(RogueDroidEntity::new, SpawnGroup.MISC).build("rogue_android")
-	);
-	public static final EntityType<UnfinishedAndroidEntity> UNFINISHED_ANDROID_ENTITY = Registry.register(
-			Registries.ENTITY_TYPE,
-			Identifier.of(CCAndroids.MOD_ID, "unfinished_android"),
-			EntityType.Builder.create(UnfinishedAndroidEntity::new, SpawnGroup.MISC).build("unfinished_android")
-	);
-
 	@Override
 	public void onInitialize() {
 		ComputerCraftAPI.registerAPIFactory(computer -> {

@@ -45,7 +45,7 @@ public class AndroidBrain implements IAndroidAccess {
 
     public AndroidBrain(BaseAndroidEntity android) {
         this.owner = android;
-        this.sensor = new SensorModule(this.owner, this, 10);
+        this.sensor = new SensorModule(this.owner, this, 10, 6);
         this.miningModule = new MiningModule(this.owner, this);
         this.interactionModule = new InteractionModule(this.owner, this);
         if (android.getWorld() instanceof ServerWorld)

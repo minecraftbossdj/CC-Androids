@@ -3,6 +3,7 @@ package com.thunderbear06.entity.android;
 import com.thunderbear06.computer.ComputerComponents;
 import com.thunderbear06.computer.EntityComputer;
 import com.thunderbear06.entity.AI.AndroidBrain;
+import com.thunderbear06.item.ItemRegistry;
 import dan200.computercraft.api.ComputerCraftAPI;
 import dan200.computercraft.api.lua.MethodResult;
 import dan200.computercraft.shared.ModRegistry;
@@ -142,6 +143,10 @@ public class BaseAndroidEntity extends PathAwareEntity implements NamedScreenHan
             handleDoor(lastNode.previous, false);
     }
 
+    public void jumpAccess() {
+        this.jump();
+    }
+
     // Computer
 
     public final ServerComputer createServerComputer() {
@@ -170,6 +175,10 @@ public class BaseAndroidEntity extends PathAwareEntity implements NamedScreenHan
 
     public void setFamily(ComputerFamily family) {
         this.family = family;
+    }
+
+    public void setComputerID (int id) {
+        this.computerID = id;
     }
 
     protected EntityComputer createComputer(int id) {
@@ -214,9 +223,28 @@ public class BaseAndroidEntity extends PathAwareEntity implements NamedScreenHan
 
     @Override
     protected void dropInventory() {
+        if (this.computerID >= 0)
+            this.dropCPU();
+
         for (ItemStack stack : this.internalStorage) {
             this.dropStack(stack);
         }
+    }
+
+    private void dropCPU() {
+        ItemStack stack = new ItemStack(ItemRegistry.ANDROID_CPU, 1);
+
+        NbtCompound compound = new NbtCompound();
+        NbtCompound computerCompound = new NbtCompound();
+
+        computerCompound.putInt("ComputerID", this.computerID);
+        computerCompound.putString("ComputerFamily", this.getFamily().toString());
+
+        compound.put("Computer", computerCompound);
+
+        stack.setNbt(compound);
+
+        this.dropStack(stack);
     }
 
     @Override

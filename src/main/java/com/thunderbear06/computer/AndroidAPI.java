@@ -135,6 +135,9 @@ public class AndroidAPI implements ILuaAPI {
         if (this.android.getOwner().distanceTo(itemEntity) > 5)
             return MethodResult.of("Item is too far to pick up");
 
+        if (!this.android.getOwner().getMainHandStack().isEmpty())
+            return MethodResult.of("Cannot pickup item without an empty hand");
+
         return this.android.getOwner().pickupGroundItem(itemEntity);
     }
 
@@ -219,6 +222,13 @@ public class AndroidAPI implements ILuaAPI {
     public final MethodResult getGroundItems(Optional<String> type, Optional<Integer> max) {
         AndroidBrain brain = (AndroidBrain) this.android;
         return MethodResult.of(brain.getSensorModule().getGroundItems(type.orElse(null), max.orElse(Integer.MAX_VALUE)));
+    }
+
+    @LuaFunction
+    public final MethodResult getBlocksOfType(String type) {
+        AndroidBrain brain = (AndroidBrain) this.android;
+
+        return MethodResult.of(brain.getSensorModule().getBlocksOfType(this.android.getPosition(), this.android.getOwner().getEyePos(), this.android.getWorld(), type));
     }
 
     /*
