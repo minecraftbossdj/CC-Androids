@@ -12,6 +12,7 @@ import net.minecraft.entity.ai.TargetPredicate;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.registry.Registries;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.RaycastContext;
 import net.minecraft.world.World;
@@ -96,10 +97,18 @@ public class SensorModule extends AndroidModule{
         for (BlockPos pos : BlockPos.iterateOutwards(origin, this.blockSearchRadius, this.blockSearchRadius, this.blockSearchRadius)) {
             if (!Registries.BLOCK.getId(world.getBlockState(pos).getBlock()).toString().equals(type))
                 continue;
-            RaycastContext context = new RaycastContext(eyePos, pos.toCenterPos(), RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.ANY, this.owner);
-            if (!world.raycast(context).getBlockPos().equals(pos))
-                continue;
-            blocks.add(new HashMap<>() {{put("x", pos.getX()); put("y", pos.getY()); put("z", pos.getZ());}} );
+
+            for (Direction direction : Direction.stream().toList()) {
+                if (world.getBlockState(pos.offset(direction)).isSolidBlock(world, pos.offset(direction)))
+                    continue;
+
+                RaycastContext context = new RaycastContext(eyePos, pos.offset(direction).toCenterPos(), RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.ANY, this.owner);
+                if (!world.raycast(context).getBlockPos().equals(pos.offset(direction)))
+                    continue;
+
+                blocks.add(new HashMap<>() {{put("x", pos.getX()); put("y", pos.getY()); put("z", pos.getZ());}} );
+                break;
+            }
         }
 
         return blocks;

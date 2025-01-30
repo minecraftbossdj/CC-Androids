@@ -13,7 +13,6 @@ import org.jetbrains.annotations.Nullable;
 
 public class AndroidMineBlockGoal extends BaseAndroidGoal{
     private BlockPos pos;
-    private boolean isPillaring = false;
 
     public AndroidMineBlockGoal(BaseAndroidEntity android, AndroidBrain brain) {
         super(android, brain);
@@ -37,11 +36,6 @@ public class AndroidMineBlockGoal extends BaseAndroidGoal{
     @Override
     public void tick() {
         BlockPos pos = this.pos;
-
-        if (this.isPillaring && this.android.getVelocity().getY() <= 0) {
-            this.android.getWorld().setBlockState(this.android.getBlockPos().down(), Blocks.DIRT.getDefaultState());
-            this.isPillaring = false;
-        }
 
         if (isInRangeOf(pos)) {
             this.android.getLookControl().lookAt(pos.getX(), pos.getY(), pos.getZ());
