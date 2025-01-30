@@ -1,10 +1,11 @@
 package com.thunderbear06.computer;
 
 import com.thunderbear06.entity.AI.AndroidBrain;
-import com.thunderbear06.entity.AI.modules.SensorModule;
 import com.thunderbear06.entity.android.AndroidEntity;
-import com.thunderbear06.entity.pathing.PathFinder;
-import com.thunderbear06.entity.pathing.PathNode;
+import com.thunderbear06.entity.navigation.Navigation;
+import com.thunderbear06.entity.navigation.goal.GotoBlockGoal;
+import com.thunderbear06.entity.navigation.pathing.Path;
+import com.thunderbear06.entity.navigation.pathing.PathFinder;
 import dan200.computercraft.api.lua.ILuaAPI;
 import dan200.computercraft.api.lua.LuaException;
 import dan200.computercraft.api.lua.LuaFunction;
@@ -38,6 +39,7 @@ public class AndroidAPI implements ILuaAPI {
     public @Nullable String getModuleName() {
         return "android";
     }
+
 
     /*
     * Information
