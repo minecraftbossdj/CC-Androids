@@ -2,10 +2,14 @@ package com.thunderbear06.computer;
 
 import com.thunderbear06.entity.AI.AndroidBrain;
 import com.thunderbear06.entity.AI.modules.SensorModule;
+import com.thunderbear06.entity.android.AndroidEntity;
+import com.thunderbear06.entity.pathing.PathFinder;
+import com.thunderbear06.entity.pathing.PathNode;
 import dan200.computercraft.api.lua.ILuaAPI;
 import dan200.computercraft.api.lua.LuaException;
 import dan200.computercraft.api.lua.LuaFunction;
 import dan200.computercraft.api.lua.MethodResult;
+import net.minecraft.block.Blocks;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.HostileEntity;
