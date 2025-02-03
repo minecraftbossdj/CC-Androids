@@ -1,5 +1,6 @@
 package com.thunderbear06.entity.android;
 
+import com.thunderbear06.CCAndroids;
 import com.thunderbear06.component.ComputerComponents;
 import com.thunderbear06.computer.AndroidComputerContainer;
 import com.thunderbear06.computer.EntityComputer;
@@ -7,6 +8,9 @@ import com.thunderbear06.ai.AndroidBrain;
 import com.thunderbear06.item.ItemRegistry;
 import dan200.computercraft.api.ComputerCraftAPI;
 import dan200.computercraft.api.lua.MethodResult;
+import dan200.computercraft.api.peripheral.IPeripheral;
+import dan200.computercraft.api.peripheral.PeripheralLookup;
+import dan200.computercraft.core.computer.ComputerSide;
 import dan200.computercraft.shared.ModRegistry;
 import dan200.computercraft.shared.computer.core.ComputerFamily;
 import dan200.computercraft.shared.computer.core.ServerComputer;
@@ -16,6 +20,7 @@ import dan200.computercraft.shared.config.Config;
 import dan200.computercraft.shared.util.ComponentMap;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.DoorBlock;
+import net.minecraft.entity.EntityPose;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.ItemEntity;
@@ -24,6 +29,9 @@ import net.minecraft.entity.ai.pathing.PathNode;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.entity.damage.DamageSources;
+import net.minecraft.entity.damage.DamageType;
+import net.minecraft.entity.damage.DamageTypes;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
@@ -39,6 +47,8 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Hand;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
 import javax.annotation.Nullable;
@@ -49,6 +59,8 @@ public class BaseAndroidEntity extends PathAwareEntity {
     public final AndroidBrain brain;
     public final AndroidComputerContainer computerContainer;
     public final DefaultedList<ItemStack> internalStorage;
+
+    private int ticksIdle = 0;
 
     protected BaseAndroidEntity(EntityType<? extends PathAwareEntity> entityType, World world) {
         super(entityType, world);
@@ -69,6 +81,23 @@ public class BaseAndroidEntity extends PathAwareEntity {
         super.tickMovement();
 
         this.openNaNoor();
+
+        if (this.getWorld().isClient())
+            return;
+
+        if (!this.brain.getState().equals("idle")) {
+            this.ticksIdle = 0;
+            return;
+        }
+
+        this.ticksIdle++;
+
+        if (this.ticksIdle < 20)
+            return;
+
+        this.ticksIdle = 0;
+
+        updatePeripherals();
     }
 
     @Override
@@ -79,6 +108,20 @@ public class BaseAndroidEntity extends PathAwareEntity {
 
         if (!this.getWorld().isClient()) {
             this.computerContainer.onTick();
+        }
+    }
+
+    private void updatePeripherals() {
+        if (this.computerContainer.getComputerID() < 0 || !this.computerContainer.on)
+            return;
+
+        for (Direction direction : Direction.stream().toList()) {
+            if (direction == Direction.UP)
+                continue;
+
+            IPeripheral peripheral = PeripheralLookup.get().find(this.getWorld(), this.getBlockPos().offset(direction), direction);
+
+            this.computerContainer.setPeripheral(ComputerSide.valueOf(direction.getId()), peripheral);
         }
     }
 
@@ -105,10 +148,6 @@ public class BaseAndroidEntity extends PathAwareEntity {
         handleDoor(node, true);
         if (lastNode != null && lastNode.previous != null)
             handleDoor(lastNode.previous, false);
-    }
-
-    public void jumpAccess() {
-        this.jump();
     }
 
     // Inventory
@@ -164,11 +203,6 @@ public class BaseAndroidEntity extends PathAwareEntity {
     }
 
     @Override
-    public void onDeath(DamageSource damageSource) {
-        super.onDeath(damageSource);
-    }
-
-    @Override
     public ItemStack tryEquip(ItemStack stack) {
         EquipmentSlot equipmentSlot = EquipmentSlot.MAINHAND;
         ItemStack itemStack = this.getEquippedStack(equipmentSlot);
@@ -202,6 +236,7 @@ public class BaseAndroidEntity extends PathAwareEntity {
 
         return stack.isEmpty() ? ItemStack.EMPTY : stack;
     }
+
     public ItemStack getStashItem(int index, boolean remove) {
         if (index < 0 || index >= this.internalStorage.size())
             return null;
@@ -212,7 +247,6 @@ public class BaseAndroidEntity extends PathAwareEntity {
 
         return storedStack;
     }
-
     public @Nullable MethodResult canStash(ItemStack itemStack, int index) {
         if (index < 0 || index >= this.internalStorage.size())
             return MethodResult.of(String.format("Index out of bounds! Must be between 1 and %d", index));
@@ -225,8 +259,8 @@ public class BaseAndroidEntity extends PathAwareEntity {
         return null;
     }
 
-    // Misc
 
+    // Misc
     @Override
     public void writeCustomDataToNbt(NbtCompound nbt) {
         Inventories.writeNbt(nbt, this.internalStorage);
@@ -252,6 +286,16 @@ public class BaseAndroidEntity extends PathAwareEntity {
         }
 
         super.readCustomDataFromNbt(nbt);
+    }
+
+    @Override
+    public boolean damage(DamageSource source, float amount) {
+        if (source.isOf(DamageTypes.FALL))
+            return false;
+        if (source.isOf(DamageTypes.MAGIC))
+            return false;
+
+        return super.damage(source, amount);
     }
 
     // Robots don't drown now, do they?

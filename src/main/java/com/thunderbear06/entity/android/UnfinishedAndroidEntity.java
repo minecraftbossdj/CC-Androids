@@ -15,13 +15,13 @@ import net.minecraft.util.Hand;
 import net.minecraft.world.World;
 
 public class UnfinishedAndroidEntity extends MobEntity {
-    private byte components_needed;
+    public byte components_needed;
     private boolean has_core;
 
     public UnfinishedAndroidEntity(EntityType<? extends MobEntity> entityType, World world) {
         super(entityType, world);
 
-        this.components_needed = 16;
+        this.components_needed = 14;
         this.has_core = false;
     }
 

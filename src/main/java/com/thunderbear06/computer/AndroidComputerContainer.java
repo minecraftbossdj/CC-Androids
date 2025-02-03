@@ -4,6 +4,8 @@ import com.thunderbear06.CCAndroids;
 import com.thunderbear06.component.ComputerComponents;
 import com.thunderbear06.entity.android.BaseAndroidEntity;
 import dan200.computercraft.api.ComputerCraftAPI;
+import dan200.computercraft.api.peripheral.IPeripheral;
+import dan200.computercraft.core.computer.ComputerSide;
 import dan200.computercraft.shared.ModRegistry;
 import dan200.computercraft.shared.computer.core.ComputerFamily;
 import dan200.computercraft.shared.computer.core.ServerComputer;
@@ -21,6 +23,8 @@ import net.minecraft.screen.ScreenHandler;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 
 import javax.annotation.Nullable;
@@ -33,6 +37,7 @@ public class AndroidComputerContainer implements NamedScreenHandlerFactory {
     @Nullable
     public String label;
     public boolean on = false;
+    public boolean locked = false;
 
     @Nullable
     private UUID instanceID = null;
@@ -54,7 +59,7 @@ public class AndroidComputerContainer implements NamedScreenHandlerFactory {
             ServerComputer computer = getServerComputer();
 
             if (computer == null) {
-                CCAndroids.LOGGER.error("Automaton is on but has no ServerComputer");
+                CCAndroids.LOGGER.error("Android is on but has no associated ServerComputer");
                 return;
             }
 
@@ -73,6 +78,11 @@ public class AndroidComputerContainer implements NamedScreenHandlerFactory {
     }
 
     public void openComputer(ServerPlayerEntity player) {
+        if (this.locked && !player.getGameProfile().equals(this.android.brain.getOwningPlayer())) {
+            player.getWorld().playSoundFromEntity(null, this.android, SoundEvents.BLOCK_CHEST_LOCKED, SoundCategory.NEUTRAL, 1.0f, 1.0f);
+            return;
+        }
+
         ServerComputer computer = getOrCreateServerComputer();
 
         if (!this.on) {
@@ -86,7 +96,7 @@ public class AndroidComputerContainer implements NamedScreenHandlerFactory {
         if (!Objects.equals(this.label, computer.getLabel())) {
             this.label = computer.getLabel();
 
-            if (this.label == null || this.label.isBlank()){
+            if (this.label == null || this.label.isEmpty()){
                 this.android.setCustomName(Text.empty());
                 this.android.setCustomNameVisible(false);
             } else {
@@ -113,6 +123,17 @@ public class AndroidComputerContainer implements NamedScreenHandlerFactory {
 
             return computer;
         }
+    }
+
+    public void setPeripheral(ComputerSide side, IPeripheral peripheral) {
+        ServerComputer computer = getServerComputer();
+
+        if (computer == null) {
+            CCAndroids.LOGGER.error("Failed to set peripheral of type {} on side {} of computer container owned by {}. Reason: Failed to get ServerComputer (It was null)", peripheral.getType(), side.getName(), this.android.getName());
+            return;
+        }
+
+        computer.setPeripheral(side, peripheral);
     }
 
     public ComputerFamily getFamily() {
