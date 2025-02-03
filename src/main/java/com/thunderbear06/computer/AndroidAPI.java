@@ -70,7 +70,7 @@ public class AndroidAPI implements ILuaAPI {
     }
 
     @LuaFunction
-    public final MethodResult follow(String entityUUID) {
+    public final MethodResult goTo(String entityUUID) {
         if (!this.android.setTargetEntity(UUID.fromString(entityUUID))) {
             return MethodResult.of("Unknown entity or invalid UUID");
         }

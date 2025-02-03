@@ -1,11 +1,13 @@
 package com.thunderbear06.entity.AI.modules;
 
 import com.thunderbear06.entity.AI.AndroidBrain;
+import com.thunderbear06.entity.android.AndroidEntity;
 import com.thunderbear06.entity.android.BaseAndroidEntity;
 import com.thunderbear06.entity.player.AndroidPlayer;
 import net.minecraft.block.BlockState;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.item.ItemStack;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 
@@ -32,6 +34,9 @@ public class MiningModule extends AndroidModule{
     }
 
     public boolean canMineBlock(BlockPos pos) {
+        if (!this.owner.getWorld().isClient() && AndroidPlayer.get(this.brain).isBlockProtected((ServerWorld) this.owner.getWorld(), pos))
+            return false;
+
         BlockState state = this.owner.getWorld().getBlockState(pos);
 
         return !state.isAir() && state.getHardness(this.owner.getWorld(), pos) > -1;
@@ -40,20 +45,8 @@ public class MiningModule extends AndroidModule{
     private float tickBreakProgress(BlockPos pos, BlockState state, ItemStack itemStack, float progress) {
         this.owner.swingHand(Hand.MAIN_HAND);
         this.owner.getWorld().setBlockBreakingInfo(this.owner.getId(), pos, (int) progress);
-        progress += getBreakSpeed(state, pos, itemStack);
+        progress += AndroidPlayer.get(this.brain).player().getBlockBreakingSpeed(state);
         return progress;
-    }
-
-    private float getBreakSpeed(BlockState state, BlockPos pos, ItemStack itemStack) {
-        float multiplier = itemStack.getMiningSpeedMultiplier(state);
-        if (multiplier > 1.0F) {
-            int i = EnchantmentHelper.getEfficiency(this.owner);
-            if (i > 0 && !itemStack.isEmpty()) {
-                multiplier += (float)(i * i + 1);
-            }
-        }
-
-        return (1.0f / state.getHardness(this.owner.getWorld(), pos)) * multiplier;
     }
 
     private void resetBreakProgress() {

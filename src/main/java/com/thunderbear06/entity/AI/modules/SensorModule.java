@@ -129,17 +129,17 @@ public class SensorModule extends AndroidModule{
         return infoMap;
     }
 
-    private Predicate<LivingEntity> getTypePredicate(@Nullable String type) throws LuaException {
+    private Predicate<LivingEntity> getTypePredicate(@Nullable String type) {
         if (type == null) {
             return (entity -> entity != this.owner && this.owner.canSee(entity));
         } else {
-            Optional<EntityType<?>> targetType = EntityType.get(type);
-
-            if (targetType.isEmpty()) {
-                throw new LuaException("Unknown EntityType: "+type);
-            }
-
-            return (entity -> entity != this.owner && !entity.isSpectator() && this.owner.canSee(entity) && entity.getType().equals(targetType.get()));
+            return (entity -> {
+                return EntityType.getId(entity.getType()).toString().contains(type)
+                        && entity != this.owner
+                        && !entity.isSpectator()
+                        && entity.isAlive()
+                        && this.owner.canSee(entity);
+            });
         }
     }
 }

@@ -1,9 +1,5 @@
 package com.thunderbear06.entity.android;
 
-import baritone.api.BaritoneAPI;
-import baritone.api.IBaritone;
-import baritone.api.pathing.goals.GoalBlock;
-import baritone.api.pathing.goals.GoalRunAway;
 import com.thunderbear06.entity.AI.goals.*;
 import dan200.computercraft.shared.computer.core.ComputerFamily;
 import dan200.computercraft.shared.computer.core.ServerComputer;
@@ -15,7 +11,6 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 
@@ -25,7 +20,7 @@ public class AndroidEntity extends BaseAndroidEntity {
         super(entityType, world);
         this.setFamily(ComputerFamily.NORMAL);
 
-        //initAndroidGoals();
+        initAndroidGoals();
     }
 
     protected void initAndroidGoals() {
