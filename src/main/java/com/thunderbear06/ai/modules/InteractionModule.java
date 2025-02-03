@@ -1,6 +1,6 @@
-package com.thunderbear06.entity.AI.modules;
+package com.thunderbear06.ai.modules;
 
-import com.thunderbear06.entity.AI.AndroidBrain;
+import com.thunderbear06.ai.AndroidBrain;
 import com.thunderbear06.entity.android.BaseAndroidEntity;
 import com.thunderbear06.entity.player.AndroidPlayer;
 import net.minecraft.entity.LivingEntity;

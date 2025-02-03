@@ -1,15 +1,9 @@
-package com.thunderbear06.entity.AI.goals;
+package com.thunderbear06.ai.goals;
 
-import com.thunderbear06.entity.AI.AndroidBrain;
+import com.thunderbear06.ai.AndroidBrain;
 import com.thunderbear06.entity.android.BaseAndroidEntity;
-import net.minecraft.block.Blocks;
-import net.minecraft.entity.ai.pathing.Path;
-import net.minecraft.entity.ai.pathing.PathNode;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
-import org.jetbrains.annotations.Nullable;
 
 public class AndroidMineBlockGoal extends BaseAndroidGoal{
     private BlockPos pos;

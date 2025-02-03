@@ -1,6 +1,6 @@
 package com.thunderbear06.entity.android;
 
-import com.thunderbear06.entity.AI.goals.*;
+import com.thunderbear06.ai.goals.*;
 import dan200.computercraft.shared.computer.core.ComputerFamily;
 import dan200.computercraft.shared.computer.core.ServerComputer;
 import dan200.computercraft.shared.network.container.ComputerContainerData;

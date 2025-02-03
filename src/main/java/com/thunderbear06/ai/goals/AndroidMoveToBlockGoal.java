@@ -1,16 +1,8 @@
-package com.thunderbear06.entity.AI.goals;
+package com.thunderbear06.ai.goals;
 
-import com.thunderbear06.entity.AI.AndroidBrain;
-import com.thunderbear06.entity.android.AndroidEntity;
+import com.thunderbear06.ai.AndroidBrain;
 import com.thunderbear06.entity.android.BaseAndroidEntity;
-import dan200.computercraft.shared.integration.ExternalModTags;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.registry.Registries;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3d;
-import org.jetbrains.annotations.Nullable;
 
 public class AndroidMoveToBlockGoal extends BaseAndroidGoal {
 

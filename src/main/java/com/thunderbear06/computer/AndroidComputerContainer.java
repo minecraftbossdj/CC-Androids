@@ -1,0 +1,113 @@
+package com.thunderbear06.computer;
+
+import com.thunderbear06.component.ComputerComponents;
+import com.thunderbear06.entity.android.AndroidEntity;
+import com.thunderbear06.entity.android.BaseAndroidEntity;
+import dan200.computercraft.api.ComputerCraftAPI;
+import dan200.computercraft.shared.ModRegistry;
+import dan200.computercraft.shared.computer.core.ComputerFamily;
+import dan200.computercraft.shared.computer.core.ServerComputer;
+import dan200.computercraft.shared.computer.core.ServerContext;
+import dan200.computercraft.shared.computer.inventory.ComputerMenuWithoutInventory;
+import dan200.computercraft.shared.config.Config;
+import dan200.computercraft.shared.util.ComponentMap;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.screen.NamedScreenHandlerFactory;
+import net.minecraft.screen.ScreenHandler;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.text.Text;
+
+import javax.annotation.Nullable;
+import java.util.UUID;
+
+public class AndroidComputerContainer implements NamedScreenHandlerFactory {
+    private final BaseAndroidEntity android;
+
+    @Nullable
+    public String label;
+    public boolean on = false;
+
+    @Nullable
+    private UUID instanceID = null;
+    private int computerID = -1;
+    private boolean startOn = false;
+    private boolean fresh = false;
+    private ComputerFamily family;
+
+    public AndroidComputerContainer(BaseAndroidEntity android) {
+        this.android = android;
+    }
+
+    public void turnOn() {
+
+    }
+
+    public final ServerComputer createServerComputer() {
+        MinecraftServer server = this.android.getWorld().getServer();
+        if (server == null) {
+            throw new IllegalStateException("Cannot access server computer on the client.");
+        } else {
+            EntityComputer computer = (EntityComputer) ServerContext.get(server).registry().get(this.instanceID);
+            if (computer == null) {
+                if (this.computerID < 0) {
+                    this.computerID = ComputerCraftAPI.createUniqueNumberedSaveDir(server, "computer");
+                }
+
+                computer = this.createComputer(this.computerID);
+                this.instanceID = computer.register();
+                this.fresh = true;
+            }
+
+            return computer;
+        }
+    }
+
+    public ComputerFamily getFamily() {
+        return this.family;
+    }
+
+    public int getComputerID() {
+        return this.computerID;
+    }
+
+    public void setFamily(ComputerFamily family) {
+        this.family = family;
+    }
+
+    public void setComputerID (int id) {
+        this.computerID = id;
+    }
+
+    protected EntityComputer createComputer(int id) {
+        return new EntityComputer((ServerWorld)this.android.getWorld(), this.android, id, this.label, this.getFamily(), Config.computerTermWidth, Config.computerTermHeight, ComponentMap.builder().add(ComputerComponents.ANDROID_COMPUTER, this.android.brain).build());
+    }
+
+    @Override
+    public @Nullable ScreenHandler createMenu(int id, PlayerInventory inventory, PlayerEntity player) {
+        return new ComputerMenuWithoutInventory(ModRegistry.Menus.COMPUTER.get(), id, inventory, player1 -> true, this.createServerComputer());
+    }
+
+    @Nullable
+    public ServerComputer getServerComputer() {
+        return !this.android.getWorld().isClient && this.android.getWorld().getServer() != null ? ServerContext.get(this.android.getWorld().getServer()).registry().get(this.instanceID) : null;
+    }
+
+    @Override
+    public Text getDisplayName() {
+        return Text.literal("Android terminal");
+    }
+
+    public void writeNbt(NbtCompound computerCompound) {
+        computerCompound.putInt("ComputerID", this.getComputerID());
+        computerCompound.putString("ComputerFamily", this.getFamily().toString());
+    }
+
+    public void readNbt(NbtCompound computerCompound) {
+        this.computerID = computerCompound.getInt("ComputerID");
+        this.setFamily(ComputerFamily.valueOf(computerCompound.getString("ComputerFamily")));
+    }
+}

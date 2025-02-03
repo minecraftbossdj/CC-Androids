@@ -1,6 +1,7 @@
-package com.thunderbear06.computer;
+package com.thunderbear06.component;
 
 import com.thunderbear06.CCAndroids;
+import com.thunderbear06.computer.IAndroidAccess;
 import dan200.computercraft.api.component.ComputerComponent;
 
 public class ComputerComponents {

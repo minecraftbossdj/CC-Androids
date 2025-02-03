@@ -2,7 +2,7 @@ package com.thunderbear06.entity.player;
 
 import com.mojang.authlib.GameProfile;
 import com.thunderbear06.computer.IAndroidAccess;
-import com.thunderbear06.entity.AI.AndroidBrain;
+import com.thunderbear06.ai.AndroidBrain;
 import dan200.computercraft.shared.platform.PlatformHelper;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;

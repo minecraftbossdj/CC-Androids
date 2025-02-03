@@ -1,6 +1,6 @@
-package com.thunderbear06.entity.AI.goals;
+package com.thunderbear06.ai.goals;
 
-import com.thunderbear06.entity.AI.AndroidBrain;
+import com.thunderbear06.ai.AndroidBrain;
 import com.thunderbear06.entity.android.BaseAndroidEntity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.Hand;

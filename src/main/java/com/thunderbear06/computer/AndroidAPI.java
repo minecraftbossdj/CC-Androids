@@ -1,6 +1,6 @@
 package com.thunderbear06.computer;
 
-import com.thunderbear06.entity.AI.AndroidBrain;
+import com.thunderbear06.ai.AndroidBrain;
 import dan200.computercraft.api.lua.ILuaAPI;
 import dan200.computercraft.api.lua.LuaException;
 import dan200.computercraft.api.lua.LuaFunction;

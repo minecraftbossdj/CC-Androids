@@ -1,8 +1,9 @@
 package com.thunderbear06.entity.android;
 
-import com.thunderbear06.computer.ComputerComponents;
+import com.thunderbear06.component.ComputerComponents;
+import com.thunderbear06.computer.AndroidComputerContainer;
 import com.thunderbear06.computer.EntityComputer;
-import com.thunderbear06.entity.AI.AndroidBrain;
+import com.thunderbear06.ai.AndroidBrain;
 import com.thunderbear06.item.ItemRegistry;
 import dan200.computercraft.api.ComputerCraftAPI;
 import dan200.computercraft.api.lua.MethodResult;
@@ -44,20 +45,10 @@ import javax.annotation.Nullable;
 import java.util.Objects;
 import java.util.UUID;
 
-public class BaseAndroidEntity extends PathAwareEntity implements NamedScreenHandlerFactory {
+public class BaseAndroidEntity extends PathAwareEntity {
     public final AndroidBrain brain;
-
-    @Nullable
-    public String label;
-    public boolean on = false;
+    public final AndroidComputerContainer computerContainer;
     public final DefaultedList<ItemStack> internalStorage;
-
-    @Nullable
-    private UUID instanceID = null;
-    private int computerID = -1;
-    private boolean startOn = false;
-    private boolean fresh = false;
-    private ComputerFamily family;
 
     protected BaseAndroidEntity(EntityType<? extends PathAwareEntity> entityType, World world) {
         super(entityType, world);
@@ -66,6 +57,7 @@ public class BaseAndroidEntity extends PathAwareEntity implements NamedScreenHan
 
         this.brain = new AndroidBrain(this);
         this.internalStorage = DefaultedList.ofSize(9, ItemStack.EMPTY);
+        computerContainer = new AndroidComputerContainer(this);
     }
 
     public static DefaultAttributeContainer.Builder createAndroidAttributes() {
@@ -145,54 +137,6 @@ public class BaseAndroidEntity extends PathAwareEntity implements NamedScreenHan
         this.jump();
     }
 
-    // Computer
-
-    public final ServerComputer createServerComputer() {
-        MinecraftServer server = this.getWorld().getServer();
-        if (server == null) {
-            throw new IllegalStateException("Cannot access server computer on the client.");
-        } else {
-            EntityComputer computer = (EntityComputer) ServerContext.get(server).registry().get(this.instanceID);
-            if (computer == null) {
-                if (this.computerID < 0) {
-                    this.computerID = ComputerCraftAPI.createUniqueNumberedSaveDir(server, "computer");
-                }
-
-                computer = this.createComputer(this.computerID);
-                this.instanceID = computer.register();
-                this.fresh = true;
-            }
-
-            return computer;
-        }
-    }
-
-    public ComputerFamily getFamily() {
-        return this.family;
-    }
-
-    public void setFamily(ComputerFamily family) {
-        this.family = family;
-    }
-
-    public void setComputerID (int id) {
-        this.computerID = id;
-    }
-
-    protected EntityComputer createComputer(int id) {
-        return new EntityComputer((ServerWorld)this.getWorld(), this, id, this.label, this.getFamily(), Config.computerTermWidth, Config.computerTermHeight, ComponentMap.builder().add(ComputerComponents.ANDROID_COMPUTER, this.brain).build());
-    }
-
-    @Override
-    public @Nullable ScreenHandler createMenu(int id, PlayerInventory inventory, PlayerEntity player) {
-        return new ComputerMenuWithoutInventory(ModRegistry.Menus.COMPUTER.get(), id, inventory, player1 -> true, this.createServerComputer());
-    }
-
-    @Nullable
-    public ServerComputer getServerComputer() {
-        return !this.getWorld().isClient && this.getWorld().getServer() != null ? ServerContext.get(this.getWorld().getServer()).registry().get(this.instanceID) : null;
-    }
-
     // Inventory
 
     public MethodResult pickupGroundItem(ItemEntity itemEntity) {
@@ -221,7 +165,7 @@ public class BaseAndroidEntity extends PathAwareEntity implements NamedScreenHan
 
     @Override
     protected void dropInventory() {
-        if (this.computerID >= 0)
+        if (this.computerContainer.getComputerID() >= 0)
             this.dropCPU();
 
         for (ItemStack stack : this.internalStorage) {
@@ -235,8 +179,8 @@ public class BaseAndroidEntity extends PathAwareEntity implements NamedScreenHan
         NbtCompound compound = new NbtCompound();
         NbtCompound computerCompound = new NbtCompound();
 
-        computerCompound.putInt("ComputerID", this.computerID);
-        computerCompound.putString("ComputerFamily", this.getFamily().toString());
+        computerCompound.putInt("ComputerID", this.computerContainer.getComputerID());
+        computerCompound.putString("ComputerFamily", this.computerContainer.getFamily().toString());
 
         compound.put("Computer", computerCompound);
 
@@ -315,11 +259,8 @@ public class BaseAndroidEntity extends PathAwareEntity implements NamedScreenHan
 
         NbtCompound computerCompound = new NbtCompound();
 
-        computerCompound.putInt("ComputerID", this.computerID);
-        computerCompound.putString("ComputerFamily", this.getFamily().toString());
-        this.brain.writeNbt(computerCompound);
-
-        nbt.put("ComputerEntity", computerCompound);
+        this.computerContainer.writeNbt(computerCompound);
+        nbt.put("ComputerContainer", computerCompound);
 
         super.writeCustomDataToNbt(nbt);
     }
@@ -329,9 +270,9 @@ public class BaseAndroidEntity extends PathAwareEntity implements NamedScreenHan
         Inventories.readNbt(nbt, this.internalStorage);
 
         if (nbt.contains("ComputerEntity")) {
-            NbtCompound computerCompound = nbt.getCompound("ComputerEntity");
-            this.computerID = computerCompound.getInt("ComputerID");
-            this.setFamily(ComputerFamily.valueOf(computerCompound.getString("ComputerFamily")));
+            NbtCompound computerCompound = nbt.getCompound("ComputerContainer");
+
+            this.computerContainer.readNbt(computerCompound);
             this.brain.readNbt(computerCompound);
         }
 
@@ -348,7 +289,7 @@ public class BaseAndroidEntity extends PathAwareEntity implements NamedScreenHan
     public void remove(RemovalReason reason) {
         super.remove(reason);
 
-        ServerComputer computer = getServerComputer();
+        ServerComputer computer = this.computerContainer.getServerComputer();
 
         if (computer != null)
             computer.close();

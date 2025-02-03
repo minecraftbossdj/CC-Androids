@@ -72,8 +72,8 @@ public class UnfinishedAndroidEntity extends MobEntity {
                 family = ComputerFamily.valueOf(compound.getString("ComputerFamily"));
             }
 
-            android.setComputerID(computer_id);
-            android.setFamily(family);
+            android.computerContainer.setComputerID(computer_id);
+            android.computerContainer.setFamily(family);
 
             android.getWorld().playSoundFromEntity(null, android, SoundEvents.BLOCK_BEACON_ACTIVATE, SoundCategory.NEUTRAL, 1.0f, 1.0f);
         }

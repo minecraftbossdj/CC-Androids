@@ -1,10 +1,10 @@
-package com.thunderbear06.entity.AI;
+package com.thunderbear06.ai;
 
 import com.mojang.authlib.GameProfile;
 import com.thunderbear06.computer.IAndroidAccess;
-import com.thunderbear06.entity.AI.modules.InteractionModule;
-import com.thunderbear06.entity.AI.modules.MiningModule;
-import com.thunderbear06.entity.AI.modules.SensorModule;
+import com.thunderbear06.ai.modules.InteractionModule;
+import com.thunderbear06.ai.modules.MiningModule;
+import com.thunderbear06.ai.modules.SensorModule;
 import com.thunderbear06.entity.android.BaseAndroidEntity;
 import com.thunderbear06.entity.player.AndroidPlayer;
 import net.minecraft.entity.LivingEntity;

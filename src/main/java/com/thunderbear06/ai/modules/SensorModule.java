@@ -1,7 +1,6 @@
-package com.thunderbear06.entity.AI.modules;
+package com.thunderbear06.ai.modules;
 
-import com.thunderbear06.CCAndroids;
-import com.thunderbear06.entity.AI.AndroidBrain;
+import com.thunderbear06.ai.AndroidBrain;
 import com.thunderbear06.entity.android.BaseAndroidEntity;
 import dan200.computercraft.api.lua.LuaException;
 import net.minecraft.entity.Entity;
@@ -21,7 +20,6 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Optional;
 import java.util.function.Predicate;
 
 public class SensorModule extends AndroidModule{
