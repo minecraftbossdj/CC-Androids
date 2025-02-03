@@ -21,6 +21,7 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
 import java.util.UUID;
 
 public class AndroidComputerContainer implements NamedScreenHandlerFactory {
@@ -63,6 +64,19 @@ public class AndroidComputerContainer implements NamedScreenHandlerFactory {
 
     public void turnOn() {
 
+    }
+
+    protected void updateOwnerLabel(ServerComputer computer) {
+
+        if (!Objects.equals(this.label, computer.getLabel())) {
+            this.label = computer.getLabel();
+
+            if (this.label == null || this.label.isBlank()){
+                this.android.setCustomName(Text.empty());
+            } else {
+                this.android.setCustomName(Text.literal(this.label));
+            }
+        }
     }
 
     public final ServerComputer getOrCreateServerComputer() {
