@@ -18,7 +18,7 @@ public class AndroidEntity extends BaseAndroidEntity {
 
     public AndroidEntity(EntityType<? extends PathAwareEntity> entityType, World world) {
         super(entityType, world);
-        this.setFamily(ComputerFamily.NORMAL);
+        this.computerContainer.setFamily(ComputerFamily.NORMAL);
 
         initAndroidGoals();
     }

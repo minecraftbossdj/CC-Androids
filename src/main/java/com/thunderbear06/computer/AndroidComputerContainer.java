@@ -35,7 +35,6 @@ public class AndroidComputerContainer implements NamedScreenHandlerFactory {
     private UUID instanceID = null;
     private int computerID = -1;
     private boolean startOn = false;
-    private boolean fresh = false;
     private ComputerFamily family;
 
     public AndroidComputerContainer(BaseAndroidEntity android) {
@@ -62,8 +61,12 @@ public class AndroidComputerContainer implements NamedScreenHandlerFactory {
         }
     }
 
-    public void turnOn() {
-
+    public void turnOn(ServerComputer computer) {
+        if (!computer.isOn()) {
+            computer.turnOn();
+            this.computerID = computer.getID();
+            this.on = true;
+        }
     }
 
     protected void updateOwnerLabel(ServerComputer computer) {
@@ -92,7 +95,6 @@ public class AndroidComputerContainer implements NamedScreenHandlerFactory {
 
                 computer = this.createComputer(this.computerID);
                 this.instanceID = computer.register();
-                this.fresh = true;
             }
 
             return computer;
