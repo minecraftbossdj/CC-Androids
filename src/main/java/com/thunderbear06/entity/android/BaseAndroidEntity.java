@@ -234,6 +234,7 @@ public class BaseAndroidEntity extends PathAwareEntity {
         NbtCompound computerCompound = new NbtCompound();
 
         this.computerContainer.writeNbt(computerCompound);
+        this.brain.writeNbt(computerCompound);
         nbt.put("ComputerContainer", computerCompound);
 
         super.writeCustomDataToNbt(nbt);

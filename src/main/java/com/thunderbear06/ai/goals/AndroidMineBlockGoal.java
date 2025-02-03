@@ -14,17 +14,7 @@ public class AndroidMineBlockGoal extends BaseAndroidGoal{
 
     @Override
     public boolean canStart() {
-        this.pos = this.brain.getTargetBlock();
-
-        if (this.pos == null)
-            return false;
-
-        World world = this.android.getWorld();
-
-        if (world.getBlockState(pos.down()).isAir() && world.getBlockState(pos.down(2)).isAir() && world.getBlockState(pos.down(3)).isAir())
-            return false;
-
-        return super.canStart() && this.brain.getState().equals("miningBlock") && this.brain.getMiningModule().canMineBlock(this.pos);
+        return super.canStart() && this.brain.getState().equals("miningBlock") && this.brain.hasTargetBlock() && this.brain.getMiningModule().canMineBlock(this.pos);
     }
 
     @Override

@@ -2,13 +2,11 @@ package com.thunderbear06.entity.android;
 
 import com.thunderbear06.ai.goals.*;
 import dan200.computercraft.shared.computer.core.ComputerFamily;
-import dan200.computercraft.shared.computer.core.ServerComputer;
-import dan200.computercraft.shared.network.container.ComputerContainerData;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ai.goal.LookAtEntityGoal;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.world.World;
@@ -40,13 +38,7 @@ public class AndroidEntity extends BaseAndroidEntity {
             if (this.brain.getOwningPlayer() == null)
                 this.brain.setOwningPlayer(player.getGameProfile());
 
-            ServerComputer serverComputer = createServerComputer();
-
-            serverComputer.turnOn();
-
-            serverComputer.keepAlive();
-
-            (new ComputerContainerData(serverComputer, ItemStack.EMPTY)).open(player, this);
+            this.computerContainer.openComputer((ServerPlayerEntity) player);
         }
 
         return ActionResult.CONSUME;

@@ -7,6 +7,8 @@ import com.thunderbear06.ai.modules.MiningModule;
 import com.thunderbear06.ai.modules.SensorModule;
 import com.thunderbear06.entity.android.BaseAndroidEntity;
 import com.thunderbear06.entity.player.AndroidPlayer;
+import com.thunderbear06.util.PathReachChecker;
+import net.minecraft.block.Blocks;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
@@ -104,9 +106,25 @@ public class AndroidBrain implements IAndroidAccess {
 
     @Override
     public boolean setTargetBlock(BlockPos pos) {
-        if (pos != null && !this.owner.getWorld().isInBuildLimit(pos))
+        if (pos == null) {
+            this.targetBlock = null;
+            return true;
+        }
+
+        if (!this.owner.getWorld().isInBuildLimit(pos))
             return false;
-        this.targetBlock = pos;
+
+        if (this.owner.getBlockPos().getSquaredDistance(pos) > 100) {
+            this.targetBlock = pos;
+            return true;
+        }
+
+        BlockPos closest = PathReachChecker.getClosestPosition(this.owner.getBlockPos(), pos, (ServerWorld) this.owner.getWorld());
+
+        if (!closest.isWithinDistance(pos, 3))
+            return false;
+
+        this.targetBlock = closest;
         return true;
     }
 
@@ -170,14 +188,13 @@ public class AndroidBrain implements IAndroidAccess {
             owner.putString("Name", this.getOwningPlayer().getName());
             owner.putUuid("UUID", this.getOwningPlayer().getId());
             nbt.put("OwningPlayer", owner);
-
         }
     }
 
     public void readNbt(NbtCompound nbt) {
         if (nbt.contains("OwningPlayer")) {
             NbtCompound owner = nbt.getCompound("OwningPlayer");
-            this.owningPlayer = new GameProfile(NbtHelper.toUuid(owner.get("UUID")), owner.getString("Name"));
+            this.owningPlayer = new GameProfile(owner.getUuid("UUID"), owner.getString("Name"));
         }
     }
 }

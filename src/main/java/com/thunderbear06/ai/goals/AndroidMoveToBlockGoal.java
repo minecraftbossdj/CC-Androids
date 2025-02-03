@@ -25,8 +25,15 @@ public class AndroidMoveToBlockGoal extends BaseAndroidGoal {
     }
 
     @Override
+    public void tick() {
+        if (this.android.getNavigation().isIdle()) {
+            this.android.getNavigation().startMovingTo(pos.getX(), pos.getY(), pos.getZ(), 0.5);
+        }
+    }
+
+    @Override
     public boolean shouldContinue() {
-        return super.shouldContinue() && !this.android.getNavigation().isIdle();
+        return super.shouldContinue() && !isInRangeOf(this.pos);
     }
 
     @Override

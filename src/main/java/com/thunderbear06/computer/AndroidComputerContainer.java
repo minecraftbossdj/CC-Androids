@@ -10,13 +10,16 @@ import dan200.computercraft.shared.computer.core.ServerComputer;
 import dan200.computercraft.shared.computer.core.ServerContext;
 import dan200.computercraft.shared.computer.inventory.ComputerMenuWithoutInventory;
 import dan200.computercraft.shared.config.Config;
+import dan200.computercraft.shared.network.container.ComputerContainerData;
 import dan200.computercraft.shared.util.ComponentMap;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.screen.NamedScreenHandlerFactory;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 
@@ -69,15 +72,26 @@ public class AndroidComputerContainer implements NamedScreenHandlerFactory {
         }
     }
 
-    protected void updateOwnerLabel(ServerComputer computer) {
+    public void openComputer(ServerPlayerEntity player) {
+        ServerComputer computer = getOrCreateServerComputer();
 
+        if (!this.on) {
+            turnOn(computer);
+        }
+
+        (new ComputerContainerData(computer, ItemStack.EMPTY)).open(player, this);
+    }
+
+    protected void updateOwnerLabel(ServerComputer computer) {
         if (!Objects.equals(this.label, computer.getLabel())) {
             this.label = computer.getLabel();
 
             if (this.label == null || this.label.isBlank()){
                 this.android.setCustomName(Text.empty());
+                this.android.setCustomNameVisible(false);
             } else {
                 this.android.setCustomName(Text.literal(this.label));
+                this.android.setCustomNameVisible(true);
             }
         }
     }

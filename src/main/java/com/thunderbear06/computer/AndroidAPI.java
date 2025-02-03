@@ -82,7 +82,7 @@ public class AndroidAPI implements ILuaAPI {
     @LuaFunction
     public final MethodResult moveTo(int x, int y, int z) {
         if (!this.android.setTargetBlock(new BlockPos(x,y,z))) {
-            return MethodResult.of("Block position must be within world build limit");
+            return MethodResult.of("Block position unreachable");
         }
 
         this.android.setState("movingToBlock");
@@ -92,7 +92,7 @@ public class AndroidAPI implements ILuaAPI {
     @LuaFunction
     public final MethodResult mineBlock(int x, int y, int z) {
         if (!this.android.setTargetBlock(new BlockPos(x,y,z))) {
-            return MethodResult.of("Block position must be within world build limit");
+            return MethodResult.of("Block position unreachable");
         }
 
         this.android.setState("miningBlock");
@@ -102,7 +102,7 @@ public class AndroidAPI implements ILuaAPI {
     @LuaFunction
     public final MethodResult useItemOnBlock(int x, int y, int z) {
         if (!this.android.setTargetBlock(new BlockPos(x,y,z))) {
-            return MethodResult.of("Block position must be within world build limit");
+            return MethodResult.of("Block position unreachable");
         }
 
         this.android.setState("usingItemOnBlock");

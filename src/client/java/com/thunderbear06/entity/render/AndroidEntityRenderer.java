@@ -20,9 +20,9 @@ public class AndroidEntityRenderer extends BipedEntityRenderer<AndroidEntity, Pl
 
     @Override
     public Identifier getTexture(AndroidEntity entity) {
-        if (entity.getFamily() == ComputerFamily.ADVANCED)
+        if (entity.computerContainer.getFamily() == ComputerFamily.ADVANCED)
             return androidAdvanced;
-        if (entity.getFamily() == ComputerFamily.COMMAND)
+        if (entity.computerContainer.getFamily() == ComputerFamily.COMMAND)
             return androidCommand;
         return androidNormal;
     }
