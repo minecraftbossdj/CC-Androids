@@ -78,33 +78,7 @@ public class BaseAndroidEntity extends PathAwareEntity {
         tickHandSwing();
 
         if (!this.getWorld().isClient()) {
-            tickAndroid();
-        }
-    }
-
-    public void tickAndroid() {
-        if (this.computerID >= 0 || this.startOn) {
-            ServerComputer computer = this.createServerComputer();
-
-            if (this.startOn || this.fresh && this.on) {
-                computer.turnOn();
-                this.startOn = false;
-            }
-
-            computer.keepAlive();
-            this.fresh = false;
-            this.computerID = computer.getID();
-            boolean newOn = computer.isOn();
-            if (this.on != newOn) {
-                this.on = newOn;
-            }
-
-            if (!Objects.equals(this.label, computer.getLabel())) {
-                this.label = computer.getLabel();
-
-                this.setCustomName(Text.of(this.label));
-                this.setCustomNameVisible(this.label != null && !this.label.isEmpty());
-            }
+            this.computerContainer.onTick();
         }
     }
 

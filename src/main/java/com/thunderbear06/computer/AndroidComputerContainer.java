@@ -1,7 +1,7 @@
 package com.thunderbear06.computer;
 
+import com.thunderbear06.CCAndroids;
 import com.thunderbear06.component.ComputerComponents;
-import com.thunderbear06.entity.android.AndroidEntity;
 import com.thunderbear06.entity.android.BaseAndroidEntity;
 import dan200.computercraft.api.ComputerCraftAPI;
 import dan200.computercraft.shared.ModRegistry;
@@ -11,7 +11,6 @@ import dan200.computercraft.shared.computer.core.ServerContext;
 import dan200.computercraft.shared.computer.inventory.ComputerMenuWithoutInventory;
 import dan200.computercraft.shared.config.Config;
 import dan200.computercraft.shared.util.ComponentMap;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.nbt.NbtCompound;
@@ -42,11 +41,31 @@ public class AndroidComputerContainer implements NamedScreenHandlerFactory {
         this.android = android;
     }
 
+    public void onTick() {
+        if (this.startOn) {
+            this.turnOn(getOrCreateServerComputer());
+            this.startOn = false;
+        }
+
+        if (this.on && this.computerID >= 0) {
+            ServerComputer computer = getServerComputer();
+
+            if (computer == null) {
+                CCAndroids.LOGGER.error("Automaton is on but has no ServerComputer");
+                return;
+            }
+
+            updateOwnerLabel(computer);
+
+            computer.keepAlive();
+        }
+    }
+
     public void turnOn() {
 
     }
 
-    public final ServerComputer createServerComputer() {
+    public final ServerComputer getOrCreateServerComputer() {
         MinecraftServer server = this.android.getWorld().getServer();
         if (server == null) {
             throw new IllegalStateException("Cannot access server computer on the client.");
@@ -88,7 +107,7 @@ public class AndroidComputerContainer implements NamedScreenHandlerFactory {
 
     @Override
     public @Nullable ScreenHandler createMenu(int id, PlayerInventory inventory, PlayerEntity player) {
-        return new ComputerMenuWithoutInventory(ModRegistry.Menus.COMPUTER.get(), id, inventory, player1 -> true, this.createServerComputer());
+        return new ComputerMenuWithoutInventory(ModRegistry.Menus.COMPUTER.get(), id, inventory, player1 -> true, this.getOrCreateServerComputer());
     }
 
     @Nullable
