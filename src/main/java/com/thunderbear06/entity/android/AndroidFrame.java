@@ -1,6 +1,6 @@
-package com.thunderbear06.entity;
+package com.thunderbear06.entity.android;
 
-import com.thunderbear06.entity.android.AndroidEntity;
+import com.thunderbear06.entity.EntityRegistry;
 import com.thunderbear06.item.ItemRegistry;
 import dan200.computercraft.shared.computer.core.ComputerFamily;
 import net.minecraft.entity.Entity;
@@ -22,12 +22,12 @@ import net.minecraft.world.event.GameEvent;
 import org.jetbrains.annotations.Nullable;
 
 public class AndroidFrame extends MobEntity {
-    private final byte max_components_needed = 8;
-    private final byte max_ingots_needed = 10;
+    private final byte maxComponentsNeeded = 8;
+    private final byte maxIngotsNeeded = 10;
 
-    public byte components_needed;
-    public boolean has_core;
-    public byte ingots_needed;
+    public byte componentsNeeded;
+    public boolean hasCore;
+    public byte ingotsNeeded;
 
     private boolean isAdvanced = false;
 
@@ -36,9 +36,9 @@ public class AndroidFrame extends MobEntity {
     public AndroidFrame(EntityType<? extends MobEntity> entityType, World world) {
         super(entityType, world);
 
-        this.components_needed = this.max_components_needed;
-        this.ingots_needed = this.max_ingots_needed;
-        this.has_core = false;
+        this.componentsNeeded = this.maxComponentsNeeded;
+        this.ingotsNeeded = this.maxIngotsNeeded;
+        this.hasCore = false;
     }
 
     @Override
@@ -68,7 +68,7 @@ public class AndroidFrame extends MobEntity {
             }
         }
 
-        if (handStack.isOf(ItemRegistry.ANDROID_CPU) || handStack.isOf(Items.COMMAND_BLOCK) && this.isReadyForCPU()) {
+        if ((handStack.isOf(ItemRegistry.ANDROID_CPU) || handStack.isOf(Items.COMMAND_BLOCK)) && this.isReadyForCPU()) {
             insertCPU(handStack);
             onSuccess(handStack, player, hand);
             return ActionResult.SUCCESS;
@@ -83,10 +83,10 @@ public class AndroidFrame extends MobEntity {
     }
 
     private boolean addComponents(World world) {
-        if (this.components_needed <= 0)
+        if (this.componentsNeeded <= 0)
             return false;
 
-        if (--this.components_needed == 0)
+        if (--this.componentsNeeded == 0)
             world.playSoundFromEntity(null, this, SoundEvents.ENTITY_VILLAGER_WORK_ARMORER, SoundCategory.NEUTRAL, 1.0f, 1.0f);
         else
             world.playSoundFromEntity(null, this, SoundEvents.ENTITY_IRON_GOLEM_REPAIR, SoundCategory.NEUTRAL, 1.0f, 1.0f);
@@ -95,14 +95,14 @@ public class AndroidFrame extends MobEntity {
     }
 
     private boolean addPlates(World world, boolean isGold) {
-        if (this.components_needed > 0)
+        if (this.componentsNeeded > 0)
             return false;
 
-        if (this.ingots_needed <= 0)
+        if (this.ingotsNeeded <= 0)
             return false;
 
         if (isGold && !this.isAdvanced) {
-            if (this.ingots_needed < this.max_ingots_needed)
+            if (this.ingotsNeeded < this.maxIngotsNeeded)
                 return false;
             this.isAdvanced = true;
         }
@@ -110,7 +110,7 @@ public class AndroidFrame extends MobEntity {
         if (!isGold && this.isAdvanced)
             return false;
 
-        if (--this.ingots_needed == 0)
+        if (--this.ingotsNeeded == 0)
             world.playSoundFromEntity(null, this, SoundEvents.ENTITY_VILLAGER_WORK_ARMORER, SoundCategory.NEUTRAL, 1.0f, 1.0f);
         else
             world.playSoundFromEntity(null, this, SoundEvents.ENTITY_IRON_GOLEM_REPAIR, SoundCategory.NEUTRAL, 1.0f, 1.0f);
@@ -119,9 +119,9 @@ public class AndroidFrame extends MobEntity {
     }
 
     private boolean insertCore(World world) {
-        if (this.has_core)
+        if (this.hasCore)
             return false;
-        this.has_core = true;
+        this.hasCore = true;
 
         world.playSoundFromEntity(null, this, SoundEvents.BLOCK_END_PORTAL_FRAME_FILL, SoundCategory.NEUTRAL, 1.0f, 1.0f);
 
@@ -129,43 +129,43 @@ public class AndroidFrame extends MobEntity {
     }
 
     private boolean isReadyForCPU() {
-        return this.components_needed == 0 && this.has_core && this.ingots_needed == 0;
+        return this.componentsNeeded == 0 && this.hasCore && this.ingotsNeeded == 0;
     }
 
     private void insertCPU(ItemStack cpu) {
-        int computer_id = -1;
-
-        if (cpu.hasNbt() && cpu.getNbt().contains("ComputerID")) {
-            computer_id = cpu.getNbt().getInt("ComputerID");
-        }
-
         ComputerFamily family;
+        int computerID = -1;
 
         if (cpu.isOf(Items.COMMAND_BLOCK))
             family = ComputerFamily.COMMAND;
-        else {
+        else
             family = this.isAdvanced ? ComputerFamily.ADVANCED : ComputerFamily.NORMAL;
-        }
 
-        this.finish(computer_id, family);
+        if (cpu.hasNbt() && cpu.getNbt().contains("ComputerID"))
+            computerID = cpu.getNbt().getInt("ComputerID");
+
+        finish(family, computerID);
     }
 
-    private void finish(int computerID, ComputerFamily family) {
-        AndroidEntity android = EntityRegistry.ANDROID_ENTITY.create(this.getWorld());
+    private void finish(ComputerFamily family, int computerID) {
+        BaseAndroidEntity android;
+
+        switch (family) {
+            case NORMAL -> android = EntityRegistry.ANDROID_ENTITY.create(getWorld());
+            case ADVANCED -> android = EntityRegistry.ADVANCED_ANDROID_ENTITY.create(getWorld());
+            case COMMAND -> android = EntityRegistry.COMMAND_ANDROID_ENTITY.create(getWorld());
+            default -> throw new IllegalArgumentException("Unknown ComputerFamily " + family);
+        }
 
         assert android != null;
 
         android.copyPositionAndRotation(this);
-
-        this.getWorld().spawnEntity(android);
-
-        android.computerContainer.setComputerID(computerID);
-        android.computerContainer.setFamily(family);
+        android.getComputer().setComputerID(computerID);
 
         this.discard();
+        this.getWorld().spawnEntity(android);
 
         android.getWorld().playSoundFromEntity(null, android, SoundEvents.BLOCK_BEACON_ACTIVATE, SoundCategory.NEUTRAL, 1.0f, 1.0f);
-
     }
 
     @Override
@@ -233,31 +233,38 @@ public class AndroidFrame extends MobEntity {
 
     @Override
     protected void dropInventory() {
-        int components_dropped = this.max_components_needed - this.components_needed;
+        int components_dropped = this.maxComponentsNeeded - this.componentsNeeded;
 
         for (int i = 0; i < components_dropped; i++) {
             this.dropStack(new ItemStack(ItemRegistry.COMPONENTS));
         }
 
-        if (!this.has_core)
-            return;
+        for (int j = 0; j < ingotsNeeded; j++) {
+            this.dropStack(new ItemStack(this.isAdvanced ? Items.GOLD_INGOT : Items.IRON_INGOT));
+        }
 
-        this.dropStack(new ItemStack(ItemRegistry.REDSTONE_REACTOR));
+        if (this.hasCore)
+            this.dropStack(new ItemStack(ItemRegistry.REDSTONE_REACTOR));
+
         this.dropStack(new ItemStack(ItemRegistry.ANDROID_FRAME));
     }
 
     @Override
     public void writeCustomDataToNbt(NbtCompound nbt) {
-        nbt.putByte("ComponentsNeeded", this.components_needed);
-        nbt.putBoolean("HasCore", this.has_core);
+        nbt.putByte("ComponentsNeeded", this.componentsNeeded);
+        nbt.putByte("IngotsNeeded", this.ingotsNeeded);
+        nbt.putBoolean("IsAdvanced", this.isAdvanced);
+        nbt.putBoolean("HasCore", this.hasCore);
         super.writeCustomDataToNbt(nbt);
     }
 
     @Override
     public void readNbt(NbtCompound nbt) {
         if (nbt.contains("ComponentsNeeded")) {
-            this.components_needed = nbt.getByte("ComponentsNeeded");
-            this.has_core = nbt.getBoolean("HasCore");
+            this.componentsNeeded = nbt.getByte("ComponentsNeeded");
+            this.ingotsNeeded = nbt.getByte("IngotsNeeded");
+            this.isAdvanced = nbt.getBoolean("IsAdvanced");
+            this.hasCore = nbt.getBoolean("HasCore");
         }
         super.readNbt(nbt);
     }

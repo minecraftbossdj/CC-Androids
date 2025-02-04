@@ -1,6 +1,5 @@
 package com.thunderbear06.entity.android;
 
-import com.thunderbear06.CCAndroids;
 import com.thunderbear06.ai.goals.*;
 import dan200.computercraft.shared.computer.core.ComputerFamily;
 import net.minecraft.entity.EntityType;
@@ -34,20 +33,13 @@ public class AndroidEntity extends BaseAndroidEntity {
     }
 
     @Override
-    public void tick() {
-        if (this.getWorld().isClient() && this.age < 1)
-            CCAndroids.LOGGER.info(this.computerContainer.getFamily().toString());
-        super.tick();
-    }
-
-    @Override
     protected ActionResult interactMob(PlayerEntity player, Hand hand) {
         if (!getWorld().isClient()) {
 
             if (this.brain.getOwningPlayer() == null)
                 this.brain.setOwningPlayer(player.getGameProfile());
 
-            this.computerContainer.openComputer((ServerPlayerEntity) player);
+            this.getComputer().openComputer((ServerPlayerEntity) player);
         }
 
         return ActionResult.CONSUME;

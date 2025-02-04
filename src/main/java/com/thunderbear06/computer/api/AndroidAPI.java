@@ -1,17 +1,19 @@
-package com.thunderbear06.computer;
+package com.thunderbear06.computer.api;
 
 import com.thunderbear06.ai.AndroidBrain;
-import dan200.computercraft.api.lua.ILuaAPI;
-import dan200.computercraft.api.lua.LuaException;
-import dan200.computercraft.api.lua.LuaFunction;
-import dan200.computercraft.api.lua.MethodResult;
+import com.thunderbear06.computer.IAndroidAccess;
+import dan200.computercraft.api.ComputerCraftAPI;
+import dan200.computercraft.api.lua.*;
+import dan200.computercraft.shared.ComputerCraft;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.HostileEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.text.Text;
 import net.minecraft.util.Hand;
+import net.minecraft.util.Util;
 import net.minecraft.util.math.BlockPos;
 import org.jetbrains.annotations.Nullable;
 
@@ -33,6 +35,7 @@ public class AndroidAPI implements ILuaAPI {
     public @Nullable String getModuleName() {
         return "android";
     }
+
 
 
     /*
@@ -132,7 +135,7 @@ public class AndroidAPI implements ILuaAPI {
         if (itemEntity == null)
             return MethodResult.of("Unknown item or invalid UUID");
 
-        if (this.android.getOwner().distanceTo(itemEntity) > 5)
+        if (this.android.getOwner().distanceTo(itemEntity) > 2)
             return MethodResult.of("Item is too far to pick up");
 
         if (!this.android.getOwner().getMainHandStack().isEmpty())
@@ -205,14 +208,14 @@ public class AndroidAPI implements ILuaAPI {
     }
 
     @LuaFunction
-    public final MethodResult getNearbyMobs(Optional<String> type) throws LuaException {
+    public final MethodResult getNearbyMobs(Optional<String> type) {
         AndroidBrain brain = (AndroidBrain) this.android;
 
         return MethodResult.of(brain.getSensorModule().getMobs(type.orElse(null)));
     }
 
     @LuaFunction
-    public final MethodResult getClosestMobOfType(Optional<String> type) throws LuaException {
+    public final MethodResult getClosestMobOfType(Optional<String> type) {
         AndroidBrain brain = (AndroidBrain) this.android;
 
         return MethodResult.of(brain.getSensorModule().getClosestMobOfType(type.orElse(null)));
@@ -221,7 +224,7 @@ public class AndroidAPI implements ILuaAPI {
     @LuaFunction
     public final MethodResult getGroundItems(Optional<String> type, Optional<Integer> max) {
         AndroidBrain brain = (AndroidBrain) this.android;
-        return MethodResult.of(brain.getSensorModule().getGroundItems(type.orElse(null), max.orElse(Integer.MAX_VALUE)));
+        return MethodResult.of(brain.getSensorModule().getGroundItem(type.orElse(null), max.orElse(Integer.MAX_VALUE)));
     }
 
     @LuaFunction
@@ -241,7 +244,7 @@ public class AndroidAPI implements ILuaAPI {
         return MethodResult.of();
     }
 
-    //TODO: Revamp
+    //TODO: Wish this could return NBT
 
     @LuaFunction
     public final MethodResult getMobInfo(String entityUUIDString) {

@@ -1,5 +1,7 @@
 {
   "entity.cc-androids.android": "Android",
+  "entity.cc-androids.advanced_android": "Advanced Android",
+  "entity.cc-androids.command_android": "Command Android",
   "entity.cc-androids.rogue_android": "Automaton",
   "entity.cc-androids.unfinished_android": "Android Scaffolding",
 

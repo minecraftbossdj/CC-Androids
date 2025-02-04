@@ -2,6 +2,7 @@ package com.thunderbear06.entity.render;
 
 import com.thunderbear06.CCAndroids;
 import com.thunderbear06.entity.android.AndroidEntity;
+import com.thunderbear06.entity.android.BaseAndroidEntity;
 import dan200.computercraft.shared.computer.core.ComputerFamily;
 import net.minecraft.client.render.entity.BipedEntityRenderer;
 import net.minecraft.client.render.entity.EntityRendererFactory;
@@ -20,9 +21,10 @@ public class AndroidEntityRenderer extends BipedEntityRenderer<AndroidEntity, Pl
 
     @Override
     public Identifier getTexture(AndroidEntity entity) {
-        if (entity.computerContainer.getFamily() == ComputerFamily.ADVANCED)
+        ComputerFamily family = entity.getComputer().family;
+        if (family == ComputerFamily.ADVANCED)
             return androidAdvanced;
-        if (entity.computerContainer.getFamily() == ComputerFamily.COMMAND)
+        if (family == ComputerFamily.COMMAND)
             return androidCommand;
         return androidNormal;
     }

@@ -1,9 +1,7 @@
 package com.thunderbear06.entity;
 
 import com.thunderbear06.CCAndroids;
-import com.thunderbear06.entity.android.AndroidEntity;
-import com.thunderbear06.entity.android.BaseAndroidEntity;
-import com.thunderbear06.entity.android.RogueDroidEntity;
+import com.thunderbear06.entity.android.*;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.SpawnGroup;
@@ -16,6 +14,16 @@ public class EntityRegistry {
             Registries.ENTITY_TYPE,
             Identifier.of(CCAndroids.MOD_ID, "android"),
             EntityType.Builder.create(AndroidEntity::new, SpawnGroup.MISC).build("android")
+    );
+    public static final EntityType<AdvancedAndroidEntity> ADVANCED_ANDROID_ENTITY = Registry.register(
+            Registries.ENTITY_TYPE,
+            Identifier.of(CCAndroids.MOD_ID, "advanced_android"),
+            EntityType.Builder.create(AdvancedAndroidEntity::new, SpawnGroup.MISC).build("advanced_android")
+    );
+    public static final EntityType<CommandAndroidEntity> COMMAND_ANDROID_ENTITY = Registry.register(
+            Registries.ENTITY_TYPE,
+            Identifier.of(CCAndroids.MOD_ID, "command_android"),
+            EntityType.Builder.create(CommandAndroidEntity::new, SpawnGroup.MISC).build("command_android")
     );
 
     public static final EntityType<RogueDroidEntity> ROGUE_ANDROID_ENTITY = Registry.register(
@@ -31,6 +39,8 @@ public class EntityRegistry {
 
     public static void register() {
         FabricDefaultAttributeRegistry.register(ANDROID_ENTITY, BaseAndroidEntity.createAndroidAttributes());
+        FabricDefaultAttributeRegistry.register(ADVANCED_ANDROID_ENTITY, BaseAndroidEntity.createAndroidAttributes());
+        FabricDefaultAttributeRegistry.register(COMMAND_ANDROID_ENTITY, BaseAndroidEntity.createAndroidAttributes());
         FabricDefaultAttributeRegistry.register(ROGUE_ANDROID_ENTITY, BaseAndroidEntity.createAndroidAttributes());
         FabricDefaultAttributeRegistry.register(UNFINISHED_ANDROID_ENTITY, BaseAndroidEntity.createAndroidAttributes());
     }

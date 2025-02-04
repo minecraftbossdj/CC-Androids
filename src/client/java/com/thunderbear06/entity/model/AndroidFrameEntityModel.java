@@ -1,6 +1,6 @@
 package com.thunderbear06.entity.model;
 
-import com.thunderbear06.entity.AndroidFrame;
+import com.thunderbear06.entity.android.AndroidFrame;
 import net.minecraft.client.model.ModelPart;
 import net.minecraft.client.render.entity.model.PlayerEntityModel;
 
@@ -11,8 +11,8 @@ public class AndroidFrameEntityModel extends PlayerEntityModel<AndroidFrame> {
 
     @Override
     public void animateModel(AndroidFrame livingEntity, float f, float g, float h) {
-        byte comps = livingEntity.components_needed;
-        byte ingots = livingEntity.ingots_needed;
+        byte comps = livingEntity.componentsNeeded;
+        byte ingots = livingEntity.ingotsNeeded;
 
         this.leftArm.visible = comps < 8;
         this.rightArm.visible = comps < 6;

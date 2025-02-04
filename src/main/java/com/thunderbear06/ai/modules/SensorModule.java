@@ -40,7 +40,7 @@ public class SensorModule extends AndroidModule{
         return this.owner.getWorld().getClosestPlayer(pos.getX(), pos.getY(), pos.getZ(), this.entitySearchRadius, entity -> !entity.isSpectator());
     }
 
-    public List<HashMap<String, Object>> getMobs(@Nullable String type) throws LuaException {
+    public List<HashMap<String, Object>> getMobs(@Nullable String type) {
         List<HashMap<String, Object>> result = new ArrayList<>();
 
         this.owner.getWorld().getEntitiesByClass(LivingEntity.class, this.owner.getBoundingBox().expand(this.entitySearchRadius), getTypePredicate(type)).forEach(entity -> {
@@ -50,7 +50,7 @@ public class SensorModule extends AndroidModule{
         return result;
     }
 
-    public HashMap<String, Object> getClosestMobOfType(@Nullable String type) throws LuaException {
+    public HashMap<String, Object> getClosestMobOfType(@Nullable String type) {
         BlockPos pos = this.owner.getBlockPos();
 
         Entity entity = this.owner.getWorld().getClosestEntity(
@@ -72,9 +72,8 @@ public class SensorModule extends AndroidModule{
         return info;
     }
 
-    public List<HashMap<String, Object>> getGroundItems(@Nullable String type, int max) {
+    public List<HashMap<String, Object>> getGroundItem(@Nullable String type, int max) {
         List<ItemEntity> list = this.owner.getWorld().getNonSpectatingEntities(ItemEntity.class, this.owner.getBoundingBox().expand(5));
-
         List<HashMap<String, Object>> results = new ArrayList<>();
 
         for (ItemEntity entity : list) {
@@ -93,7 +92,7 @@ public class SensorModule extends AndroidModule{
         List<HashMap<String, Integer>> blocks = new ArrayList<>();
 
         for (BlockPos pos : BlockPos.iterateOutwards(origin, this.blockSearchRadius, this.blockSearchRadius, this.blockSearchRadius)) {
-            if (!Registries.BLOCK.getId(world.getBlockState(pos).getBlock()).toString().equals(type))
+            if (!Registries.BLOCK.getId(world.getBlockState(pos).getBlock()).toString().contains(type))
                 continue;
 
             for (Direction direction : Direction.stream().toList()) {

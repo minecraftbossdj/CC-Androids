@@ -7,6 +7,7 @@ import com.thunderbear06.computer.EntityComputer;
 import com.thunderbear06.ai.AndroidBrain;
 import com.thunderbear06.item.ItemRegistry;
 import dan200.computercraft.api.ComputerCraftAPI;
+import dan200.computercraft.api.client.FabricComputerCraftAPIClient;
 import dan200.computercraft.api.lua.MethodResult;
 import dan200.computercraft.api.peripheral.IPeripheral;
 import dan200.computercraft.api.peripheral.PeripheralLookup;
@@ -41,6 +42,7 @@ import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.registry.tag.DamageTypeTags;
+import net.minecraft.registry.tag.ItemTags;
 import net.minecraft.screen.NamedScreenHandlerFactory;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.server.MinecraftServer;
@@ -59,8 +61,9 @@ import java.util.UUID;
 
 public class BaseAndroidEntity extends PathAwareEntity {
     public final AndroidBrain brain;
-    public AndroidComputerContainer computerContainer;
     public final DefaultedList<ItemStack> internalStorage;
+
+    protected final AndroidComputerContainer computerContainer;
 
     private int ticksIdle = 0;
 
@@ -121,6 +124,10 @@ public class BaseAndroidEntity extends PathAwareEntity {
 
             this.computerContainer.setPeripheral(ComputerSide.valueOf(direction.getId()), peripheral);
         }
+    }
+
+    public AndroidComputerContainer getComputer() {
+        return this.computerContainer;
     }
 
     // Action
@@ -287,13 +294,6 @@ public class BaseAndroidEntity extends PathAwareEntity {
 
     @Override
     public boolean damage(DamageSource source, float amount) {
-        if (this.computerContainer.getFamily() != null && this.computerContainer.getFamily() == ComputerFamily.COMMAND) {
-            if (!(source.getAttacker() instanceof PlayerEntity player))
-                return source.getTypeRegistryEntry().isIn(DamageTypeTags.BYPASSES_INVULNERABILITY);
-            if (!player.isCreative())
-                return false;
-        }
-
         if (source.isOf(DamageTypes.FALL))
             return false;
         if (source.isOf(DamageTypes.MAGIC))

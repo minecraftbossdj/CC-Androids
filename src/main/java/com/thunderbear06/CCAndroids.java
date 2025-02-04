@@ -1,6 +1,6 @@
 package com.thunderbear06;
 
-import com.thunderbear06.computer.AndroidAPI;
+import com.thunderbear06.computer.api.AndroidAPI;
 import com.thunderbear06.computer.IAndroidAccess;
 import com.thunderbear06.component.ComputerComponents;
 import com.thunderbear06.entity.EntityRegistry;

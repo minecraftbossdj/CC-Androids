@@ -12,6 +12,8 @@ public class CCAndroidsClient implements ClientModInitializer {
 	@Override
 	public void onInitializeClient() {
 		EntityRendererRegistry.register(EntityRegistry.ANDROID_ENTITY, (AndroidEntityRenderer::new));
+		EntityRendererRegistry.register(EntityRegistry.ADVANCED_ANDROID_ENTITY, (AndroidEntityRenderer::new));
+		EntityRendererRegistry.register(EntityRegistry.COMMAND_ANDROID_ENTITY, (AndroidEntityRenderer::new));
 		EntityRendererRegistry.register(EntityRegistry.ROGUE_ANDROID_ENTITY, (RogueAndroidEntityRenderer::new));
 		EntityRendererRegistry.register(EntityRegistry.UNFINISHED_ANDROID_ENTITY, (AndroidFrameEntityRenderer::new));
 	}

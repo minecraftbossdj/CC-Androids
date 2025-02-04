@@ -17,7 +17,7 @@ public abstract class BaseAndroidGoal extends Goal {
 
     @Override
     public boolean canStart() {
-        return this.android.computerContainer.on;
+        return this.android.getComputer().on;
     }
 
     @Override

@@ -2,11 +2,12 @@ package com.thunderbear06.ai.goals;
 
 import com.thunderbear06.ai.AndroidBrain;
 import com.thunderbear06.entity.android.AndroidEntity;
+import com.thunderbear06.entity.android.BaseAndroidEntity;
 
 import java.util.Objects;
 
 public class AndroidFollowTargetGoal extends BaseAndroidGoal {
-    public AndroidFollowTargetGoal(AndroidEntity android, AndroidBrain brain) {
+    public AndroidFollowTargetGoal(BaseAndroidEntity android, AndroidBrain brain) {
         super(android, brain);
     }
 

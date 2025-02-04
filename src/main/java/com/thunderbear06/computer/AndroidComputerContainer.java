@@ -43,7 +43,7 @@ public class AndroidComputerContainer implements NamedScreenHandlerFactory {
     private UUID instanceID = null;
     private int computerID = -1;
     private boolean startOn = false;
-    private ComputerFamily family;
+    public ComputerFamily family;
 
     public AndroidComputerContainer(BaseAndroidEntity android) {
         this.android = android;
@@ -173,11 +173,9 @@ public class AndroidComputerContainer implements NamedScreenHandlerFactory {
 
     public void writeNbt(NbtCompound computerCompound) {
         computerCompound.putInt("ComputerID", this.getComputerID());
-        computerCompound.putString("ComputerFamily", this.getFamily().toString());
     }
 
     public void readNbt(NbtCompound computerCompound) {
         this.setComputerID(computerCompound.getInt("ComputerID"));
-        this.setFamily(ComputerFamily.valueOf(computerCompound.getString("ComputerFamily")));
     }
 }

@@ -1,7 +1,7 @@
 package com.thunderbear06.entity.render;
 
 import com.thunderbear06.CCAndroids;
-import com.thunderbear06.entity.AndroidFrame;
+import com.thunderbear06.entity.android.AndroidFrame;
 import com.thunderbear06.entity.model.AndroidFrameEntityModel;
 import net.minecraft.client.render.entity.BipedEntityRenderer;
 import net.minecraft.client.render.entity.EntityRendererFactory;
@@ -18,6 +18,6 @@ public class AndroidFrameEntityRenderer extends BipedEntityRenderer<AndroidFrame
 
     @Override
     public Identifier getTexture(AndroidFrame entity) {
-        return entity.has_core ? androidUnfinishedCore : androidUnfinished;
+        return entity.hasCore ? androidUnfinishedCore : androidUnfinished;
     }
 }

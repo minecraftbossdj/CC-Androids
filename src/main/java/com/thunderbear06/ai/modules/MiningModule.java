@@ -4,7 +4,6 @@ import com.thunderbear06.ai.AndroidBrain;
 import com.thunderbear06.entity.android.BaseAndroidEntity;
 import com.thunderbear06.entity.player.AndroidPlayer;
 import net.minecraft.block.BlockState;
-import net.minecraft.item.ItemStack;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
@@ -16,10 +15,10 @@ public class MiningModule extends AndroidModule{
         super(owner, brain);
     }
 
-    public void mineWith(BlockPos pos, ItemStack itemStack) {
+    public void mine(BlockPos pos) {
         BlockState state = this.owner.getWorld().getBlockState(pos);
 
-        this.breakProgress = tickBreakProgress(pos, state, itemStack, this.breakProgress);
+        this.breakProgress = tickBreakProgress(pos, state, this.breakProgress);
 
         if (this.breakProgress >= 10.0f) {
             breakBlock(pos);
@@ -40,7 +39,7 @@ public class MiningModule extends AndroidModule{
         return !state.isAir() && state.getHardness(this.owner.getWorld(), pos) > -1;
     }
 
-    private float tickBreakProgress(BlockPos pos, BlockState state, ItemStack itemStack, float progress) {
+    private float tickBreakProgress(BlockPos pos, BlockState state, float progress) {
         this.owner.swingHand(Hand.MAIN_HAND);
         this.owner.getWorld().setBlockBreakingInfo(this.owner.getId(), pos, (int) progress);
         progress += AndroidPlayer.get(this.brain).player().getBlockBreakingSpeed(state);
