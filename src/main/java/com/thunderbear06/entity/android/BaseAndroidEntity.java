@@ -37,8 +37,10 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventories;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.tag.BlockTags;
+import net.minecraft.registry.tag.DamageTypeTags;
 import net.minecraft.screen.NamedScreenHandlerFactory;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.server.MinecraftServer;
@@ -57,7 +59,7 @@ import java.util.UUID;
 
 public class BaseAndroidEntity extends PathAwareEntity {
     public final AndroidBrain brain;
-    public final AndroidComputerContainer computerContainer;
+    public AndroidComputerContainer computerContainer;
     public final DefaultedList<ItemStack> internalStorage;
 
     private int ticksIdle = 0;
@@ -69,7 +71,7 @@ public class BaseAndroidEntity extends PathAwareEntity {
 
         this.brain = new AndroidBrain(this);
         this.internalStorage = DefaultedList.ofSize(9, ItemStack.EMPTY);
-        computerContainer = new AndroidComputerContainer(this);
+        this.computerContainer = new AndroidComputerContainer(this);
     }
 
     public static DefaultAttributeContainer.Builder createAndroidAttributes() {
@@ -81,23 +83,6 @@ public class BaseAndroidEntity extends PathAwareEntity {
         super.tickMovement();
 
         this.openNaNoor();
-
-        if (this.getWorld().isClient())
-            return;
-
-        if (!this.brain.getState().equals("idle")) {
-            this.ticksIdle = 0;
-            return;
-        }
-
-        this.ticksIdle++;
-
-        if (this.ticksIdle < 20)
-            return;
-
-        this.ticksIdle = 0;
-
-        updatePeripherals();
     }
 
     @Override
@@ -106,9 +91,22 @@ public class BaseAndroidEntity extends PathAwareEntity {
 
         tickHandSwing();
 
-        if (!this.getWorld().isClient()) {
-            this.computerContainer.onTick();
+        if (this.getWorld().isClient())
+            return;
+
+        this.computerContainer.onTick();
+
+        if (!this.brain.getState().equals("idle")) {
+            this.ticksIdle = 0;
+            return;
         }
+
+        if (this.ticksIdle++ < 20)
+            return;
+
+        this.ticksIdle = 0;
+
+        updatePeripherals();
     }
 
     private void updatePeripherals() {
@@ -127,16 +125,6 @@ public class BaseAndroidEntity extends PathAwareEntity {
 
     // Action
 
-    private void handleDoor(PathNode node, boolean open) {
-        BlockPos pos = new BlockPos(node.x, node.y, node.z);
-        BlockState state = this.getWorld().getBlockState(pos);
-
-        if (state.isIn(BlockTags.WOODEN_DOORS)) {
-            DoorBlock door = (DoorBlock) state.getBlock();
-            door.setOpen(this, this.getWorld(), state, pos, open);
-        }
-    }
-
     private void openNaNoor() {
         MobNavigation nav = (MobNavigation) this.getNavigation();
 
@@ -148,6 +136,16 @@ public class BaseAndroidEntity extends PathAwareEntity {
         handleDoor(node, true);
         if (lastNode != null && lastNode.previous != null)
             handleDoor(lastNode.previous, false);
+    }
+
+    private void handleDoor(PathNode node, boolean open) {
+        BlockPos pos = new BlockPos(node.x, node.y, node.z);
+        BlockState state = this.getWorld().getBlockState(pos);
+
+        if (state.isIn(BlockTags.WOODEN_DOORS)) {
+            DoorBlock door = (DoorBlock) state.getBlock();
+            door.setOpen(this, this.getWorld(), state, pos, open);
+        }
     }
 
     // Inventory
@@ -178,8 +176,7 @@ public class BaseAndroidEntity extends PathAwareEntity {
 
     @Override
     protected void dropInventory() {
-        if (this.computerContainer.getComputerID() >= 0)
-            this.dropCPU();
+        this.dropCPU();
 
         for (ItemStack stack : this.internalStorage) {
             this.dropStack(stack);
@@ -187,17 +184,17 @@ public class BaseAndroidEntity extends PathAwareEntity {
     }
 
     private void dropCPU() {
-        ItemStack stack = new ItemStack(ItemRegistry.ANDROID_CPU, 1);
+        boolean isCommand = this.computerContainer.getFamily() == ComputerFamily.COMMAND;
 
-        NbtCompound compound = new NbtCompound();
-        NbtCompound computerCompound = new NbtCompound();
+        ItemStack stack = new ItemStack(isCommand ? Items.COMMAND_BLOCK : ItemRegistry.ANDROID_CPU);
 
-        computerCompound.putInt("ComputerID", this.computerContainer.getComputerID());
-        computerCompound.putString("ComputerFamily", this.computerContainer.getFamily().toString());
+        if (this.computerContainer.getComputerID() >= 0) {
+            NbtCompound compound = new NbtCompound();
 
-        compound.put("Computer", computerCompound);
+            compound.putInt("ComputerID", this.computerContainer.getComputerID());
 
-        stack.setNbt(compound);
+            stack.setNbt(compound);
+        }
 
         this.dropStack(stack);
     }
@@ -269,7 +266,7 @@ public class BaseAndroidEntity extends PathAwareEntity {
 
         this.computerContainer.writeNbt(computerCompound);
         this.brain.writeNbt(computerCompound);
-        nbt.put("ComputerContainer", computerCompound);
+        nbt.put("ComputerEntity", computerCompound);
 
         super.writeCustomDataToNbt(nbt);
     }
@@ -279,7 +276,7 @@ public class BaseAndroidEntity extends PathAwareEntity {
         Inventories.readNbt(nbt, this.internalStorage);
 
         if (nbt.contains("ComputerEntity")) {
-            NbtCompound computerCompound = nbt.getCompound("ComputerContainer");
+            NbtCompound computerCompound = nbt.getCompound("ComputerEntity");
 
             this.computerContainer.readNbt(computerCompound);
             this.brain.readNbt(computerCompound);
@@ -290,6 +287,13 @@ public class BaseAndroidEntity extends PathAwareEntity {
 
     @Override
     public boolean damage(DamageSource source, float amount) {
+        if (this.computerContainer.getFamily() != null && this.computerContainer.getFamily() == ComputerFamily.COMMAND) {
+            if (!(source.getAttacker() instanceof PlayerEntity player))
+                return source.getTypeRegistryEntry().isIn(DamageTypeTags.BYPASSES_INVULNERABILITY);
+            if (!player.isCreative())
+                return false;
+        }
+
         if (source.isOf(DamageTypes.FALL))
             return false;
         if (source.isOf(DamageTypes.MAGIC))

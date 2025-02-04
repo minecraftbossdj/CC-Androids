@@ -1,9 +1,10 @@
 {
   "entity.cc-androids.android": "Android",
-  "entity.cc-androids.rogue_android": "Rogue Android",
-  "entity.cc-androids.unfinished_android": "Android framework",
+  "entity.cc-androids.rogue_android": "Automaton",
+  "entity.cc-androids.unfinished_android": "Android Scaffolding",
 
   "item.cc-androids.components": "Components",
   "item.cc-androids.android_cpu": "Android CPU",
-  "item.cc-androids.redstone_reactor": "Redstone Reactor"
+  "item.cc-androids.redstone_reactor": "Redstone Reactor",
+  "item.cc-androids.android_frame": "Android Frame"
 }

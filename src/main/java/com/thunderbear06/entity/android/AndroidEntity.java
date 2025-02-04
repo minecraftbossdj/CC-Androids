@@ -1,5 +1,6 @@
 package com.thunderbear06.entity.android;
 
+import com.thunderbear06.CCAndroids;
 import com.thunderbear06.ai.goals.*;
 import dan200.computercraft.shared.computer.core.ComputerFamily;
 import net.minecraft.entity.EntityType;
@@ -16,6 +17,7 @@ public class AndroidEntity extends BaseAndroidEntity {
 
     public AndroidEntity(EntityType<? extends PathAwareEntity> entityType, World world) {
         super(entityType, world);
+
         this.computerContainer.setFamily(ComputerFamily.NORMAL);
 
         initAndroidGoals();
@@ -29,6 +31,13 @@ public class AndroidEntity extends BaseAndroidEntity {
         goalSelector.add(0, new AndroidFollowTargetGoal(this, this.brain));
         goalSelector.add(0, new AndroidMeleeAttackGoal(this));
         goalSelector.add(1, new LookAtEntityGoal(this, PlayerEntity.class, 10));
+    }
+
+    @Override
+    public void tick() {
+        if (this.getWorld().isClient() && this.age < 1)
+            CCAndroids.LOGGER.info(this.computerContainer.getFamily().toString());
+        super.tick();
     }
 
     @Override

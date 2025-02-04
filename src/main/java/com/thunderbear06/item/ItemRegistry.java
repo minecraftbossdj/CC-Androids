@@ -28,12 +28,18 @@ public class ItemRegistry {
             new Identifier(CCAndroids.MOD_ID,"redstone_reactor"),
             new Item(new FabricItemSettings())
     );
+    public static final Item ANDROID_FRAME = Registry.register(
+            Registries.ITEM,
+            new Identifier(CCAndroids.MOD_ID,"android_frame"),
+            new AndroidScaffoldingItem(new FabricItemSettings())
+    );
 
     public static void register() {
         ItemGroupEvents.modifyEntriesEvent(ItemGroups.INGREDIENTS).register(itemGroup -> {
             itemGroup.add(COMPONENTS);
             itemGroup.add(ANDROID_CPU);
             itemGroup.add(REDSTONE_REACTOR);
+            itemGroup.add(ANDROID_FRAME);
         });
     }
 

@@ -177,7 +177,7 @@ public class AndroidComputerContainer implements NamedScreenHandlerFactory {
     }
 
     public void readNbt(NbtCompound computerCompound) {
-        this.computerID = computerCompound.getInt("ComputerID");
+        this.setComputerID(computerCompound.getInt("ComputerID"));
         this.setFamily(ComputerFamily.valueOf(computerCompound.getString("ComputerFamily")));
     }
 }
