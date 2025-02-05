@@ -98,7 +98,6 @@ public class AndroidAPI implements ILuaAPI {
         }
 
         this.brain.getTargeting().setBlockTarget(pos);
-        this.brain.setState("movingToBlock");
         return MethodResult.of();
     }
 

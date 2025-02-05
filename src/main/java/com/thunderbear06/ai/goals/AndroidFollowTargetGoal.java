@@ -25,7 +25,7 @@ public class AndroidFollowTargetGoal extends BaseAndroidGoal {
 
     @Override
     public boolean shouldContinue() {
-        return super.shouldContinue() && !this.android.getNavigation().isIdle();
+        return super.shouldContinue() && this.android.getNavigation().isIdle();
     }
 
     @Override

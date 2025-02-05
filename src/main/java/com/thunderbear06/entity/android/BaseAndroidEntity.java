@@ -104,8 +104,8 @@ public class BaseAndroidEntity extends PathAwareEntity {
         return this.computerContainer;
     }
 
-    // Action
 
+    // Action
     public void sendChatMessage(String msg) {
         this.getWorld().getPlayers().forEach(player -> {
             if (this.getBlockPos().isWithinDistance(player.getBlockPos(), 50))
@@ -136,8 +136,8 @@ public class BaseAndroidEntity extends PathAwareEntity {
         }
     }
 
-    // Inventory
 
+    // Inventory
     public MethodResult pickupGroundItem(ItemEntity itemEntity) {
         if (itemEntity.isRemoved())
             return MethodResult.of("Item does not exist");
@@ -232,6 +232,7 @@ public class BaseAndroidEntity extends PathAwareEntity {
 
         return storedStack;
     }
+
     public @Nullable MethodResult canStash(ItemStack itemStack, int index) {
         if (index < 0 || index >= this.internalStorage.size())
             return MethodResult.of(String.format("Index out of bounds! Must be between 1 and %d", index));
@@ -244,8 +245,8 @@ public class BaseAndroidEntity extends PathAwareEntity {
         return null;
     }
 
-
     // Misc
+
     @Override
     public void writeCustomDataToNbt(NbtCompound nbt) {
         Inventories.writeNbt(nbt, this.internalStorage);
@@ -258,7 +259,6 @@ public class BaseAndroidEntity extends PathAwareEntity {
 
         super.writeCustomDataToNbt(nbt);
     }
-
     @Override
     public void readCustomDataFromNbt(NbtCompound nbt) {
         Inventories.readNbt(nbt, this.internalStorage);
@@ -271,6 +271,11 @@ public class BaseAndroidEntity extends PathAwareEntity {
         }
 
         super.readCustomDataFromNbt(nbt);
+    }
+
+    @Override
+    public boolean cannotDespawn() {
+        return true;
     }
 
     @Override

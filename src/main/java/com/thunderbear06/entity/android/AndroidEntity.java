@@ -1,8 +1,11 @@
 package com.thunderbear06.entity.android;
 
+import com.thunderbear06.ai.TaskManager;
 import com.thunderbear06.ai.goals.*;
+import com.thunderbear06.ai.tasks.*;
 import dan200.computercraft.shared.computer.core.ComputerFamily;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.ai.goal.GoalSelector;
 import net.minecraft.entity.ai.goal.LookAtEntityGoal;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributes;
@@ -18,27 +21,46 @@ import net.minecraft.world.World;
 
 
 public class AndroidEntity extends BaseAndroidEntity {
+    protected final TaskManager taskManager;
 
     public AndroidEntity(EntityType<? extends PathAwareEntity> entityType, World world) {
         super(entityType, world);
 
+        this.taskManager = new TaskManager(new LookAtEntityTask(this, 0.1f));
         this.computerContainer.setFamily(ComputerFamily.NORMAL);
 
-        initAndroidGoals();
+        //initAndroidGoals();
+        addAndroidTasks();
     }
 
     public static DefaultAttributeContainer.Builder createAndroidAttributes() {
         return createMobAttributes().add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 1.0);
     }
 
-    protected void initAndroidGoals() {
-        goalSelector.add(0, new AndroidMoveToBlockGoal(this, this.brain));
-        goalSelector.add(0, new AndroidMineBlockGoal(this, this.brain));
-        goalSelector.add(0, new AndroidUseItemOnBlockGoal(this, this.brain));
-        goalSelector.add(0, new AndroidUseItemOnEntityGoal(this, this.brain));
-        goalSelector.add(0, new AndroidFollowTargetGoal(this, this.brain));
-        goalSelector.add(0, new AndroidMeleeAttackGoal(this));
-        goalSelector.add(1, new LookAtEntityGoal(this, PlayerEntity.class, 10));
+    protected void addAndroidTasks() {
+        this.taskManager.addTask(new AttackEntityTask(this, 0.5f));
+        this.taskManager.addTask(new MineBlockTask(this, 0.5f));
+        this.taskManager.addTask(new UseOnBlockTask(this, 0.5f));
+        this.taskManager.addTask(new UseOnEntityTask(this, 0.5f));
+        this.taskManager.addTask(new MoveToBlockTask(this, 0.5f));
+        this.taskManager.addTask(new MoveToEntityTask(this, 0.5f));
+    }
+
+//    protected void initAndroidGoals() {
+//        goalSelector.add(0, new AndroidMoveToBlockGoal(this, this.brain));
+//        goalSelector.add(0, new AndroidMineBlockGoal(this, this.brain));
+//        goalSelector.add(0, new AndroidUseItemOnBlockGoal(this, this.brain));
+//        goalSelector.add(0, new AndroidUseItemOnEntityGoal(this, this.brain));
+//        goalSelector.add(0, new AndroidFollowTargetGoal(this, this.brain));
+//        goalSelector.add(0, new AndroidMeleeAttackGoal(this));
+//        goalSelector.add(1, new LookAtEntityGoal(this, PlayerEntity.class, 10));
+//    }
+
+    @Override
+    public void tickMovement() {
+        super.tickMovement();
+
+        this.taskManager.tick();
     }
 
     @Override
