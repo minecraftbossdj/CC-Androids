@@ -1,8 +1,7 @@
 package com.thunderbear06.entity.player;
 
 import com.mojang.authlib.GameProfile;
-import com.thunderbear06.computer.IAndroidAccess;
-import com.thunderbear06.ai.AndroidBrain;
+import com.thunderbear06.ai.NewAndroidBrain;
 import dan200.computercraft.shared.platform.PlatformHelper;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -25,42 +24,40 @@ public class AndroidPlayer {
         this.player = player;
     }
 
-    private static AndroidPlayer create(IAndroidAccess android) {
-        ServerWorld world = (ServerWorld)android.getWorld();
-        GameProfile profile = android.getOwningPlayer();
+    private static AndroidPlayer create(NewAndroidBrain brain) {
+        ServerWorld world = (ServerWorld) brain.getAndroid().getWorld();
+        GameProfile profile = brain.getOwningPlayerProfile();
         AndroidPlayer player = new AndroidPlayer(PlatformHelper.get().createFakePlayer(world, getProfile(profile != null ? profile : DEFAULT_PROFILE)));
-        player.setState(android);
+        player.setState(brain);
         return player;
     }
 
-    public static AndroidPlayer get(IAndroidAccess access) {
-        if (!(access instanceof AndroidBrain brain)) {
-            throw new IllegalStateException("IAndroidAccess is not a brain");
+    @SuppressWarnings(value = "deprecation")
+    public static AndroidPlayer get(NewAndroidBrain brain) {
+        AndroidPlayer player = brain.fakePlayer;
+        if (player != null && player.player.getGameProfile() == getProfile(brain.getOwningPlayerProfile()) && player.player.getWorld() == brain.getAndroid().getWorld()) {
+            player.setState(brain);
         } else {
-            AndroidPlayer player = brain.fakePlayer;
-            if (player != null && player.player.getGameProfile() == getProfile(access.getOwningPlayer()) && player.player.getWorld() == access.getWorld()) {
-                player.setState(access);
-            } else {
-                player = brain.fakePlayer = create(brain);
-            }
-
-            return player;
+            player = brain.fakePlayer = create(brain);
         }
+
+        return player;
+
     }
 
     public ServerPlayerEntity player() {
         return this.player;
     }
 
-    private void setState(IAndroidAccess android) {
+    private void setState(NewAndroidBrain brain) {
         if (this.player.currentScreenHandler != this.player.playerScreenHandler) {
             LOGGER.warn("Android has open container ({})", this.player.currentScreenHandler);
             this.player.onHandledScreenClosed();
         }
 
-        setPosition(android);
-        loadHand(android.getOwner().getMainHandStack(), Hand.MAIN_HAND);
-        loadHand(android.getOwner().getOffHandStack(), Hand.OFF_HAND);
+        setPosition(brain);
+        loadHand(brain.getAndroid().getMainHandStack(), Hand.MAIN_HAND);
+        loadHand(brain.getAndroid().getOffHandStack(), Hand.OFF_HAND);
     }
 
     private void setRotation(Vec3d rotation) {
@@ -68,10 +65,10 @@ public class AndroidPlayer {
         this.player.setPitch((float) rotation.x);
     }
 
-    public void setPosition(IAndroidAccess android) {
-        this.setRotation(android.getOwner().getRotationVector());
+    public void setPosition(NewAndroidBrain brain) {
+        this.setRotation(brain.getAndroid().getRotationVector());
 
-        Vec3d pos = android.getOwner().getPos();
+        Vec3d pos = brain.getAndroid().getPos();
 
         this.player.setPosition(pos);
 

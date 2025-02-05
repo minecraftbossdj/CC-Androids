@@ -1,84 +1,62 @@
 package com.thunderbear06.entity.android;
 
-import com.thunderbear06.CCAndroids;
-import com.thunderbear06.component.ComputerComponents;
+import com.thunderbear06.ai.NewAndroidBrain;
 import com.thunderbear06.computer.AndroidComputerContainer;
-import com.thunderbear06.computer.EntityComputer;
-import com.thunderbear06.ai.AndroidBrain;
 import com.thunderbear06.item.ItemRegistry;
-import dan200.computercraft.api.ComputerCraftAPI;
-import dan200.computercraft.api.client.FabricComputerCraftAPIClient;
 import dan200.computercraft.api.lua.MethodResult;
 import dan200.computercraft.api.peripheral.IPeripheral;
 import dan200.computercraft.api.peripheral.PeripheralLookup;
 import dan200.computercraft.core.computer.ComputerSide;
-import dan200.computercraft.shared.ModRegistry;
 import dan200.computercraft.shared.computer.core.ComputerFamily;
 import dan200.computercraft.shared.computer.core.ServerComputer;
-import dan200.computercraft.shared.computer.core.ServerContext;
-import dan200.computercraft.shared.computer.inventory.ComputerMenuWithoutInventory;
-import dan200.computercraft.shared.config.Config;
-import dan200.computercraft.shared.util.ComponentMap;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.DoorBlock;
-import net.minecraft.entity.EntityPose;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.ai.pathing.MobNavigation;
 import net.minecraft.entity.ai.pathing.PathNode;
-import net.minecraft.entity.attribute.DefaultAttributeContainer;
-import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.damage.DamageSources;
-import net.minecraft.entity.damage.DamageType;
 import net.minecraft.entity.damage.DamageTypes;
+import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.mob.PathAwareEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventories;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.tag.BlockTags;
-import net.minecraft.registry.tag.DamageTypeTags;
-import net.minecraft.registry.tag.ItemTags;
-import net.minecraft.screen.NamedScreenHandlerFactory;
-import net.minecraft.screen.ScreenHandler;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.util.Hand;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
 import javax.annotation.Nullable;
-import java.util.Objects;
-import java.util.UUID;
 
 public class BaseAndroidEntity extends PathAwareEntity {
-    public final AndroidBrain brain;
+    public final NewAndroidBrain brain;
     public final DefaultedList<ItemStack> internalStorage;
 
     protected final AndroidComputerContainer computerContainer;
 
-    private int ticksIdle = 0;
+    public boolean isOn = false;
 
     protected BaseAndroidEntity(EntityType<? extends PathAwareEntity> entityType, World world) {
         super(entityType, world);
 
         ((MobNavigation)this.getNavigation()).setCanPathThroughDoors(true);
 
-        this.brain = new AndroidBrain(this);
+        this.brain = new NewAndroidBrain(this);
         this.internalStorage = DefaultedList.ofSize(9, ItemStack.EMPTY);
         this.computerContainer = new AndroidComputerContainer(this);
     }
 
-    public static DefaultAttributeContainer.Builder createAndroidAttributes() {
-        return createMobAttributes().add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 1.0);
+    public void shutdown() {
+        this.isOn = false;
+
+        this.brain.onShutdown();
     }
 
     @Override
@@ -99,15 +77,11 @@ public class BaseAndroidEntity extends PathAwareEntity {
 
         this.computerContainer.onTick();
 
-        if (!this.brain.getState().equals("idle")) {
-            this.ticksIdle = 0;
-            return;
-        }
-
-        if (this.ticksIdle++ < 20)
+        if (!this.brain.getState().equals("idle"))
             return;
 
-        this.ticksIdle = 0;
+        if (this.age % 20 > 0)
+            return;
 
         updatePeripherals();
     }
@@ -131,6 +105,13 @@ public class BaseAndroidEntity extends PathAwareEntity {
     }
 
     // Action
+
+    public void sendChatMessage(String msg) {
+        this.getWorld().getPlayers().forEach(player -> {
+            if (this.getBlockPos().isWithinDistance(player.getBlockPos(), 50))
+                player.sendMessage(Text.literal(msg));
+        });
+    }
 
     private void openNaNoor() {
         MobNavigation nav = (MobNavigation) this.getNavigation();
@@ -302,6 +283,12 @@ public class BaseAndroidEntity extends PathAwareEntity {
         return super.damage(source, amount);
     }
 
+    @Override
+    protected void onStatusEffectApplied(StatusEffectInstance effect, @org.jetbrains.annotations.Nullable Entity source) {}
+
+    @Override
+    protected void onStatusEffectUpgraded(StatusEffectInstance effect, boolean reapplyEffect, @org.jetbrains.annotations.Nullable Entity source) {}
+
     // Robots don't drown now, do they?
     @Override
     public int getAir() {
@@ -316,5 +303,13 @@ public class BaseAndroidEntity extends PathAwareEntity {
 
         if (computer != null)
             computer.close();
+    }
+
+    public double getEntitySearchRadius() {
+        return 10.0;
+    }
+
+    public int getBlockSearchRadius() {
+        return 10;
     }
 }

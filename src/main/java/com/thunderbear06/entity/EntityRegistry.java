@@ -5,6 +5,7 @@ import com.thunderbear06.entity.android.*;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.SpawnGroup;
+import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.util.Identifier;
@@ -38,10 +39,10 @@ public class EntityRegistry {
     );
 
     public static void register() {
-        FabricDefaultAttributeRegistry.register(ANDROID_ENTITY, BaseAndroidEntity.createAndroidAttributes());
-        FabricDefaultAttributeRegistry.register(ADVANCED_ANDROID_ENTITY, BaseAndroidEntity.createAndroidAttributes());
-        FabricDefaultAttributeRegistry.register(COMMAND_ANDROID_ENTITY, BaseAndroidEntity.createAndroidAttributes());
-        FabricDefaultAttributeRegistry.register(ROGUE_ANDROID_ENTITY, BaseAndroidEntity.createAndroidAttributes());
-        FabricDefaultAttributeRegistry.register(UNFINISHED_ANDROID_ENTITY, BaseAndroidEntity.createAndroidAttributes());
+        FabricDefaultAttributeRegistry.register(ANDROID_ENTITY, AndroidEntity.createAndroidAttributes());
+        FabricDefaultAttributeRegistry.register(ADVANCED_ANDROID_ENTITY, AdvancedAndroidEntity.createAndroidAttributes());
+        FabricDefaultAttributeRegistry.register(COMMAND_ANDROID_ENTITY, CommandAndroidEntity.createAndroidAttributes());
+        FabricDefaultAttributeRegistry.register(ROGUE_ANDROID_ENTITY, RogueDroidEntity.createAndroidAttributes());
+        FabricDefaultAttributeRegistry.register(UNFINISHED_ANDROID_ENTITY, MobEntity.createMobAttributes());
     }
 }

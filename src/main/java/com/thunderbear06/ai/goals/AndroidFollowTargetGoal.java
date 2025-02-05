@@ -1,24 +1,26 @@
 package com.thunderbear06.ai.goals;
 
-import com.thunderbear06.ai.AndroidBrain;
-import com.thunderbear06.entity.android.AndroidEntity;
+import com.thunderbear06.ai.NewAndroidBrain;
 import com.thunderbear06.entity.android.BaseAndroidEntity;
 
-import java.util.Objects;
-
 public class AndroidFollowTargetGoal extends BaseAndroidGoal {
-    public AndroidFollowTargetGoal(BaseAndroidEntity android, AndroidBrain brain) {
+    public AndroidFollowTargetGoal(BaseAndroidEntity android, NewAndroidBrain brain) {
         super(android, brain);
     }
 
     @Override
     public boolean canStart() {
-        return super.canStart() && Objects.equals(this.brain.getState(), "following") && this.brain.getTargetEntity() != null;
+        if (!super.canStart())
+            return false;
+        if (!this.brain.isInState("following"))
+            return false;
+
+        return this.brain.getTargeting().hasEntityTarget();
     }
 
     @Override
     public void tick() {
-        this.android.getNavigation().startMovingTo(this.brain.getTargetEntity(), 0.5);
+        this.android.getNavigation().startMovingTo(this.brain.getTargeting().getEntityTarget(), 0.5);
     }
 
     @Override
@@ -28,7 +30,7 @@ public class AndroidFollowTargetGoal extends BaseAndroidGoal {
 
     @Override
     public void stop() {
-        super.stop();
         this.android.getNavigation().stop();
+        super.stop();
     }
 }

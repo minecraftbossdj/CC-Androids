@@ -2,6 +2,8 @@ package com.thunderbear06.entity.android;
 
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ai.goal.*;
+import net.minecraft.entity.attribute.DefaultAttributeContainer;
+import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.entity.passive.MerchantEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -10,6 +12,13 @@ import net.minecraft.world.World;
 public class RogueDroidEntity extends PathAwareEntity {
     public RogueDroidEntity(EntityType<? extends PathAwareEntity> entityType, World world) {
         super(entityType, world);
+    }
+
+    public static DefaultAttributeContainer.Builder createAndroidAttributes() {
+        return createMobAttributes()
+                .add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 5.0)
+                .add(EntityAttributes.GENERIC_MAX_HEALTH, 25.0)
+                .add(EntityAttributes.GENERIC_ARMOR, 5.0);
     }
 
     @Override

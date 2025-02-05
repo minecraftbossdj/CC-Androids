@@ -67,6 +67,10 @@ public class AndroidComputerContainer implements NamedScreenHandlerFactory {
 
             computer.keepAlive();
         }
+
+        if (!this.on && this.android.isOn) {
+            this.android.shutdown();
+        }
     }
 
     public void turnOn(ServerComputer computer) {
@@ -74,11 +78,12 @@ public class AndroidComputerContainer implements NamedScreenHandlerFactory {
             computer.turnOn();
             this.computerID = computer.getID();
             this.on = true;
+            this.android.isOn = true;
         }
     }
 
     public void openComputer(ServerPlayerEntity player) {
-        if (this.locked && !player.getGameProfile().equals(this.android.brain.getOwningPlayer())) {
+        if (this.locked && !player.getGameProfile().equals(this.android.brain.getOwningPlayerProfile())) {
             player.getWorld().playSoundFromEntity(null, this.android, SoundEvents.BLOCK_CHEST_LOCKED, SoundCategory.NEUTRAL, 1.0f, 1.0f);
             return;
         }

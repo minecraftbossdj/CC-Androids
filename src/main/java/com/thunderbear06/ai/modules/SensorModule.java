@@ -1,14 +1,12 @@
 package com.thunderbear06.ai.modules;
 
-import com.thunderbear06.ai.AndroidBrain;
+import com.thunderbear06.ai.NewAndroidBrain;
 import com.thunderbear06.entity.android.BaseAndroidEntity;
-import dan200.computercraft.api.lua.LuaException;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.TargetPredicate;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.registry.Registries;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
@@ -27,23 +25,16 @@ public class SensorModule extends AndroidModule{
     private final double entitySearchRadius;
     private final int blockSearchRadius;
 
-    public SensorModule(BaseAndroidEntity android, AndroidBrain brain, double searchRadius, int blockSearchRadius) {
+    public SensorModule(BaseAndroidEntity android, NewAndroidBrain brain, double searchRadius, int blockSearchRadius) {
         super(android, brain);
         this.entitySearchRadius = searchRadius;
         this.blockSearchRadius = blockSearchRadius;
     }
 
-
-    public PlayerEntity getClosestPlayer() {
-        BlockPos pos = this.owner.getBlockPos();
-
-        return this.owner.getWorld().getClosestPlayer(pos.getX(), pos.getY(), pos.getZ(), this.entitySearchRadius, entity -> !entity.isSpectator());
-    }
-
     public List<HashMap<String, Object>> getMobs(@Nullable String type) {
         List<HashMap<String, Object>> result = new ArrayList<>();
 
-        this.owner.getWorld().getEntitiesByClass(LivingEntity.class, this.owner.getBoundingBox().expand(this.entitySearchRadius), getTypePredicate(type)).forEach(entity -> {
+        this.android.getWorld().getEntitiesByClass(LivingEntity.class, this.android.getBoundingBox().expand(this.entitySearchRadius), getTypePredicate(type)).forEach(entity -> {
             result.add(collectEntityInfo(entity));
         });
 
@@ -51,16 +42,16 @@ public class SensorModule extends AndroidModule{
     }
 
     public HashMap<String, Object> getClosestMobOfType(@Nullable String type) {
-        BlockPos pos = this.owner.getBlockPos();
+        BlockPos pos = this.android.getBlockPos();
 
-        Entity entity = this.owner.getWorld().getClosestEntity(
+        Entity entity = this.android.getWorld().getClosestEntity(
                 LivingEntity.class,
                 TargetPredicate.DEFAULT.setPredicate(getTypePredicate(type)),
-                this.owner,
+                this.android,
                 pos.getX(),
                 pos.getY(),
                 pos.getX(),
-                this.owner.getBoundingBox().expand(this.entitySearchRadius)
+                this.android.getBoundingBox().expand(this.entitySearchRadius)
         );
 
         if (entity == null || entity instanceof LivingEntity livingEntity && livingEntity.isDead())
@@ -73,7 +64,7 @@ public class SensorModule extends AndroidModule{
     }
 
     public List<HashMap<String, Object>> getGroundItem(@Nullable String type, int max) {
-        List<ItemEntity> list = this.owner.getWorld().getNonSpectatingEntities(ItemEntity.class, this.owner.getBoundingBox().expand(5));
+        List<ItemEntity> list = this.android.getWorld().getNonSpectatingEntities(ItemEntity.class, this.android.getBoundingBox().expand(5));
         List<HashMap<String, Object>> results = new ArrayList<>();
 
         for (ItemEntity entity : list) {
@@ -99,7 +90,7 @@ public class SensorModule extends AndroidModule{
                 if (world.getBlockState(pos.offset(direction)).isSolidBlock(world, pos.offset(direction)))
                     continue;
 
-                RaycastContext context = new RaycastContext(eyePos, pos.offset(direction).toCenterPos(), RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.ANY, this.owner);
+                RaycastContext context = new RaycastContext(eyePos, pos.offset(direction).toCenterPos(), RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.ANY, this.android);
                 if (!world.raycast(context).getBlockPos().equals(pos.offset(direction)))
                     continue;
 
@@ -128,14 +119,14 @@ public class SensorModule extends AndroidModule{
 
     private Predicate<LivingEntity> getTypePredicate(@Nullable String type) {
         if (type == null) {
-            return (entity -> entity != this.owner && this.owner.canSee(entity));
+            return (entity -> entity != this.android && this.android.canSee(entity));
         } else {
             return (entity -> {
                 return EntityType.getId(entity.getType()).toString().contains(type)
-                        && entity != this.owner
+                        && entity != this.android
                         && !entity.isSpectator()
                         && entity.isAlive()
-                        && this.owner.canSee(entity);
+                        && this.android.canSee(entity);
             });
         }
     }

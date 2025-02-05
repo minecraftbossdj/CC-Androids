@@ -14,12 +14,16 @@ public class AndroidMeleeAttackGoal extends BaseAndroidGoal {
 
     @Override
     public boolean canStart() {
-        return super.canStart() && this.brain.getState().equals("attacking") && this.brain.getTargetEntity() != null && this.brain.getTargetEntity().isAlive();
+        if (!super.canStart())
+            return false;
+        if (!this.brain.isInState("attacking"))
+            return false;
+        return this.brain.getTargeting().hasEntityTarget();
     }
 
     @Override
     public void tick() {
-        LivingEntity target = this.brain.getTargetEntity();
+        LivingEntity target = this.brain.getTargeting().getEntityTarget();
 
         if (this.attackCooldown > 0)
             this.attackCooldown--;

@@ -1,6 +1,6 @@
 package com.thunderbear06.ai.modules;
 
-import com.thunderbear06.ai.AndroidBrain;
+import com.thunderbear06.ai.NewAndroidBrain;
 import com.thunderbear06.entity.android.BaseAndroidEntity;
 import com.thunderbear06.entity.player.AndroidPlayer;
 import net.minecraft.entity.LivingEntity;
@@ -14,8 +14,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 
 public class InteractionModule extends AndroidModule{
-    public InteractionModule(BaseAndroidEntity owner, AndroidBrain brain) {
-        super(owner, brain);
+    public InteractionModule(BaseAndroidEntity android, NewAndroidBrain brain) {
+        super(android, brain);
     }
 
     public void useHandItemOnBlock(Hand hand, BlockPos pos) {
@@ -23,7 +23,7 @@ public class InteractionModule extends AndroidModule{
 
         ItemStack handStack = hand == Hand.MAIN_HAND ? player.getMainHandStack() : player.getOffHandStack();
 
-        player.interactionManager.interactBlock(player, this.owner.getWorld(), handStack, hand, new BlockHitResult(pos.toCenterPos(), Direction.UP, pos, false));
+        player.interactionManager.interactBlock(player, this.android.getWorld(), handStack, hand, new BlockHitResult(pos.toCenterPos(), Direction.UP, pos, false));
     }
 
     public void useHandItemOnEntity(Hand hand, LivingEntity entity) {
@@ -33,11 +33,11 @@ public class InteractionModule extends AndroidModule{
 
         if (entity instanceof MobEntity mob) {
             if (handStack.isOf(Items.LEAD) && mob.getHoldingEntity() == null) {
-                mob.attachLeash(this.owner, true);
+                mob.attachLeash(this.android, true);
                 handStack.decrement(1);
-                this.owner.setStackInHand(hand, handStack);
+                this.android.setStackInHand(hand, handStack);
                 return;
-            } else if (handStack.isEmpty() && mob.getHoldingEntity() != null && mob.getHoldingEntity().equals(this.owner)) {
+            } else if (handStack.isEmpty() && mob.getHoldingEntity() != null && mob.getHoldingEntity().equals(this.android)) {
                 mob.detachLeash(true, true);
                 return;
             }
