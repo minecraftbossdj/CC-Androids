@@ -12,11 +12,16 @@ public class AttackEntityTask extends MoveToEntityTask {
     }
 
     @Override
+    public String getName() {
+        return "attacking";
+    }
+
+    @Override
     public void tick() {
         if (this.attackCooldown-- > 0)
             return;
 
-        if (isInRange(this.android.getSquaredDistanceToAttackPosOf(getTarget())) && this.attackCooldown <= 0)
+        if (isInRange(2) && this.attackCooldown <= 0)
             attack();
         else
             super.tick();

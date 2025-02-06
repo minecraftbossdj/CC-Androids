@@ -1,16 +1,26 @@
 package com.thunderbear06.entity.android;
 
+import net.minecraft.entity.EntityData;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.EquipmentSlot;
+import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.ai.goal.*;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.entity.mob.PathAwareEntity;
+import net.minecraft.entity.mob.HostileEntity;
 import net.minecraft.entity.passive.MerchantEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.util.Hand;
+import net.minecraft.world.LocalDifficulty;
+import net.minecraft.world.ServerWorldAccess;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 
-public class RogueDroidEntity extends PathAwareEntity {
-    public RogueDroidEntity(EntityType<? extends PathAwareEntity> entityType, World world) {
+public class RogueDroidEntity extends HostileEntity {
+    public RogueDroidEntity(EntityType<? extends HostileEntity> entityType, World world) {
         super(entityType, world);
     }
 
@@ -19,6 +29,19 @@ public class RogueDroidEntity extends PathAwareEntity {
                 .add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 5.0)
                 .add(EntityAttributes.GENERIC_MAX_HEALTH, 25.0)
                 .add(EntityAttributes.GENERIC_ARMOR, 5.0);
+    }
+
+    // TODO: spawning entity with equipment for hands
+//    @Override
+//    public @Nullable EntityData initialize(ServerWorldAccess world, LocalDifficulty difficulty, SpawnReason spawnReason, @Nullable EntityData entityData, @Nullable NbtCompound entityNbt) {
+//        if (spawnReason.equals(SpawnReason.NATURAL))
+//            this.setStackInHand(Hand.MAIN_HAND, getEquipmentForSlot(EquipmentSlot.MAINHAND, this.random.nextBetween()));
+//        return super.initialize(world, difficulty, spawnReason, entityData, entityNbt);
+//    }
+
+    @Override
+    public boolean shouldDropXp() {
+        return false;
     }
 
     @Override

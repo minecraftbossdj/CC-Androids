@@ -36,8 +36,8 @@ import net.minecraft.world.World;
 import javax.annotation.Nullable;
 
 public class BaseAndroidEntity extends PathAwareEntity {
-    public final NewAndroidBrain brain;
     public final DefaultedList<ItemStack> internalStorage;
+    public NewAndroidBrain brain;
 
     protected final AndroidComputerContainer computerContainer;
 
@@ -48,7 +48,6 @@ public class BaseAndroidEntity extends PathAwareEntity {
 
         ((MobNavigation)this.getNavigation()).setCanPathThroughDoors(true);
 
-        this.brain = new NewAndroidBrain(this);
         this.internalStorage = DefaultedList.ofSize(9, ItemStack.EMPTY);
         this.computerContainer = new AndroidComputerContainer(this);
     }

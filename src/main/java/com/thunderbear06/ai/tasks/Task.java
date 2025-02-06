@@ -5,11 +5,11 @@ import com.thunderbear06.entity.android.AndroidEntity;
 public abstract class Task {
     protected final AndroidEntity android;
 
-    public String name = null;
-
     public Task(AndroidEntity android) {
         this.android = android;
     }
+
+    public abstract String getName();
 
     public boolean shouldTick() {
         return false;

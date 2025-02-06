@@ -87,8 +87,4 @@ public class AndroidPlayer {
     public void loadHand(ItemStack stack, Hand hand) {
         this.player.setStackInHand(hand, stack);
     }
-
-    public boolean isBlockProtected(ServerWorld level, BlockPos pos) {
-        return level.getServer().isSpawnProtected(level, pos, this.player);
-    }
 }

@@ -12,6 +12,11 @@ public class MoveToBlockTask extends BlockBasedTask{
     }
 
     @Override
+    public String getName() {
+        return "movingToBlock";
+    }
+
+    @Override
     public boolean shouldTick() {
         return !isInRange(1);
     }

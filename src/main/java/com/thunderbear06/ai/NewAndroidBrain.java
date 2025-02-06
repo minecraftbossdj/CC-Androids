@@ -3,23 +3,24 @@ package com.thunderbear06.ai;
 import com.mojang.authlib.GameProfile;
 import com.thunderbear06.CCAndroids;
 import com.thunderbear06.ai.modules.AModules;
+import com.thunderbear06.entity.android.AndroidEntity;
 import com.thunderbear06.entity.android.BaseAndroidEntity;
 import com.thunderbear06.entity.player.AndroidPlayer;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.world.ServerWorld;
 
 public class NewAndroidBrain {
-    protected final BaseAndroidEntity android;
+    protected final AndroidEntity android;
     protected final AndroidTargets targeting;
     protected final AModules modules;
 
-    protected String state = "idle";
+    //protected String state = "idle";
 
     @Deprecated
     public AndroidPlayer fakePlayer;
     private GameProfile owningPlayerProfile;
 
-    public NewAndroidBrain(BaseAndroidEntity android) {
+    public NewAndroidBrain(AndroidEntity android) {
         this.android = android;
         this.targeting = new AndroidTargets();
         this.modules = new AModules(android, this);
@@ -36,20 +37,28 @@ public class NewAndroidBrain {
         setState("idle");
     }
 
+    public void setTask(String taskName) {
+        CCAndroids.LOGGER.info("Set current android task to {}", taskName);
+        this.android.getTaskManager().setCurrentTask(taskName);
+    }
+
+    public String getCurrentTask() {
+        return this.android.getTaskManager().getCurrentTaskName();
+    }
+
     public void setState(String newState) {
-        CCAndroids.LOGGER.info("Set android state to {}", newState);
-        this.state = newState;
+        //this.state = newState;
     }
 
     public String getState() {
-        return this.state;
+        return "idle"; // this.android.getTaskManager().getCurrentTaskName();
     }
 
     public boolean isInState(String state) {
-        return this.state.equals(state);
+        return false; //this.state.equals(state);
     }
 
-    public BaseAndroidEntity getAndroid() {
+    public AndroidEntity getAndroid() {
         return this.android;
     }
 

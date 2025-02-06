@@ -68,7 +68,7 @@ public class AndroidAPI implements ILuaAPI {
             return MethodResult.of("Unknown entity or invalid UUID");
 
         this.brain.getTargeting().setEntityTarget(target);
-        this.brain.setState("attacking");
+        this.brain.setTask("attacking");
         return MethodResult.of();
     }
 
@@ -80,7 +80,7 @@ public class AndroidAPI implements ILuaAPI {
             return MethodResult.of("Unknown entity or invalid UUID");
 
         this.brain.getTargeting().setEntityTarget(target);
-        this.brain.setState("following");
+        this.brain.setTask("movingToEntity");
         return MethodResult.of();
     }
 
@@ -98,6 +98,7 @@ public class AndroidAPI implements ILuaAPI {
         }
 
         this.brain.getTargeting().setBlockTarget(pos);
+        this.brain.setTask("movingToBlock");
         return MethodResult.of();
     }
 
@@ -114,12 +115,12 @@ public class AndroidAPI implements ILuaAPI {
 //        }
 
         this.brain.getTargeting().setBlockTarget(pos);
-        this.brain.setState("miningBlock");
+        this.brain.setTask("miningBlock");
         return MethodResult.of();
     }
 
     @LuaFunction
-    public final MethodResult useItemOnBlock(int x, int y, int z) {
+    public final MethodResult interactWithBlock(int x, int y, int z) {
         BlockPos pos = new BlockPos(x,y,z);
         if (!this.brain.getAndroid().getWorld().isInBuildLimit(pos))
             return MethodResult.of("Block position must be in world build limit");
@@ -131,19 +132,19 @@ public class AndroidAPI implements ILuaAPI {
         }
 
         this.brain.getTargeting().setBlockTarget(pos);
-        this.brain.setState("usingItemOnBlock");
+        this.brain.setTask("interactingBlock");
         return MethodResult.of();
     }
 
     @LuaFunction
-    public final MethodResult useItemOnEntity(String entityUUID) {
+    public final MethodResult interactWithEntity(String entityUUID) {
         LivingEntity target = (LivingEntity) ((ServerWorld)this.brain.getAndroid().getWorld()).getEntity(UUID.fromString(entityUUID));
 
         if (target == null || target.isRemoved())
             return MethodResult.of("Unknown entity or invalid UUID");
 
         this.brain.getTargeting().setEntityTarget(target);
-        this.brain.setState("usingItemOnEntity");
+        this.brain.setTask("interactEntity");
         return MethodResult.of();
     }
 

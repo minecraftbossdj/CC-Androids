@@ -9,15 +9,10 @@ import java.util.List;
 
 public class TaskManager {
     private final HashMap<String, Task> tasks = new HashMap<>();
-    private final Task idleTask;
     private Task currentTask = null;
 
-    public TaskManager(Task idleTask) {
-        this.idleTask = idleTask;
-    }
-
     public void addTask(Task task) {
-        this.tasks.put(task.name, task);
+        this.tasks.put(task.getName(), task);
     }
 
     public void setCurrentTask(String taskName) {
@@ -26,10 +21,15 @@ public class TaskManager {
             return;
         }
 
-        clearCurrentTask();
+        if (this.currentTask != null)
+            clearCurrentTask();
 
         this.currentTask = this.tasks.get(taskName);
         this.currentTask.firstTick();
+    }
+
+    public String getCurrentTaskName() {
+        return this.currentTask == null ? "idle" : this.currentTask.getName();
     }
 
     public void clearCurrentTask() {
@@ -39,7 +39,6 @@ public class TaskManager {
 
     public void tick() {
         if (this.currentTask == null) {
-            this.idleTask.tick();
             return;
         }
 

@@ -1,11 +1,10 @@
 package com.thunderbear06.entity.android;
 
+import com.thunderbear06.ai.NewAndroidBrain;
 import com.thunderbear06.ai.TaskManager;
-import com.thunderbear06.ai.goals.*;
 import com.thunderbear06.ai.tasks.*;
 import dan200.computercraft.shared.computer.core.ComputerFamily;
 import net.minecraft.entity.EntityType;
-import net.minecraft.entity.ai.goal.GoalSelector;
 import net.minecraft.entity.ai.goal.LookAtEntityGoal;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributes;
@@ -26,11 +25,12 @@ public class AndroidEntity extends BaseAndroidEntity {
     public AndroidEntity(EntityType<? extends PathAwareEntity> entityType, World world) {
         super(entityType, world);
 
-        this.taskManager = new TaskManager(new LookAtEntityTask(this, 0.1f));
+        this.brain = new NewAndroidBrain(this);
+        this.taskManager = new TaskManager();
         this.computerContainer.setFamily(ComputerFamily.NORMAL);
 
-        //initAndroidGoals();
         addAndroidTasks();
+        initAndroidGoals();
     }
 
     public static DefaultAttributeContainer.Builder createAndroidAttributes() {
@@ -40,21 +40,15 @@ public class AndroidEntity extends BaseAndroidEntity {
     protected void addAndroidTasks() {
         this.taskManager.addTask(new AttackEntityTask(this, 0.5f));
         this.taskManager.addTask(new MineBlockTask(this, 0.5f));
-        this.taskManager.addTask(new UseOnBlockTask(this, 0.5f));
-        this.taskManager.addTask(new UseOnEntityTask(this, 0.5f));
+        this.taskManager.addTask(new InteractBlockTask(this, 0.5f));
+        this.taskManager.addTask(new InteractEntityTask(this, 0.5f));
         this.taskManager.addTask(new MoveToBlockTask(this, 0.5f));
         this.taskManager.addTask(new MoveToEntityTask(this, 0.5f));
     }
 
-//    protected void initAndroidGoals() {
-//        goalSelector.add(0, new AndroidMoveToBlockGoal(this, this.brain));
-//        goalSelector.add(0, new AndroidMineBlockGoal(this, this.brain));
-//        goalSelector.add(0, new AndroidUseItemOnBlockGoal(this, this.brain));
-//        goalSelector.add(0, new AndroidUseItemOnEntityGoal(this, this.brain));
-//        goalSelector.add(0, new AndroidFollowTargetGoal(this, this.brain));
-//        goalSelector.add(0, new AndroidMeleeAttackGoal(this));
-//        goalSelector.add(1, new LookAtEntityGoal(this, PlayerEntity.class, 10));
-//    }
+    protected void initAndroidGoals() {
+        this.goalSelector.add(0, new LookAtEntityGoal(this, PlayerEntity.class, 10));
+    }
 
     @Override
     public void tickMovement() {
@@ -97,6 +91,10 @@ public class AndroidEntity extends BaseAndroidEntity {
         }
 
         return ActionResult.CONSUME;
+    }
+
+    public TaskManager getTaskManager() {
+        return this.taskManager;
     }
 
     private void spawnHearts() {

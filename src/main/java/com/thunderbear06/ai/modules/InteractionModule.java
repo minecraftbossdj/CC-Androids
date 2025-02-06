@@ -18,18 +18,20 @@ public class InteractionModule extends AndroidModule{
         super(android, brain);
     }
 
-    public void useHandItemOnBlock(Hand hand, BlockPos pos) {
+    public void interactWithBlock(Hand hand, BlockPos pos) {
         ServerPlayerEntity player = AndroidPlayer.get(this.brain).player();
 
-        ItemStack handStack = hand == Hand.MAIN_HAND ? player.getMainHandStack() : player.getOffHandStack();
+        this.android.swingHand(hand);
 
-        player.interactionManager.interactBlock(player, this.android.getWorld(), handStack, hand, new BlockHitResult(pos.toCenterPos(), Direction.UP, pos, false));
+        player.interactionManager.interactBlock(player, this.android.getWorld(), player.getStackInHand(hand), hand, new BlockHitResult(pos.toCenterPos(), Direction.DOWN, pos, true));
     }
 
-    public void useHandItemOnEntity(Hand hand, LivingEntity entity) {
+    public void interactWithEntity(Hand hand, LivingEntity entity) {
         ServerPlayerEntity player = AndroidPlayer.get(this.brain).player();
 
-        ItemStack handStack = hand == Hand.MAIN_HAND ? player.getMainHandStack() : player.getOffHandStack();
+        ItemStack handStack = player.getStackInHand(hand);
+
+        this.android.swingHand(hand);
 
         if (entity instanceof MobEntity mob) {
             if (handStack.isOf(Items.LEAD) && mob.getHoldingEntity() == null) {

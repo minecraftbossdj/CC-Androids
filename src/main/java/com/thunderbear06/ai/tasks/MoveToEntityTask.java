@@ -13,6 +13,11 @@ public class MoveToEntityTask extends EntityBasedTask{
     }
 
     @Override
+    public String getName() {
+        return "movingToEntity";
+    }
+
+    @Override
     public boolean shouldTick() {
         return super.shouldTick() && !isInRange(1);
     }
