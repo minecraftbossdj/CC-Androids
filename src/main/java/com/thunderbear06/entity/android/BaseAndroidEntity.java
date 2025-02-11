@@ -40,6 +40,8 @@ public class BaseAndroidEntity extends PathAwareEntity {
     public NewAndroidBrain brain;
 
     protected final AndroidComputerContainer computerContainer;
+    protected final int maxFuel = 1000;
+    protected int fuel = 0;
 
     public boolean isOn = false;
 
@@ -99,16 +101,23 @@ public class BaseAndroidEntity extends PathAwareEntity {
         }
     }
 
+    protected boolean consumeFuel() {
+        if (this.fuel > 0) {
+            this.fuel--;
+            return true;
+        }
+        return false;
+    }
+
     public AndroidComputerContainer getComputer() {
         return this.computerContainer;
     }
-
 
     // Action
     public void sendChatMessage(String msg) {
         this.getWorld().getPlayers().forEach(player -> {
             if (this.getBlockPos().isWithinDistance(player.getBlockPos(), 50))
-                player.sendMessage(Text.literal(msg));
+                player.sendMessage(Text.literal(this.getName()+msg));
         });
     }
 

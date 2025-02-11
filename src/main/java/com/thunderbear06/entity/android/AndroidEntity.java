@@ -54,7 +54,18 @@ public class AndroidEntity extends BaseAndroidEntity {
     public void tickMovement() {
         super.tickMovement();
 
-        this.taskManager.tick();
+        if (this.consumeFuel()){
+            this.taskManager.tick();
+            return;
+        }
+
+        if (!this.getNavigation().isIdle())
+            this.getNavigation().stop();
+    }
+
+    @Override
+    public float getMovementSpeed() {
+        return super.getMovementSpeed() * ((float) (this.fuel+(this.maxFuel/2)) / this.maxFuel);
     }
 
     @Override

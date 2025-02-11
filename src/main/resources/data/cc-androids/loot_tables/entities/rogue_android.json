@@ -12,12 +12,12 @@
         {
           "type": "minecraft:item",
           "name": "cc-androids:components",
-          "weight": 5
+          "weight": 10
         },
         {
           "type": "minecraft:item",
           "name": "minecraft:iron_ingot",
-          "weight": 5
+          "weight": 2
         }
       ]
     }

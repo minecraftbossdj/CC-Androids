@@ -23,7 +23,7 @@ public class InteractionModule extends AndroidModule{
 
         this.android.swingHand(hand);
 
-        player.interactionManager.interactBlock(player, this.android.getWorld(), player.getStackInHand(hand), hand, new BlockHitResult(pos.toCenterPos(), Direction.DOWN, pos, true));
+        player.interactionManager.interactBlock(player, this.android.getWorld(), player.getStackInHand(hand), hand, new BlockHitResult(pos.toCenterPos(), Direction.UP, pos, true));
     }
 
     public void interactWithEntity(Hand hand, LivingEntity entity) {

@@ -31,13 +31,25 @@ public class RogueDroidEntity extends HostileEntity {
                 .add(EntityAttributes.GENERIC_ARMOR, 5.0);
     }
 
-    // TODO: spawning entity with equipment for hands
-//    @Override
-//    public @Nullable EntityData initialize(ServerWorldAccess world, LocalDifficulty difficulty, SpawnReason spawnReason, @Nullable EntityData entityData, @Nullable NbtCompound entityNbt) {
-//        if (spawnReason.equals(SpawnReason.NATURAL))
-//            this.setStackInHand(Hand.MAIN_HAND, getEquipmentForSlot(EquipmentSlot.MAINHAND, this.random.nextBetween()));
-//        return super.initialize(world, difficulty, spawnReason, entityData, entityNbt);
-//    }
+    @Override
+    public @Nullable EntityData initialize(ServerWorldAccess world, LocalDifficulty difficulty, SpawnReason spawnReason, @Nullable EntityData entityData, @Nullable NbtCompound entityNbt) {
+        if (spawnReason.equals(SpawnReason.NATURAL)) {
+            int rng = this.getRandom().nextInt(10);
+
+            ItemStack handStack = switch (rng) {
+                case 5 -> Items.WOODEN_SHOVEL.getDefaultStack();
+                case 6 -> Items.WOODEN_HOE.getDefaultStack();
+                case 7 -> Items.WOODEN_PICKAXE.getDefaultStack();
+                case 8 -> Items.WOODEN_SWORD.getDefaultStack();
+                case 9 -> Items.STICK.getDefaultStack();
+                case 10 -> Items.IRON_SHOVEL.getDefaultStack();
+                default -> ItemStack.EMPTY;
+            };
+
+            setStackInHand(Hand.MAIN_HAND, handStack);
+        }
+        return super.initialize(world, difficulty, spawnReason, entityData, entityNbt);
+    }
 
     @Override
     public boolean shouldDropXp() {

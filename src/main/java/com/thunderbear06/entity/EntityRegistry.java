@@ -2,7 +2,6 @@ package com.thunderbear06.entity;
 
 import com.thunderbear06.CCAndroids;
 import com.thunderbear06.entity.android.*;
-import dan200.computercraft.shared.FabricCommonHooks;
 import net.fabricmc.fabric.api.biome.v1.BiomeModifications;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
 import net.minecraft.entity.EntityType;
@@ -12,8 +11,6 @@ import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.tag.BiomeTags;
 import net.minecraft.util.Identifier;
-import net.minecraft.world.biome.Biome;
-import net.minecraft.world.biome.source.BiomeSources;
 
 public class EntityRegistry {
     public static final EntityType<AndroidEntity> ANDROID_ENTITY = Registry.register(
@@ -57,6 +54,6 @@ public class EntityRegistry {
     }
 
     private static void registerSpawns() {
-        BiomeModifications.addSpawn(context -> !context.hasTag(BiomeTags.IS_OCEAN), SpawnGroup.MONSTER, ROGUE_ANDROID_ENTITY, 10, 1,3);
+        BiomeModifications.addSpawn(context -> !context.hasTag(BiomeTags.IS_OCEAN), SpawnGroup.MONSTER, ROGUE_ANDROID_ENTITY, 3, 1,3);
     }
 }
