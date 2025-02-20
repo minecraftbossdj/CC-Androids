@@ -5,6 +5,7 @@ import com.thunderbear06.component.ComputerComponents;
 import com.thunderbear06.entity.android.BaseAndroidEntity;
 import dan200.computercraft.api.ComputerCraftAPI;
 import dan200.computercraft.api.peripheral.IPeripheral;
+import dan200.computercraft.api.peripheral.PeripheralType;
 import dan200.computercraft.core.computer.ComputerSide;
 import dan200.computercraft.shared.ModRegistry;
 import dan200.computercraft.shared.computer.core.ComputerFamily;

@@ -26,7 +26,7 @@ public class PathReachChecker {
             BlockPos next = null;
 
             for (BlockPos checkBlock : check) {
-                if (checkBlock.getSquaredDistance(target) < current.getSquaredDistance(target) && isTraverseable(checkBlock, world))
+                if (checkBlock.getSquaredDistance(target) < current.getSquaredDistance(target) && isTraversable(checkBlock, world))
                     next = checkBlock;
             }
 
@@ -39,7 +39,7 @@ public class PathReachChecker {
         return current;
     }
 
-    private static boolean isTraverseable(BlockPos pos, ServerWorld world) {
+    private static boolean isTraversable(BlockPos pos, ServerWorld world) {
         if (world.getBlockState(pos).isSolidBlock(world, pos))
             return false;
         if (!world.getBlockState(pos.down()).isSolidBlock(world, pos.down()))

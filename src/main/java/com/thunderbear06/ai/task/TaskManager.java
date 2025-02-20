@@ -1,11 +1,8 @@
-package com.thunderbear06.ai;
+package com.thunderbear06.ai.task;
 
 import com.thunderbear06.CCAndroids;
-import com.thunderbear06.ai.tasks.Task;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 public class TaskManager {
     private final HashMap<String, Task> tasks = new HashMap<>();
@@ -48,5 +45,9 @@ public class TaskManager {
         }
 
         clearCurrentTask();
+    }
+
+    public boolean hasTask() {
+        return this.currentTask != null;
     }
 }

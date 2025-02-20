@@ -1,9 +1,10 @@
-package com.thunderbear06.ai.tasks;
+package com.thunderbear06.ai.task.tasks;
 
+import com.thunderbear06.ai.task.Task;
 import com.thunderbear06.entity.android.AndroidEntity;
 import net.minecraft.util.math.BlockPos;
 
-public abstract class BlockBasedTask extends Task{
+public abstract class BlockBasedTask extends Task {
     public BlockBasedTask(AndroidEntity android) {
         super(android);
     }

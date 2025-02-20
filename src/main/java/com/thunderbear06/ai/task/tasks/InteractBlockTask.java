@@ -1,18 +1,19 @@
-package com.thunderbear06.ai.tasks;
+package com.thunderbear06.ai.task.tasks;
 
 import com.thunderbear06.entity.android.AndroidEntity;
 import net.minecraft.util.Hand;
+import net.minecraft.util.math.BlockPos;
 
-public class InteractEntityTask extends MoveToEntityTask {
+public class InteractBlockTask extends MoveToBlockTask{
     private boolean complete = false;
 
-    public InteractEntityTask(AndroidEntity android, double moveSpeed) {
+    public InteractBlockTask(AndroidEntity android, double moveSpeed) {
         super(android, moveSpeed);
     }
 
     @Override
     public String getName() {
-        return "interactingEntity";
+        return "usingBlock";
     }
 
     @Override
@@ -28,11 +29,11 @@ public class InteractEntityTask extends MoveToEntityTask {
     @Override
     public void tick() {
         if (isInRange(2)) {
-            this.android.getLookControl().lookAt(getTarget());
-            this.android.brain.getModules().interactionModule.interactWithEntity(Hand.MAIN_HAND, getTarget());
+            BlockPos pos = getPos();
+            this.android.getLookControl().lookAt(pos.getX(), pos.getY(), pos.getZ());
+            this.android.brain.getModules().interactionModule.interactWithBlock(Hand.MAIN_HAND, pos);
             this.complete = true;
-        }
-        else
+        } else
             super.tick();
     }
 }

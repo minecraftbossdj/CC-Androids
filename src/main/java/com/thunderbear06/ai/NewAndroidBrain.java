@@ -4,7 +4,6 @@ import com.mojang.authlib.GameProfile;
 import com.thunderbear06.CCAndroids;
 import com.thunderbear06.ai.modules.AModules;
 import com.thunderbear06.entity.android.AndroidEntity;
-import com.thunderbear06.entity.android.BaseAndroidEntity;
 import com.thunderbear06.entity.player.AndroidPlayer;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.world.ServerWorld;
@@ -52,10 +51,6 @@ public class NewAndroidBrain {
 
     public String getState() {
         return "idle"; // this.android.getTaskManager().getCurrentTaskName();
-    }
-
-    public boolean isInState(String state) {
-        return false; //this.state.equals(state);
     }
 
     public AndroidEntity getAndroid() {

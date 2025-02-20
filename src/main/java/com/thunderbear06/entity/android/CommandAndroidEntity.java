@@ -6,8 +6,6 @@ import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.mob.PathAwareEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.registry.tag.DamageTypeTags;
 import net.minecraft.world.World;
 
 public class CommandAndroidEntity extends AdvancedAndroidEntity{
@@ -23,9 +21,6 @@ public class CommandAndroidEntity extends AdvancedAndroidEntity{
 
     @Override
     public boolean damage(DamageSource source, float amount) {
-        if (!(source.getAttacker() instanceof PlayerEntity player))
-            return source.getTypeRegistryEntry().isIn(DamageTypeTags.BYPASSES_INVULNERABILITY);
-
-        return player.isCreative() && super.damage(source, amount);
+        return source.isSourceCreativePlayer() && super.damage(source, amount);
     }
 }

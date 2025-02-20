@@ -1,4 +1,4 @@
-package com.thunderbear06.ai.tasks;
+package com.thunderbear06.ai.task.tasks;
 
 import com.thunderbear06.entity.android.AndroidEntity;
 import net.minecraft.entity.LivingEntity;

@@ -78,13 +78,17 @@ public class BaseAndroidEntity extends PathAwareEntity {
 
         this.computerContainer.onTick();
 
-        if (!this.brain.getState().equals("idle"))
-            return;
-
         if (this.age % 20 > 0)
             return;
 
-        updatePeripherals();
+        if (isIdle())
+            updatePeripherals();
+        else
+            consumeFuel();
+    }
+
+    protected boolean isIdle() {
+        return true;
     }
 
     private void updatePeripherals() {
@@ -101,12 +105,30 @@ public class BaseAndroidEntity extends PathAwareEntity {
         }
     }
 
-    protected boolean consumeFuel() {
-        if (this.fuel > 0) {
+    protected void consumeFuel() {
+        if (this.fuel > 0)
             this.fuel--;
-            return true;
-        }
-        return false;
+    }
+
+    public int addFuel(int amt) {
+        int cost = this.maxFuel - this.fuel;
+
+        cost = cost < amt ? amt - cost : amt;
+
+        setFuel(this.fuel + cost);
+        return cost;
+    }
+
+    public int getFuel() {
+        return this.fuel;
+    }
+
+    public void setFuel(int newFuel) {
+        this.fuel = newFuel;
+    }
+
+    public boolean hasFuel() {
+        return this.fuel > 0;
     }
 
     public AndroidComputerContainer getComputer() {
@@ -259,6 +281,8 @@ public class BaseAndroidEntity extends PathAwareEntity {
     public void writeCustomDataToNbt(NbtCompound nbt) {
         Inventories.writeNbt(nbt, this.internalStorage);
 
+        nbt.putInt("Fuel", this.getFuel());
+
         NbtCompound computerCompound = new NbtCompound();
 
         this.computerContainer.writeNbt(computerCompound);
@@ -270,6 +294,9 @@ public class BaseAndroidEntity extends PathAwareEntity {
     @Override
     public void readCustomDataFromNbt(NbtCompound nbt) {
         Inventories.readNbt(nbt, this.internalStorage);
+
+        if (nbt.contains("Fuel"))
+            setFuel(nbt.getInt("Fuel"));
 
         if (nbt.contains("ComputerEntity")) {
             NbtCompound computerCompound = nbt.getCompound("ComputerEntity");

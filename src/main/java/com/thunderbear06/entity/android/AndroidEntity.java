@@ -1,8 +1,8 @@
 package com.thunderbear06.entity.android;
 
 import com.thunderbear06.ai.NewAndroidBrain;
-import com.thunderbear06.ai.TaskManager;
-import com.thunderbear06.ai.tasks.*;
+import com.thunderbear06.ai.task.TaskManager;
+import com.thunderbear06.ai.task.tasks.*;
 import dan200.computercraft.shared.computer.core.ComputerFamily;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ai.goal.LookAtEntityGoal;
@@ -39,7 +39,7 @@ public class AndroidEntity extends BaseAndroidEntity {
 
     protected void addAndroidTasks() {
         this.taskManager.addTask(new AttackEntityTask(this, 0.5f));
-        this.taskManager.addTask(new MineBlockTask(this, 0.5f));
+        this.taskManager.addTask(new BreakBlockTask(this, 0.5f));
         this.taskManager.addTask(new InteractBlockTask(this, 0.5f));
         this.taskManager.addTask(new InteractEntityTask(this, 0.5f));
         this.taskManager.addTask(new MoveToBlockTask(this, 0.5f));
@@ -54,43 +54,22 @@ public class AndroidEntity extends BaseAndroidEntity {
     public void tickMovement() {
         super.tickMovement();
 
-        if (this.consumeFuel()){
+        if (hasFuel())
             this.taskManager.tick();
-            return;
-        }
-
-        if (!this.getNavigation().isIdle())
+        else if (!this.getNavigation().isIdle())
             this.getNavigation().stop();
     }
 
     @Override
-    public float getMovementSpeed() {
-        return super.getMovementSpeed() * ((float) (this.fuel+(this.maxFuel/2)) / this.maxFuel);
+    protected boolean isIdle() {
+        return !this.taskManager.hasTask();
     }
 
     @Override
     protected ActionResult interactMob(PlayerEntity player, Hand hand) {
-        ItemStack stack = player.getStackInHand(hand);
-        ItemStack stack1 = this.getStackInHand(hand);
 
-        if (!stack.isEmpty() && stack1.isEmpty()) {
-            if (stack.isIn(ItemTags.FLOWERS)) {
-                spawnHearts();
-            }
-
-            this.setStackInHand(hand, stack.copyWithCount(1));
-
-            player.getStackInHand(hand).decrement(1);
-            player.setStackInHand(hand, stack);
-
-            return ActionResult.SUCCESS;
-        }
-
-
-        if (player.isSneaking() && stack.isEmpty() && !stack1.isEmpty()) {
-            player.setStackInHand(hand, stack1);
-            this.setStackInHand(hand, ItemStack.EMPTY);
-
+        if (player.isSneaking()) {
+            player.setStackInHand(Hand.MAIN_HAND, swapHandStack(player.getStackInHand(hand)));
             return ActionResult.SUCCESS;
         }
 
@@ -102,6 +81,16 @@ public class AndroidEntity extends BaseAndroidEntity {
         }
 
         return ActionResult.CONSUME;
+    }
+
+    protected ItemStack swapHandStack(ItemStack stack) {
+        ItemStack heldStack = this.getMainHandStack();
+
+        if (stack.isIn(ItemTags.FLOWERS))
+            spawnHearts();
+
+        this.setStackInHand(Hand.MAIN_HAND, stack);
+        return heldStack;
     }
 
     public TaskManager getTaskManager() {

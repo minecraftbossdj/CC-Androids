@@ -2,7 +2,6 @@ package com.thunderbear06.entity.render;
 
 import com.thunderbear06.CCAndroids;
 import com.thunderbear06.entity.android.AndroidEntity;
-import com.thunderbear06.entity.android.BaseAndroidEntity;
 import dan200.computercraft.shared.computer.core.ComputerFamily;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.entity.BipedEntityRenderer;

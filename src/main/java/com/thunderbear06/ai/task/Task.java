@@ -1,4 +1,4 @@
-package com.thunderbear06.ai.tasks;
+package com.thunderbear06.ai.task;
 
 import com.thunderbear06.entity.android.AndroidEntity;
 

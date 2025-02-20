@@ -2,8 +2,8 @@ package com.thunderbear06;
 
 import com.thunderbear06.entity.EntityRegistry;
 import com.thunderbear06.entity.render.AndroidEntityRenderer;
-import com.thunderbear06.entity.render.RogueAndroidEntityRenderer;
 import com.thunderbear06.entity.render.AndroidFrameEntityRenderer;
+import com.thunderbear06.entity.render.RogueAndroidEntityRenderer;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
 

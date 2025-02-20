@@ -1,9 +1,10 @@
-package com.thunderbear06.ai.tasks;
+package com.thunderbear06.ai.task.tasks;
 
+import com.thunderbear06.ai.task.Task;
 import com.thunderbear06.entity.android.AndroidEntity;
 import net.minecraft.entity.LivingEntity;
 
-public abstract class EntityBasedTask extends Task{
+public abstract class EntityBasedTask extends Task {
 
     public EntityBasedTask(AndroidEntity android) {
         super(android);
