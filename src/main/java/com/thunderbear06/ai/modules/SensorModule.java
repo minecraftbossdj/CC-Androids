@@ -8,6 +8,7 @@ import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.TargetPredicate;
 import net.minecraft.registry.Registries;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
@@ -61,6 +62,15 @@ public class SensorModule extends AndroidModule{
         info.put("UUID", entity.getUuidAsString());
         info.putAll(collectEntityInfo(entity));
         return info;
+    }
+
+    public HashMap<String, Object> getClosestPlayer() {
+        ServerPlayerEntity player = (ServerPlayerEntity) this.android.getWorld().getClosestPlayer(this.android, 100);
+
+        if (player == null)
+            return new HashMap<>();
+
+        return collectEntityInfo(player);
     }
 
     public List<HashMap<String, Object>> getGroundItem(@Nullable String type, int max) {

@@ -267,9 +267,7 @@ public class AndroidAPI implements ILuaAPI {
 
     @LuaFunction(mainThread = true)
     public final MethodResult getClosestPlayer() {
-        PlayerEntity player = this.brain.getAndroid().getWorld().getClosestPlayer(this.brain.getAndroid(), 100);
-
-        return MethodResult.of(player == null ? null : player.getUuidAsString());
+        return MethodResult.of(this.brain.getModules().sensorModule.getClosestPlayer());
     }
 
     @LuaFunction(mainThread = true)
