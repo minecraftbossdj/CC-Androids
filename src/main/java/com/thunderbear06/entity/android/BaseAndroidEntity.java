@@ -1,12 +1,18 @@
 package com.thunderbear06.entity.android;
 
-import com.thunderbear06.ai.NewAndroidBrain;
+import com.thunderbear06.ai.AndroidBrain;
 import com.thunderbear06.computer.AndroidComputerContainer;
 import com.thunderbear06.item.ItemRegistry;
+import com.thunderbear06.sounds.SoundRegistry;
+import dan200.computercraft.api.ComputerCraftAPI;
 import dan200.computercraft.api.lua.MethodResult;
 import dan200.computercraft.api.peripheral.IPeripheral;
 import dan200.computercraft.api.peripheral.PeripheralLookup;
+import dan200.computercraft.api.peripheral.PeripheralType;
+import dan200.computercraft.core.apis.PeripheralAPI;
 import dan200.computercraft.core.computer.ComputerSide;
+import dan200.computercraft.core.util.PeripheralHelpers;
+import dan200.computercraft.impl.Peripherals;
 import dan200.computercraft.shared.computer.core.ComputerFamily;
 import dan200.computercraft.shared.computer.core.ServerComputer;
 import net.minecraft.block.BlockState;
@@ -26,6 +32,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.tag.BlockTags;
+import net.minecraft.sound.SoundEvent;
 import net.minecraft.text.Text;
 import net.minecraft.util.Hand;
 import net.minecraft.util.collection.DefaultedList;
@@ -37,7 +44,7 @@ import javax.annotation.Nullable;
 
 public class BaseAndroidEntity extends PathAwareEntity {
     public final DefaultedList<ItemStack> internalStorage;
-    public NewAndroidBrain brain;
+    public AndroidBrain brain;
 
     protected final AndroidComputerContainer computerContainer;
     protected final int maxFuel = 1000;
@@ -291,6 +298,7 @@ public class BaseAndroidEntity extends PathAwareEntity {
 
         super.writeCustomDataToNbt(nbt);
     }
+
     @Override
     public void readCustomDataFromNbt(NbtCompound nbt) {
         Inventories.readNbt(nbt, this.internalStorage);

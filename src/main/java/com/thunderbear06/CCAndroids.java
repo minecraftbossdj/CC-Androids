@@ -1,10 +1,11 @@
 package com.thunderbear06;
 
-import com.thunderbear06.ai.NewAndroidBrain;
+import com.thunderbear06.ai.AndroidBrain;
 import com.thunderbear06.component.ComputerComponents;
 import com.thunderbear06.computer.api.AndroidAPI;
 import com.thunderbear06.entity.EntityRegistry;
 import com.thunderbear06.item.ItemRegistry;
+import com.thunderbear06.sounds.SoundRegistry;
 import dan200.computercraft.api.ComputerCraftAPI;
 import net.fabricmc.api.ModInitializer;
 import org.slf4j.Logger;
@@ -18,11 +19,12 @@ public class CCAndroids implements ModInitializer {
 	@Override
 	public void onInitialize() {
 		ComputerCraftAPI.registerAPIFactory(computer -> {
-			NewAndroidBrain brain = computer.getComponent(ComputerComponents.ANDROID_COMPUTER);
+			AndroidBrain brain = computer.getComponent(ComputerComponents.ANDROID_COMPUTER);
 			return brain == null ? null : new AndroidAPI(brain);
 		});
 
 		ItemRegistry.register();
 		EntityRegistry.register();
+		SoundRegistry.register();
 	}
 }

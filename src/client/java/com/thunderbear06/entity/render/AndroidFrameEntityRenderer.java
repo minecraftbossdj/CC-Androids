@@ -18,6 +18,6 @@ public class AndroidFrameEntityRenderer extends BipedEntityRenderer<AndroidFrame
 
     @Override
     public Identifier getTexture(AndroidFrame entity) {
-        return entity.hasCore ? androidUnfinishedCore : androidUnfinished;
+        return entity.hasCore() ? androidUnfinishedCore : androidUnfinished;
     }
 }

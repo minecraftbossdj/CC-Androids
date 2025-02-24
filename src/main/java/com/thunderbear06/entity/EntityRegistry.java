@@ -28,7 +28,7 @@ public class EntityRegistry {
             Identifier.of(CCAndroids.MOD_ID, "command_android"),
             EntityType.Builder.create(CommandAndroidEntity::new, SpawnGroup.MISC).build("command_android")
     );
-    public static final EntityType<AndroidFrame> UNFINISHED_ANDROID_ENTITY = Registry.register(
+    public static final EntityType<AndroidFrame> ANDROID_FRAME_ENTITY = Registry.register(
             Registries.ENTITY_TYPE,
             Identifier.of(CCAndroids.MOD_ID, "unfinished_android"),
             EntityType.Builder.create(AndroidFrame::new, SpawnGroup.MISC).build("unfinished_android")
@@ -50,10 +50,10 @@ public class EntityRegistry {
         FabricDefaultAttributeRegistry.register(ADVANCED_ANDROID_ENTITY, AdvancedAndroidEntity.createAndroidAttributes());
         FabricDefaultAttributeRegistry.register(COMMAND_ANDROID_ENTITY, CommandAndroidEntity.createAndroidAttributes());
         FabricDefaultAttributeRegistry.register(ROGUE_ANDROID_ENTITY, RogueDroidEntity.createAndroidAttributes());
-        FabricDefaultAttributeRegistry.register(UNFINISHED_ANDROID_ENTITY, MobEntity.createMobAttributes());
+        FabricDefaultAttributeRegistry.register(ANDROID_FRAME_ENTITY, MobEntity.createMobAttributes());
     }
 
     private static void registerSpawns() {
-        BiomeModifications.addSpawn(context -> !context.hasTag(BiomeTags.IS_OCEAN), SpawnGroup.MONSTER, ROGUE_ANDROID_ENTITY, 3, 1,3);
+        BiomeModifications.addSpawn(context -> !context.hasTag(BiomeTags.IS_OCEAN), SpawnGroup.MONSTER, ROGUE_ANDROID_ENTITY, 1, 1,1);
     }
 }

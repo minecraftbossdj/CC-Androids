@@ -6,6 +6,9 @@ import dan200.computercraft.shared.computer.core.ComputerFamily;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.entity.data.DataTracker;
+import net.minecraft.entity.data.TrackedData;
+import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
@@ -22,23 +25,26 @@ import net.minecraft.world.event.GameEvent;
 import org.jetbrains.annotations.Nullable;
 
 public class AndroidFrame extends MobEntity {
+    private static final TrackedData<Byte> COMPONENTS_NEEDED = DataTracker.registerData(AndroidFrame.class, TrackedDataHandlerRegistry.BYTE);
+    private static final TrackedData<Byte> INGOTS_NEEDED = DataTracker.registerData(AndroidFrame.class, TrackedDataHandlerRegistry.BYTE);
+    private static final TrackedData<Boolean> HAS_CORE = DataTracker.registerData(AndroidFrame.class, TrackedDataHandlerRegistry.BOOLEAN);
+
     private final byte maxComponentsNeeded = 8;
     private final byte maxIngotsNeeded = 10;
 
-    public byte componentsNeeded;
-    public boolean hasCore;
-    public byte ingotsNeeded;
-
     private boolean isAdvanced = false;
-
     private long lastHitTime = 0;
 
     public AndroidFrame(EntityType<? extends MobEntity> entityType, World world) {
         super(entityType, world);
+    }
 
-        this.componentsNeeded = this.maxComponentsNeeded;
-        this.ingotsNeeded = this.maxIngotsNeeded;
-        this.hasCore = false;
+    @Override
+    protected void initDataTracker() {
+        super.initDataTracker();
+        this.dataTracker.startTracking(COMPONENTS_NEEDED, this.maxComponentsNeeded);
+        this.dataTracker.startTracking(INGOTS_NEEDED, this.maxIngotsNeeded);
+        this.dataTracker.startTracking(HAS_CORE, false);
     }
 
     @Override
@@ -83,26 +89,32 @@ public class AndroidFrame extends MobEntity {
     }
 
     private boolean addComponents(World world) {
-        if (this.componentsNeeded <= 0)
+        byte comps = this.getComponentsNeeded();
+
+        if (comps <= 0)
             return false;
 
-        if (--this.componentsNeeded == 0)
-            world.playSoundFromEntity(null, this, SoundEvents.ENTITY_VILLAGER_WORK_ARMORER, SoundCategory.NEUTRAL, 1.0f, 1.0f);
+        float pitch = (getRandom().nextBetween(10,12) * 0.1f);
+
+        this.dataTracker.set(COMPONENTS_NEEDED, --comps);
+
+        if (comps <= 0)
+            world.playSoundFromEntity(null, this, SoundEvents.BLOCK_ANVIL_USE, SoundCategory.NEUTRAL, 1.0f, pitch);
         else
-            world.playSoundFromEntity(null, this, SoundEvents.ENTITY_IRON_GOLEM_REPAIR, SoundCategory.NEUTRAL, 1.0f, 1.0f);
+            world.playSoundFromEntity(null, this, SoundEvents.ENTITY_IRON_GOLEM_REPAIR, SoundCategory.NEUTRAL, 1.0f, pitch);
 
         return true;
     }
 
     private boolean addPlates(World world, boolean isGold) {
-        if (this.componentsNeeded > 0)
+        if (getComponentsNeeded() > 0)
             return false;
 
-        if (this.ingotsNeeded <= 0)
+        if (getIngotsNeeded() <= 0)
             return false;
 
         if (isGold && !this.isAdvanced) {
-            if (this.ingotsNeeded < this.maxIngotsNeeded)
+            if (getIngotsNeeded() < this.maxIngotsNeeded)
                 return false;
             this.isAdvanced = true;
         }
@@ -110,18 +122,24 @@ public class AndroidFrame extends MobEntity {
         if (!isGold && this.isAdvanced)
             return false;
 
-        if (--this.ingotsNeeded == 0)
-            world.playSoundFromEntity(null, this, SoundEvents.ENTITY_VILLAGER_WORK_ARMORER, SoundCategory.NEUTRAL, 1.0f, 1.0f);
+        float pitch = (getRandom().nextBetween(10,12) * 0.1f);
+
+        byte ingots = this.dataTracker.get(INGOTS_NEEDED);
+
+        this.dataTracker.set(INGOTS_NEEDED, --ingots);
+
+        if (ingots == 0)
+            world.playSoundFromEntity(null, this, SoundEvents.BLOCK_ANVIL_USE, SoundCategory.NEUTRAL, 1.0f, pitch);
         else
-            world.playSoundFromEntity(null, this, SoundEvents.ENTITY_IRON_GOLEM_REPAIR, SoundCategory.NEUTRAL, 1.0f, 1.0f);
+            world.playSoundFromEntity(null, this, SoundEvents.ENTITY_IRON_GOLEM_REPAIR, SoundCategory.NEUTRAL, 1.0f, pitch);
 
         return true;
     }
 
     private boolean insertCore(World world) {
-        if (this.hasCore)
+        if (hasCore())
             return false;
-        this.hasCore = true;
+        this.dataTracker.set(HAS_CORE, true);
 
         world.playSoundFromEntity(null, this, SoundEvents.BLOCK_END_PORTAL_FRAME_FILL, SoundCategory.NEUTRAL, 1.0f, 1.0f);
 
@@ -129,7 +147,7 @@ public class AndroidFrame extends MobEntity {
     }
 
     private boolean isReadyForCPU() {
-        return this.componentsNeeded == 0 && this.hasCore && this.ingotsNeeded == 0;
+        return getComponentsNeeded() == 0 && hasCore() && getIngotsNeeded() == 0;
     }
 
     private void insertCPU(ItemStack cpu) {
@@ -166,6 +184,18 @@ public class AndroidFrame extends MobEntity {
         this.getWorld().spawnEntity(android);
 
         android.getWorld().playSoundFromEntity(null, android, SoundEvents.BLOCK_BEACON_ACTIVATE, SoundCategory.NEUTRAL, 1.0f, 1.0f);
+    }
+
+    public byte getComponentsNeeded() {
+        return this.dataTracker.get(COMPONENTS_NEEDED);
+    }
+
+    public byte getIngotsNeeded() {
+        return this.dataTracker.get(INGOTS_NEEDED);
+    }
+
+    public boolean hasCore() {
+        return this.dataTracker.get(HAS_CORE);
     }
 
     @Override
@@ -233,17 +263,19 @@ public class AndroidFrame extends MobEntity {
 
     @Override
     protected void dropInventory() {
-        int components_dropped = this.maxComponentsNeeded - this.componentsNeeded;
+        byte components_dropped = (byte) (this.maxComponentsNeeded - getComponentsNeeded());
 
         for (int i = 0; i < components_dropped; i++) {
             this.dropStack(new ItemStack(ItemRegistry.COMPONENTS));
         }
 
-        for (int j = 0; j < ingotsNeeded; j++) {
+        int ingots_dropped = this.maxIngotsNeeded - getIngotsNeeded();
+
+        for (int j = 0; j < ingots_dropped; j++) {
             this.dropStack(new ItemStack(this.isAdvanced ? Items.GOLD_INGOT : Items.IRON_INGOT));
         }
 
-        if (this.hasCore)
+        if (hasCore())
             this.dropStack(new ItemStack(ItemRegistry.REDSTONE_REACTOR));
 
         this.dropStack(new ItemStack(ItemRegistry.ANDROID_FRAME));
@@ -251,21 +283,21 @@ public class AndroidFrame extends MobEntity {
 
     @Override
     public void writeCustomDataToNbt(NbtCompound nbt) {
-        nbt.putByte("ComponentsNeeded", this.componentsNeeded);
-        nbt.putByte("IngotsNeeded", this.ingotsNeeded);
+        nbt.putByte("ComponentsNeeded", getComponentsNeeded());
+        nbt.putByte("IngotsNeeded", getIngotsNeeded());
         nbt.putBoolean("IsAdvanced", this.isAdvanced);
-        nbt.putBoolean("HasCore", this.hasCore);
+        nbt.putBoolean("HasCore", hasCore());
         super.writeCustomDataToNbt(nbt);
     }
 
     @Override
-    public void readNbt(NbtCompound nbt) {
+    public void readCustomDataFromNbt(NbtCompound nbt) {
         if (nbt.contains("ComponentsNeeded")) {
-            this.componentsNeeded = nbt.getByte("ComponentsNeeded");
-            this.ingotsNeeded = nbt.getByte("IngotsNeeded");
+            this.dataTracker.set(COMPONENTS_NEEDED, nbt.getByte("ComponentsNeeded"));
+            this.dataTracker.set(INGOTS_NEEDED, nbt.getByte("IngotsNeeded"));
+            this.dataTracker.set(HAS_CORE, nbt.getBoolean("HasCore"));
             this.isAdvanced = nbt.getBoolean("IsAdvanced");
-            this.hasCore = nbt.getBoolean("HasCore");
         }
-        super.readNbt(nbt);
+        super.readCustomDataFromNbt(nbt);
     }
 }

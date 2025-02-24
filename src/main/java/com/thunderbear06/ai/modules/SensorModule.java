@@ -1,6 +1,6 @@
 package com.thunderbear06.ai.modules;
 
-import com.thunderbear06.ai.NewAndroidBrain;
+import com.thunderbear06.ai.AndroidBrain;
 import com.thunderbear06.entity.android.BaseAndroidEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -21,12 +21,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.function.Predicate;
 
-public class SensorModule extends AndroidModule{
+public class SensorModule extends AbstractAndroidModule {
 
     private final double entitySearchRadius;
     private final int blockSearchRadius;
 
-    public SensorModule(BaseAndroidEntity android, NewAndroidBrain brain, double searchRadius, int blockSearchRadius) {
+    public SensorModule(BaseAndroidEntity android, AndroidBrain brain, double searchRadius, int blockSearchRadius) {
         super(android, brain);
         this.entitySearchRadius = searchRadius;
         this.blockSearchRadius = blockSearchRadius;
@@ -58,10 +58,7 @@ public class SensorModule extends AndroidModule{
         if (entity == null || entity instanceof LivingEntity livingEntity && livingEntity.isDead())
             return new HashMap<>();
 
-        HashMap<String, Object> info = new HashMap<>();
-        info.put("UUID", entity.getUuidAsString());
-        info.putAll(collectEntityInfo(entity));
-        return info;
+        return collectEntityInfo(entity);
     }
 
     public HashMap<String, Object> getClosestPlayer() {
@@ -112,7 +109,7 @@ public class SensorModule extends AndroidModule{
         return blocks;
     }
 
-    private HashMap<String, Object> collectEntityInfo(Entity entity) {
+    public HashMap<String, Object> collectEntityInfo(Entity entity) {
         HashMap<String, Object> infoMap = new HashMap<>();
 
         infoMap.put("uuid", entity.getUuidAsString());

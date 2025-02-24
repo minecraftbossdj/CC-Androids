@@ -22,7 +22,7 @@ public class InteractEntityTask extends MoveToEntityTask {
 
     @Override
     public boolean shouldTick() {
-        return super.shouldTick() && !this.complete;
+        return this.android.brain.getTargeting().hasEntityTarget() && !this.complete;
     }
 
     @Override

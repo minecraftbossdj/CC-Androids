@@ -18,8 +18,8 @@ import net.minecraft.world.event.GameEvent;
 
 import java.util.function.Consumer;
 
-public class AndroidScaffoldingItem extends Item {
-    public AndroidScaffoldingItem(Settings settings) {
+public class AndroidFrameItem extends Item {
+    public AndroidFrameItem(Settings settings) {
         super(settings);
     }
 
@@ -35,12 +35,13 @@ public class AndroidScaffoldingItem extends Item {
         BlockPos blockPos = itemPlacementContext.getBlockPos();
         ItemStack itemStack = context.getStack();
         Vec3d vec3d = Vec3d.ofBottomCenter(blockPos);
-        Box box = EntityRegistry.UNFINISHED_ANDROID_ENTITY.getDimensions().getBoxAt(vec3d.getX(), vec3d.getY(), vec3d.getZ());
+        Box box = EntityRegistry.ANDROID_FRAME_ENTITY.getDimensions().getBoxAt(vec3d.getX(), vec3d.getY(), vec3d.getZ());
 
         if (world.isSpaceEmpty(null, box) && world.getOtherEntities(null, box).isEmpty()) {
             if (world instanceof ServerWorld serverWorld) {
                 Consumer<AndroidFrame> consumer = EntityType.copier(serverWorld, itemStack, context.getPlayer());
-                AndroidFrame frame = EntityRegistry.UNFINISHED_ANDROID_ENTITY.create(serverWorld, itemStack.getNbt(), consumer, blockPos, SpawnReason.SPAWN_EGG, true, true);
+                AndroidFrame frame = EntityRegistry.ANDROID_FRAME_ENTITY.create(serverWorld, itemStack.getNbt(), consumer, blockPos, SpawnReason.SPAWN_EGG, true, true);
+
                 if (frame == null) {
                     return ActionResult.FAIL;
                 }

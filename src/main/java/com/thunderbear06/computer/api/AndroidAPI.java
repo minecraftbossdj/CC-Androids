@@ -1,14 +1,12 @@
 package com.thunderbear06.computer.api;
 
-import com.thunderbear06.ai.NewAndroidBrain;
+import com.thunderbear06.ai.AndroidBrain;
 import com.thunderbear06.util.PathReachChecker;
 import dan200.computercraft.api.lua.ILuaAPI;
 import dan200.computercraft.api.lua.LuaFunction;
 import dan200.computercraft.api.lua.MethodResult;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.mob.HostileEntity;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Hand;
@@ -18,9 +16,11 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 
 public class AndroidAPI implements ILuaAPI {
-    private final NewAndroidBrain brain;
+    private final String NO_FUEL_REASON = "Insufficient redstone fuel for this action";
 
-    public AndroidAPI(NewAndroidBrain android) {
+    private final AndroidBrain brain;
+
+    public AndroidAPI(AndroidBrain android) {
         this.brain = android;
     }
 
@@ -47,25 +47,14 @@ public class AndroidAPI implements ILuaAPI {
     * Information
     */
 
-    @LuaFunction(mainThread = true)
-    public final MethodResult getPosition() {
-        BlockPos blockPos = this.brain.getAndroid().getBlockPos();
-        Map<String, Integer> posMap = new HashMap<>();
-        posMap.put("x", blockPos.getX());
-        posMap.put("y", blockPos.getY());
-        posMap.put("z", blockPos.getZ());
-
-        return MethodResult.of(posMap);
-    }
-
     @LuaFunction
     public final MethodResult getState() {
         return MethodResult.of(this.brain.getAndroid().getTaskManager().getCurrentTaskName());
     }
 
     @LuaFunction
-    public final MethodResult getHealth() {
-        return MethodResult.of(this.brain.getAndroid().getHealth());
+    public final MethodResult getSelf() {
+        return MethodResult.of(this.brain.getModules().sensorModule.collectEntityInfo(this.brain.getAndroid()));
     }
 
     /*
@@ -75,7 +64,7 @@ public class AndroidAPI implements ILuaAPI {
     @LuaFunction
     public final MethodResult attack(String entityUUID) {
         if (!checkFuel())
-            return Result(true, "Fuel required for this action");
+            return Result(true, NO_FUEL_REASON);
 
         LivingEntity target = (LivingEntity) ((ServerWorld)this.brain.getAndroid().getWorld()).getEntity(UUID.fromString(entityUUID));
 
@@ -90,7 +79,7 @@ public class AndroidAPI implements ILuaAPI {
     @LuaFunction
     public final MethodResult goTo(String entityUUID) {
         if (!checkFuel())
-            return Result(true, "Fuel required for this action");
+            return Result(true, NO_FUEL_REASON);
 
         return this.brain.getModules().navigationModule.MoveToEntity(entityUUID);
     }
@@ -98,7 +87,7 @@ public class AndroidAPI implements ILuaAPI {
     @LuaFunction
     public final MethodResult moveTo(int x, int y, int z) {
         if (!checkFuel())
-            return Result(true, "Fuel required for this action");
+            return Result(true, NO_FUEL_REASON);
 
         return this.brain.getModules().navigationModule.MoveToBlock(new BlockPos(x,y,z));
     }
@@ -106,7 +95,7 @@ public class AndroidAPI implements ILuaAPI {
     @LuaFunction
     public final MethodResult breakBlock(int x, int y, int z) {
         if (!checkFuel())
-            return Result(true, "Fuel required for this action");
+            return Result(true, NO_FUEL_REASON);
 
         BlockPos pos = new BlockPos(x,y,z);
 
@@ -124,7 +113,7 @@ public class AndroidAPI implements ILuaAPI {
     @LuaFunction
     public final MethodResult useBlock(int x, int y, int z) {
         if (!checkFuel())
-            return Result(true, "Fuel required for this action");
+            return Result(true, NO_FUEL_REASON);
 
         BlockPos pos = new BlockPos(x,y,z);
         if (!this.brain.getAndroid().getWorld().isInBuildLimit(pos))
@@ -144,7 +133,7 @@ public class AndroidAPI implements ILuaAPI {
     @LuaFunction
     public final MethodResult useEntity(String entityUUID) {
         if (!checkFuel())
-            return Result(true, "Fuel required for this action");
+            return Result(true, NO_FUEL_REASON);
 
         LivingEntity target = (LivingEntity) ((ServerWorld)this.brain.getAndroid().getWorld()).getEntity(UUID.fromString(entityUUID));
 
@@ -152,7 +141,7 @@ public class AndroidAPI implements ILuaAPI {
             return Result(true, "Unknown entity or invalid UUID");
 
         this.brain.getTargeting().setEntityTarget(target);
-        this.brain.setTask("interactEntity");
+        this.brain.setTask("usingEntity");
         return Result(false, "Using "+target.getName().getString());
     }
 
@@ -301,28 +290,5 @@ public class AndroidAPI implements ILuaAPI {
     public final MethodResult sendChatMessage(String what) {
         this.brain.getAndroid().sendChatMessage(what);
         return MethodResult.of();
-    }
-
-    //TODO: Wish this could return NBT
-
-    @LuaFunction(mainThread = true)
-    public final MethodResult getMobInfo(String entityUUIDString) {
-        ServerWorld world = (ServerWorld) brain.getAndroid().getWorld();
-
-        LivingEntity entity = (LivingEntity) world.getEntity(UUID.fromString(entityUUIDString));
-
-        if (entity == null)
-            return MethodResult.of("Entity does not exist");
-
-        HashMap<String, Object> infoMap = new HashMap<>();
-
-        infoMap.put("name", Objects.requireNonNullElse(entity.getCustomName(), entity.getName()).getString());
-        infoMap.put("health", entity.getHealth());
-        infoMap.put("isHostile", entity instanceof HostileEntity);
-        infoMap.put("posX", entity.getX());
-        infoMap.put("posY", entity.getY());
-        infoMap.put("posZ", entity.getZ());
-
-        return MethodResult.of(infoMap);
     }
 }

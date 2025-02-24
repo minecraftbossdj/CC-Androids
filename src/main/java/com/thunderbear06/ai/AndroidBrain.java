@@ -2,27 +2,26 @@ package com.thunderbear06.ai;
 
 import com.mojang.authlib.GameProfile;
 import com.thunderbear06.CCAndroids;
-import com.thunderbear06.ai.modules.AModules;
+import com.thunderbear06.ai.modules.AndroidModules;
 import com.thunderbear06.entity.android.AndroidEntity;
 import com.thunderbear06.entity.player.AndroidPlayer;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.world.ServerWorld;
 
-public class NewAndroidBrain {
+public class AndroidBrain {
     protected final AndroidEntity android;
     protected final AndroidTargets targeting;
-    protected final AModules modules;
-
-    //protected String state = "idle";
+    protected final AndroidModules modules;
 
     @Deprecated
     public AndroidPlayer fakePlayer;
     private GameProfile owningPlayerProfile;
 
-    public NewAndroidBrain(AndroidEntity android) {
+    public AndroidBrain(AndroidEntity android) {
         this.android = android;
         this.targeting = new AndroidTargets();
-        this.modules = new AModules(android, this);
+        this.modules = new AndroidModules(android, this);
 
         if (android.getWorld() instanceof ServerWorld) {
             this.fakePlayer = AndroidPlayer.get(this);
@@ -33,24 +32,12 @@ public class NewAndroidBrain {
 
     public void onShutdown() {
         this.targeting.clearTargets();
-        setState("idle");
+        this.android.getTaskManager().setCurrentTask("idle");
     }
 
     public void setTask(String taskName) {
         CCAndroids.LOGGER.info("Set current android task to {}", taskName);
         this.android.getTaskManager().setCurrentTask(taskName);
-    }
-
-    public String getCurrentTask() {
-        return this.android.getTaskManager().getCurrentTaskName();
-    }
-
-    public void setState(String newState) {
-        //this.state = newState;
-    }
-
-    public String getState() {
-        return "idle"; // this.android.getTaskManager().getCurrentTaskName();
     }
 
     public AndroidEntity getAndroid() {
@@ -61,8 +48,12 @@ public class NewAndroidBrain {
         return this.targeting;
     }
 
-    public AModules getModules() {
+    public AndroidModules getModules() {
         return this.modules;
+    }
+
+    public boolean isOwningPlayer(PlayerEntity player) {
+        return this.owningPlayerProfile == player.getGameProfile();
     }
 
     public GameProfile getOwningPlayerProfile() {

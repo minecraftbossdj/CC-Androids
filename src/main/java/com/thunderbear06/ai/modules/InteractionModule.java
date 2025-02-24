@@ -1,8 +1,10 @@
 package com.thunderbear06.ai.modules;
 
-import com.thunderbear06.ai.NewAndroidBrain;
+import com.thunderbear06.ai.AndroidBrain;
+import com.thunderbear06.entity.android.AndroidEntity;
 import com.thunderbear06.entity.android.BaseAndroidEntity;
 import com.thunderbear06.entity.player.AndroidPlayer;
+import com.thunderbear06.item.ItemRegistry;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.item.ItemStack;
@@ -13,8 +15,8 @@ import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 
-public class InteractionModule extends AndroidModule{
-    public InteractionModule(BaseAndroidEntity android, NewAndroidBrain brain) {
+public class InteractionModule extends AbstractAndroidModule {
+    public InteractionModule(BaseAndroidEntity android, AndroidBrain brain) {
         super(android, brain);
     }
 
@@ -32,6 +34,13 @@ public class InteractionModule extends AndroidModule{
         ItemStack handStack = player.getStackInHand(hand);
 
         this.android.swingHand(hand);
+
+        if (entity instanceof AndroidEntity android && handStack.isOf(ItemRegistry.COMPONENTS)) {
+            if (android.repair()) {
+                handStack.decrement(1);
+                return;
+            }
+        }
 
         if (entity instanceof MobEntity mob) {
             if (handStack.isOf(Items.LEAD) && mob.getHoldingEntity() == null) {

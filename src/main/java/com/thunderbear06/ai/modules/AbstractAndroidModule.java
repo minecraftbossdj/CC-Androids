@@ -1,13 +1,13 @@
 package com.thunderbear06.ai.modules;
 
-import com.thunderbear06.ai.NewAndroidBrain;
+import com.thunderbear06.ai.AndroidBrain;
 import com.thunderbear06.entity.android.BaseAndroidEntity;
 
-public abstract class AndroidModule {
+public abstract class AbstractAndroidModule {
     public final BaseAndroidEntity android;
-    public final NewAndroidBrain brain;
+    public final AndroidBrain brain;
 
-    public AndroidModule(BaseAndroidEntity owner, NewAndroidBrain brain) {
+    public AbstractAndroidModule(BaseAndroidEntity owner, AndroidBrain brain) {
         this.android = owner;
         this.brain = brain;
     }

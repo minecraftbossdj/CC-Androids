@@ -9,7 +9,7 @@ public class AndroidTargets {
     public BlockPos blockTarget = null;
 
     public void setEntityTarget(LivingEntity entity) {
-        CCAndroids.LOGGER.info("Set android entity target to {}", entity == null ? "null" : entity.getName());
+        CCAndroids.LOGGER.info("Set android entity target to {}", entity == null ? "null" : entity.getName().getString());
         this.entityTarget = entity;
     }
 

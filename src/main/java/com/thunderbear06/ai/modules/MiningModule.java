@@ -1,6 +1,6 @@
 package com.thunderbear06.ai.modules;
 
-import com.thunderbear06.ai.NewAndroidBrain;
+import com.thunderbear06.ai.AndroidBrain;
 import com.thunderbear06.entity.android.BaseAndroidEntity;
 import com.thunderbear06.entity.player.AndroidPlayer;
 import net.minecraft.block.BlockState;
@@ -8,13 +8,12 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.shape.VoxelShapes;
 import net.minecraft.world.BlockStateRaycastContext;
 
-public class MiningModule extends AndroidModule{
+public class MiningModule extends AbstractAndroidModule {
     private float breakProgress = 0.0f;
 
-    public MiningModule(BaseAndroidEntity owner, NewAndroidBrain brain) {
+    public MiningModule(BaseAndroidEntity owner, AndroidBrain brain) {
         super(owner, brain);
     }
 

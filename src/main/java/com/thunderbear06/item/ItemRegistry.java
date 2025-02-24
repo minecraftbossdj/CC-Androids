@@ -30,7 +30,7 @@ public class ItemRegistry {
     public static final Item ANDROID_FRAME = Registry.register(
             Registries.ITEM,
             new Identifier(CCAndroids.MOD_ID,"android_frame"),
-            new AndroidScaffoldingItem(new FabricItemSettings())
+            new AndroidFrameItem(new FabricItemSettings())
     );
 
     public static void register() {

@@ -1,7 +1,7 @@
 package com.thunderbear06.entity.player;
 
 import com.mojang.authlib.GameProfile;
-import com.thunderbear06.ai.NewAndroidBrain;
+import com.thunderbear06.ai.AndroidBrain;
 import dan200.computercraft.shared.platform.PlatformHelper;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -23,7 +23,7 @@ public class AndroidPlayer {
         this.player = player;
     }
 
-    private static AndroidPlayer create(NewAndroidBrain brain) {
+    private static AndroidPlayer create(AndroidBrain brain) {
         ServerWorld world = (ServerWorld) brain.getAndroid().getWorld();
         GameProfile profile = brain.getOwningPlayerProfile();
         AndroidPlayer player = new AndroidPlayer(PlatformHelper.get().createFakePlayer(world, getProfile(profile != null ? profile : DEFAULT_PROFILE)));
@@ -32,7 +32,7 @@ public class AndroidPlayer {
     }
 
     @SuppressWarnings(value = "deprecation")
-    public static AndroidPlayer get(NewAndroidBrain brain) {
+    public static AndroidPlayer get(AndroidBrain brain) {
         AndroidPlayer player = brain.fakePlayer;
         if (player != null && player.player.getGameProfile() == getProfile(brain.getOwningPlayerProfile()) && player.player.getWorld() == brain.getAndroid().getWorld()) {
             player.setState(brain);
@@ -48,7 +48,7 @@ public class AndroidPlayer {
         return this.player;
     }
 
-    private void setState(NewAndroidBrain brain) {
+    private void setState(AndroidBrain brain) {
         if (this.player.currentScreenHandler != this.player.playerScreenHandler) {
             LOGGER.warn("Android has open container ({})", this.player.currentScreenHandler);
             this.player.onHandledScreenClosed();
@@ -64,7 +64,7 @@ public class AndroidPlayer {
         this.player.setPitch((float) rotation.x);
     }
 
-    public void setPosition(NewAndroidBrain brain) {
+    public void setPosition(AndroidBrain brain) {
         this.setRotation(brain.getAndroid().getRotationVector());
 
         Vec3d pos = brain.getAndroid().getPos();

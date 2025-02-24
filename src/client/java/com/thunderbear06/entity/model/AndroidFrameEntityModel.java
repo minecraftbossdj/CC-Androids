@@ -11,8 +11,8 @@ public class AndroidFrameEntityModel extends PlayerEntityModel<AndroidFrame> {
 
     @Override
     public void animateModel(AndroidFrame livingEntity, float f, float g, float h) {
-        byte comps = livingEntity.componentsNeeded;
-        byte ingots = livingEntity.ingotsNeeded;
+        int comps = livingEntity.getComponentsNeeded();
+        int ingots = livingEntity.getIngotsNeeded();
 
         this.leftArm.visible = comps < 8;
         this.rightArm.visible = comps < 6;

@@ -1,6 +1,6 @@
 package com.thunderbear06.ai.modules;
 
-import com.thunderbear06.ai.NewAndroidBrain;
+import com.thunderbear06.ai.AndroidBrain;
 import com.thunderbear06.computer.api.AndroidAPI;
 import com.thunderbear06.entity.android.BaseAndroidEntity;
 import dan200.computercraft.api.lua.MethodResult;
@@ -10,8 +10,8 @@ import net.minecraft.util.math.BlockPos;
 
 import java.util.UUID;
 
-public class NavigationModule extends AndroidModule{
-    public NavigationModule(BaseAndroidEntity owner, NewAndroidBrain brain) {
+public class NavigationModule extends AbstractAndroidModule {
+    public NavigationModule(BaseAndroidEntity owner, AndroidBrain brain) {
         super(owner, brain);
     }
 

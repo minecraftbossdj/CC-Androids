@@ -4,9 +4,14 @@
   "entity.cc-androids.command_android": "Command Android",
   "entity.cc-androids.rogue_android": "Automaton",
   "entity.cc-androids.unfinished_android": "Android Scaffolding",
+  "entity.cc-androids.android.locked": "Android is locked",
 
   "item.cc-androids.components": "Components",
   "item.cc-androids.android_cpu": "Android CPU",
   "item.cc-androids.redstone_reactor": "Redstone Reactor",
-  "item.cc-androids.android_frame": "Android Frame"
+  "item.cc-androids.android_frame": "Android Frame",
+
+  "sound.cc-androids.android_ambient": "Android beeps and boops",
+  "sound.cc-androids.android_hurt": "Android takes damage",
+  "sound.cc-androids.android_death": "Android perishes"
 }

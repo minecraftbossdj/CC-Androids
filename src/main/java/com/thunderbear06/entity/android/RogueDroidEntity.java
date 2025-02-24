@@ -1,21 +1,25 @@
 package com.thunderbear06.entity.android;
 
+import com.thunderbear06.sounds.SoundRegistry;
 import net.minecraft.entity.EntityData;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.ai.goal.*;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributes;
+import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.mob.HostileEntity;
 import net.minecraft.entity.passive.MerchantEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.Hand;
 import net.minecraft.world.LocalDifficulty;
 import net.minecraft.world.ServerWorldAccess;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldAccess;
 import org.jetbrains.annotations.Nullable;
 
 public class RogueDroidEntity extends HostileEntity {
@@ -28,6 +32,18 @@ public class RogueDroidEntity extends HostileEntity {
                 .add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 5.0)
                 .add(EntityAttributes.GENERIC_MAX_HEALTH, 25.0)
                 .add(EntityAttributes.GENERIC_ARMOR, 5.0);
+    }
+
+    @Override
+    public boolean canSpawn(WorldAccess world, SpawnReason spawnReason) {
+        if (spawnReason == SpawnReason.NATURAL) {
+            if (world.isSkyVisible(this.getBlockPos()))
+                return false;
+            if (world.getLightLevel(this.getBlockPos()) > 3)
+                return false;
+        }
+
+        return super.canSpawn(world, spawnReason);
     }
 
     @Override
@@ -51,11 +67,6 @@ public class RogueDroidEntity extends HostileEntity {
     }
 
     @Override
-    public boolean shouldDropXp() {
-        return false;
-    }
-
-    @Override
     protected void initGoals() {
         this.goalSelector.add(2, new LookAtEntityGoal(this, PlayerEntity.class, 8.0f, 1.0f));
         this.goalSelector.add(3, new LookAroundGoal(this));
@@ -68,5 +79,20 @@ public class RogueDroidEntity extends HostileEntity {
     @Override
     public int getAir() {
         return 10;
+    }
+
+    @Override
+    protected @Nullable SoundEvent getAmbientSound() {
+        return SoundRegistry.ANDROID_AMBIENT;
+    }
+
+    @Override
+    protected @Nullable SoundEvent getHurtSound(DamageSource source) {
+        return SoundRegistry.ANDROID_HURT;
+    }
+
+    @Override
+    protected @Nullable SoundEvent getDeathSound() {
+        return SoundRegistry.ANDROID_DEATH;
     }
 }
