@@ -22,7 +22,7 @@ public class NavigationModule extends AbstractAndroidModule {
         this.brain.getTargeting().setBlockTarget(pos);
         this.brain.setTask("movingToBlock");
 
-        return AndroidAPI.Result(false, "Navigating to Block pos "+pos.toString());
+        return MethodResult.of();
     }
 
     public MethodResult MoveToEntity(String entityUUID) {
@@ -34,6 +34,6 @@ public class NavigationModule extends AbstractAndroidModule {
         this.brain.getTargeting().setEntityTarget(target);
         this.brain.setTask("movingToEntity");
 
-        return AndroidAPI.Result(false, "Moving to "+target.getName());
+        return MethodResult.of();
     }
 }

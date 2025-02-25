@@ -3,15 +3,15 @@
 	"id": "cc-androids",
 	"version": "${version}",
 	"name": "CC-Androids",
-	"description": "This is an example description! Tell everyone what your mod is about!",
+	"description": "Adds programmable androids to minecraft!",
 	"authors": [
-		"Me!"
+		"ThunderBear06"
 	],
 	"contact": {
-		"homepage": "https://fabricmc.net/",
-		"sources": "https://github.com/FabricMC/fabric-example-mod"
+		"homepage": "https://modrinth.com/mod/cc-androids",
+		"sources": "https://github.com/ThunderBear2006/CC-Androids"
 	},
-	"license": "CC0-1.0",
+	"license": "CC-BY-NC-4.0",
 	"icon": "assets/cc-androids/icon.png",
 	"environment": "*",
 	"entrypoints": {
@@ -34,9 +34,6 @@
 		"minecraft": "~1.20.1",
 		"java": ">=17",
 		"fabric-api": "*",
-		"computercraft": "1.114.3"
-	},
-	"suggests": {
-		"another-mod": "*"
+		"computercraft": ">=1.115.0"
 	}
 }

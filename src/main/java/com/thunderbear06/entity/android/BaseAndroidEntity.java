@@ -2,17 +2,13 @@ package com.thunderbear06.entity.android;
 
 import com.thunderbear06.ai.AndroidBrain;
 import com.thunderbear06.computer.AndroidComputerContainer;
+import com.thunderbear06.inventory.AndroidInventory;
 import com.thunderbear06.item.ItemRegistry;
-import com.thunderbear06.sounds.SoundRegistry;
-import dan200.computercraft.api.ComputerCraftAPI;
+import com.thunderbear06.tags.TagRegistry;
 import dan200.computercraft.api.lua.MethodResult;
 import dan200.computercraft.api.peripheral.IPeripheral;
 import dan200.computercraft.api.peripheral.PeripheralLookup;
-import dan200.computercraft.api.peripheral.PeripheralType;
-import dan200.computercraft.core.apis.PeripheralAPI;
 import dan200.computercraft.core.computer.ComputerSide;
-import dan200.computercraft.core.util.PeripheralHelpers;
-import dan200.computercraft.impl.Peripherals;
 import dan200.computercraft.shared.computer.core.ComputerFamily;
 import dan200.computercraft.shared.computer.core.ServerComputer;
 import net.minecraft.block.BlockState;
@@ -28,11 +24,12 @@ import net.minecraft.entity.damage.DamageTypes;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.inventory.Inventories;
+import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
 import net.minecraft.registry.tag.BlockTags;
-import net.minecraft.sound.SoundEvent;
 import net.minecraft.text.Text;
 import net.minecraft.util.Hand;
 import net.minecraft.util.collection.DefaultedList;
@@ -43,8 +40,9 @@ import net.minecraft.world.World;
 import javax.annotation.Nullable;
 
 public class BaseAndroidEntity extends PathAwareEntity {
-    public final DefaultedList<ItemStack> internalStorage;
     public AndroidBrain brain;
+
+    public final AndroidInventory inventory;
 
     protected final AndroidComputerContainer computerContainer;
     protected final int maxFuel = 1000;
@@ -57,8 +55,10 @@ public class BaseAndroidEntity extends PathAwareEntity {
 
         ((MobNavigation)this.getNavigation()).setCanPathThroughDoors(true);
 
-        this.internalStorage = DefaultedList.ofSize(9, ItemStack.EMPTY);
+        this.inventory = new AndroidInventory(9);
+
         this.computerContainer = new AndroidComputerContainer(this);
+
     }
 
     public void shutdown() {
@@ -117,13 +117,32 @@ public class BaseAndroidEntity extends PathAwareEntity {
             this.fuel--;
     }
 
-    public int addFuel(int amt) {
-        int cost = this.maxFuel - this.fuel;
+    private int getFuelMultiplier(ItemStack stack) {
+        if (stack.isIn(TagRegistry.MINOR_ANDROID_FUEL))
+            return 10;
+        if (stack.isIn(TagRegistry.MEDIUM_ANDROID_FUEL))
+            return 80;
+        if (stack.isIn(TagRegistry.MAJOR_ANDROID_FUEL))
+            return 800;
+        return 0;
+    }
 
-        cost = cost < amt ? amt - cost : amt;
+    public boolean addFuel(int min, ItemStack stack) {
+        int mult = getFuelMultiplier(stack);
 
-        setFuel(this.fuel + cost);
-        return cost;
+        if (mult <= 0)
+            return false;
+
+        int fuelAvailable = Math.min(min, stack.getCount());
+
+        int fuelNeeded = this.maxFuel - this.fuel;
+
+        int fuelUsed = Math.min(fuelAvailable, fuelNeeded);
+
+        setFuel(Math.min(this.fuel + (fuelUsed * mult), this.maxFuel));
+        stack.decrement(fuelUsed);
+
+        return true;
     }
 
     public int getFuel() {
@@ -143,10 +162,13 @@ public class BaseAndroidEntity extends PathAwareEntity {
     }
 
     // Action
+
     public void sendChatMessage(String msg) {
+        Text message = Text.literal(this.getName().getString() + ": " + msg);
+
         this.getWorld().getPlayers().forEach(player -> {
             if (this.getBlockPos().isWithinDistance(player.getBlockPos(), 50))
-                player.sendMessage(Text.literal(this.getName()+msg));
+                player.sendMessage(message);
         });
     }
 
@@ -172,7 +194,6 @@ public class BaseAndroidEntity extends PathAwareEntity {
             door.setOpen(this, this.getWorld(), state, pos, open);
         }
     }
-
 
     // Inventory
     public MethodResult pickupGroundItem(ItemEntity itemEntity) {
@@ -203,7 +224,7 @@ public class BaseAndroidEntity extends PathAwareEntity {
     protected void dropInventory() {
         this.dropCPU();
 
-        for (ItemStack stack : this.internalStorage) {
+        for (ItemStack stack : this.inventory.clearToList()) {
             this.dropStack(stack);
         }
     }
@@ -242,16 +263,16 @@ public class BaseAndroidEntity extends PathAwareEntity {
     }
 
     public ItemStack stashStack(ItemStack stack, int index) {
-        ItemStack storedStack = this.internalStorage.get(index);
+        ItemStack storedStack = this.inventory.getStack(index);
 
         if (storedStack.isEmpty()) {
-            this.internalStorage.set(index, stack);
+            this.inventory.setStack(index, stack);
             return ItemStack.EMPTY;
         } else if (storedStack.isOf(stack.getItem())) {
             int space = storedStack.getMaxCount() - storedStack.getCount();
             int transfer = Math.min(stack.getCount(), space);
 
-            this.internalStorage.set(index, stack.copyWithCount(transfer));
+            this.inventory.setStack(index, stack.copyWithCount(transfer));
 
             stack.setCount(stack.getCount() - transfer);
         }
@@ -260,21 +281,21 @@ public class BaseAndroidEntity extends PathAwareEntity {
     }
 
     public ItemStack getStashItem(int index, boolean remove) {
-        if (index < 0 || index >= this.internalStorage.size())
+        if (index < 0 || index >= this.inventory.size()-1)
             return null;
-        ItemStack storedStack = this.internalStorage.get(index);
+        ItemStack storedStack = this.inventory.getStack(index);
 
         if (remove)
-            this.internalStorage.set(index, ItemStack.EMPTY);
+            this.inventory.setStack(index, ItemStack.EMPTY);
 
         return storedStack;
     }
 
     public @Nullable MethodResult canStash(ItemStack itemStack, int index) {
-        if (index < 0 || index >= this.internalStorage.size())
+        if (index < 0 || index >= this.inventory.size())
             return MethodResult.of(String.format("Index out of bounds! Must be between 1 and %d", index));
 
-        ItemStack storedStack = this.internalStorage.get(index);
+        ItemStack storedStack = this.inventory.getStack(index);
 
         if (!storedStack.isEmpty() && !ItemStack.canCombine(storedStack, itemStack))
             return MethodResult.of("Index is occupied by another item stack!");
@@ -286,7 +307,7 @@ public class BaseAndroidEntity extends PathAwareEntity {
 
     @Override
     public void writeCustomDataToNbt(NbtCompound nbt) {
-        Inventories.writeNbt(nbt, this.internalStorage);
+        nbt.put("Items", this.inventory.toNbtList());
 
         nbt.putInt("Fuel", this.getFuel());
 
@@ -301,7 +322,7 @@ public class BaseAndroidEntity extends PathAwareEntity {
 
     @Override
     public void readCustomDataFromNbt(NbtCompound nbt) {
-        Inventories.readNbt(nbt, this.internalStorage);
+        this.inventory.readNbtList(nbt.getList("Items", NbtElement.COMPOUND_TYPE));
 
         if (nbt.contains("Fuel"))
             setFuel(nbt.getInt("Fuel"));

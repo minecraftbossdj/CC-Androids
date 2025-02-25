@@ -64,7 +64,7 @@ public class AndroidAPI implements ILuaAPI {
     @LuaFunction
     public final MethodResult attack(String entityUUID) {
         if (!checkFuel())
-            return Result(true, NO_FUEL_REASON);
+            return Result(true, "No fuel!");
 
         LivingEntity target = (LivingEntity) ((ServerWorld)this.brain.getAndroid().getWorld()).getEntity(UUID.fromString(entityUUID));
 
@@ -73,13 +73,13 @@ public class AndroidAPI implements ILuaAPI {
 
         this.brain.getTargeting().setEntityTarget(target);
         this.brain.setTask("attacking");
-        return Result(false, "Attacking "+target.getName().getString());
+        return MethodResult.of();
     }
 
     @LuaFunction
     public final MethodResult goTo(String entityUUID) {
         if (!checkFuel())
-            return Result(true, NO_FUEL_REASON);
+            return Result(true, "No fuel!");
 
         return this.brain.getModules().navigationModule.MoveToEntity(entityUUID);
     }
@@ -87,7 +87,7 @@ public class AndroidAPI implements ILuaAPI {
     @LuaFunction
     public final MethodResult moveTo(int x, int y, int z) {
         if (!checkFuel())
-            return Result(true, NO_FUEL_REASON);
+            return Result(true, "No fuel!");
 
         return this.brain.getModules().navigationModule.MoveToBlock(new BlockPos(x,y,z));
     }
@@ -95,7 +95,7 @@ public class AndroidAPI implements ILuaAPI {
     @LuaFunction
     public final MethodResult breakBlock(int x, int y, int z) {
         if (!checkFuel())
-            return Result(true, NO_FUEL_REASON);
+            return Result(true, "No fuel!");
 
         BlockPos pos = new BlockPos(x,y,z);
 
@@ -107,13 +107,13 @@ public class AndroidAPI implements ILuaAPI {
 
         this.brain.getTargeting().setBlockTarget(pos);
         this.brain.setTask("breakingBlock");
-        return Result(false, "Mining block at "+pos);
+        return MethodResult.of();
     }
 
     @LuaFunction
     public final MethodResult useBlock(int x, int y, int z) {
         if (!checkFuel())
-            return Result(true, NO_FUEL_REASON);
+            return Result(true, "No fuel!");
 
         BlockPos pos = new BlockPos(x,y,z);
         if (!this.brain.getAndroid().getWorld().isInBuildLimit(pos))
@@ -127,13 +127,13 @@ public class AndroidAPI implements ILuaAPI {
 
         this.brain.getTargeting().setBlockTarget(pos);
         this.brain.setTask("usingBlock");
-        return Result(false, "Using block at "+pos);
+        return MethodResult.of();
     }
 
     @LuaFunction
     public final MethodResult useEntity(String entityUUID) {
         if (!checkFuel())
-            return Result(true, NO_FUEL_REASON);
+            return Result(true, "No fuel!");
 
         LivingEntity target = (LivingEntity) ((ServerWorld)this.brain.getAndroid().getWorld()).getEntity(UUID.fromString(entityUUID));
 
@@ -142,7 +142,7 @@ public class AndroidAPI implements ILuaAPI {
 
         this.brain.getTargeting().setEntityTarget(target);
         this.brain.setTask("usingEntity");
-        return Result(false, "Using "+target.getName().getString());
+        return MethodResult.of();
     }
 
     /*
@@ -174,11 +174,6 @@ public class AndroidAPI implements ILuaAPI {
 
     @LuaFunction(mainThread = true)
     public final MethodResult stashHeldItem(int index) {
-        if (index < 1)
-            return Result(true, "Index must start at 1");
-
-        index--;
-
         ItemStack itemStack = this.brain.getAndroid().getMainHandStack();
 
         if (itemStack.isEmpty())
@@ -197,11 +192,6 @@ public class AndroidAPI implements ILuaAPI {
 
     @LuaFunction(mainThread = true)
     public final MethodResult equipFromStash(int index) {
-        if (index < 1)
-            return Result(true, "Index must start at 1");
-
-        index--;
-
         ItemStack storedItemstack = this.brain.getAndroid().getStashItem(index, true);
 
         if (storedItemstack == null || storedItemstack.isEmpty())
@@ -215,11 +205,6 @@ public class AndroidAPI implements ILuaAPI {
 
     @LuaFunction(mainThread = true)
     public final MethodResult getItemInStash(int index) {
-        if (index < 1)
-            return Result(true, "Index must start at 1");
-
-        index--;
-
         ItemStack storedStack = this.brain.getAndroid().getStashItem(index, false);
 
         if (storedStack.isEmpty())
@@ -229,18 +214,13 @@ public class AndroidAPI implements ILuaAPI {
 
     @LuaFunction(mainThread = true)
     public final MethodResult refuel(Optional<Integer> amt) {
-        int refuelAmt = amt.orElse(Integer.MAX_VALUE);
-
         ItemStack heldStack = this.brain.getAndroid().getMainHandStack();
 
         if (heldStack.isEmpty())
-            return Result(true, "Must be holding redstone to refuel");
+            return Result(true, "Hand it empty");
 
-        refuelAmt = Math.min(refuelAmt, heldStack.getCount());
-
-        heldStack.decrement(this.brain.getAndroid().addFuel(refuelAmt));
-
-        this.brain.getAndroid().setStackInHand(Hand.MAIN_HAND, heldStack);
+        if (!this.brain.getAndroid().addFuel(amt.orElse(heldStack.getCount()), heldStack))
+            return Result(true, "Held item stack cannot be used for fuel");
 
         return Result(false, "Fuel level increased to "+ brain.getAndroid().getFuel());
     }
@@ -265,7 +245,7 @@ public class AndroidAPI implements ILuaAPI {
     }
 
     @LuaFunction(mainThread = true)
-    public final MethodResult getClosestMobOfType(Optional<String> type) {
+    public final MethodResult getClosestMob(Optional<String> type) {
         return MethodResult.of(brain.getModules().sensorModule.getClosestMobOfType(type.orElse(null)));
     }
 

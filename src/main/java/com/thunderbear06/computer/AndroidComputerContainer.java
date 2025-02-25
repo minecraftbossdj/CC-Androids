@@ -14,7 +14,7 @@ import dan200.computercraft.shared.computer.core.ServerContext;
 import dan200.computercraft.shared.computer.inventory.ComputerMenuWithoutInventory;
 import dan200.computercraft.shared.config.Config;
 import dan200.computercraft.shared.network.container.ComputerContainerData;
-import dan200.computercraft.shared.util.ComponentMap;
+import dan200.computercraft.shared.platform.PlatformHelper;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
@@ -35,8 +35,7 @@ import java.util.UUID;
 public class AndroidComputerContainer implements NamedScreenHandlerFactory {
     private final BaseAndroidEntity android;
 
-    @Nullable
-    public String label;
+    public String label = "";
     public boolean on = false;
     public boolean locked = false;
 
@@ -95,7 +94,12 @@ public class AndroidComputerContainer implements NamedScreenHandlerFactory {
             turnOn(computer);
         }
 
-        (new ComputerContainerData(computer, ItemStack.EMPTY)).open(player, this);
+        PlatformHelper.get().openMenu(
+                player,
+                Text.literal(this.label),
+                (syncId, playerInventory, player1) -> new ComputerMenuWithoutInventory(ModRegistry.Menus.COMPUTER.get(), syncId, playerInventory, p -> true, computer),
+                new ComputerContainerData(computer, ItemStack.EMPTY)
+        );
     }
 
     protected void updateOwnerLabel(ServerComputer computer) {
@@ -159,7 +163,12 @@ public class AndroidComputerContainer implements NamedScreenHandlerFactory {
     }
 
     protected EntityComputer createComputer(int id) {
-        return new EntityComputer((ServerWorld)this.android.getWorld(), this.android, id, this.label, this.getFamily(), Config.computerTermWidth, Config.computerTermHeight, ComponentMap.builder().add(ComputerComponents.ANDROID_COMPUTER, this.android.brain).build());
+        ServerComputer.Properties properties = ServerComputer.properties(id, this.getFamily())
+                .addComponent(ComputerComponents.ANDROID_COMPUTER, this.android.brain)
+                .label(this.label)
+                .terminalSize(Config.DEFAULT_COMPUTER_TERM_WIDTH, Config.DEFAULT_COMPUTER_TERM_HEIGHT);
+
+        return new EntityComputer((ServerWorld)this.android.getWorld(), this.android, properties);
     }
 
     @Override
