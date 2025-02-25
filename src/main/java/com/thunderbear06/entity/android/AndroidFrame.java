@@ -29,8 +29,8 @@ public class AndroidFrame extends MobEntity {
     private static final TrackedData<Byte> INGOTS_NEEDED = DataTracker.registerData(AndroidFrame.class, TrackedDataHandlerRegistry.BYTE);
     private static final TrackedData<Boolean> HAS_CORE = DataTracker.registerData(AndroidFrame.class, TrackedDataHandlerRegistry.BOOLEAN);
 
-    private final byte maxComponentsNeeded = 8;
-    private final byte maxIngotsNeeded = 10;
+    public static final byte maxComponentsNeeded = 8;
+    public static final byte maxIngotsNeeded = 10;
 
     private boolean isAdvanced = false;
     private long lastHitTime = 0;
@@ -42,8 +42,8 @@ public class AndroidFrame extends MobEntity {
     @Override
     protected void initDataTracker() {
         super.initDataTracker();
-        this.dataTracker.startTracking(COMPONENTS_NEEDED, this.maxComponentsNeeded);
-        this.dataTracker.startTracking(INGOTS_NEEDED, this.maxIngotsNeeded);
+        this.dataTracker.startTracking(COMPONENTS_NEEDED, maxComponentsNeeded);
+        this.dataTracker.startTracking(INGOTS_NEEDED, maxIngotsNeeded);
         this.dataTracker.startTracking(HAS_CORE, false);
     }
 
@@ -263,13 +263,13 @@ public class AndroidFrame extends MobEntity {
 
     @Override
     protected void dropInventory() {
-        byte components_dropped = (byte) (this.maxComponentsNeeded - getComponentsNeeded());
+        byte components_dropped = (byte) (maxComponentsNeeded - getComponentsNeeded());
 
         for (int i = 0; i < components_dropped; i++) {
             this.dropStack(new ItemStack(ItemRegistry.COMPONENTS));
         }
 
-        int ingots_dropped = this.maxIngotsNeeded - getIngotsNeeded();
+        int ingots_dropped = maxIngotsNeeded - getIngotsNeeded();
 
         for (int j = 0; j < ingots_dropped; j++) {
             this.dropStack(new ItemStack(this.isAdvanced ? Items.GOLD_INGOT : Items.IRON_INGOT));

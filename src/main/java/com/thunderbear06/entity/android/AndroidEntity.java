@@ -3,6 +3,7 @@ package com.thunderbear06.entity.android;
 import com.thunderbear06.ai.AndroidBrain;
 import com.thunderbear06.ai.task.TaskManager;
 import com.thunderbear06.ai.task.tasks.*;
+import com.thunderbear06.item.AndroidFrameItem;
 import com.thunderbear06.item.ItemRegistry;
 import com.thunderbear06.sounds.SoundRegistry;
 import dan200.computercraft.shared.computer.core.ComputerFamily;
@@ -152,5 +153,17 @@ public class AndroidEntity extends BaseAndroidEntity {
     @Override
     protected @Nullable SoundEvent getDeathSound() {
         return SoundRegistry.ANDROID_DEATH;
+    }
+
+    @Override
+    protected void dropInventory() {
+        super.dropInventory();
+
+        this.dropStack(ItemRegistry.COMPONENTS.getDefaultStack().copyWithCount(AndroidFrame.maxComponentsNeeded/2));
+        dropIngots();
+    }
+
+    protected void dropIngots() {
+        this.dropStack(Items.IRON_INGOT.getDefaultStack().copyWithCount(AndroidFrame.maxIngotsNeeded/2));
     }
 }

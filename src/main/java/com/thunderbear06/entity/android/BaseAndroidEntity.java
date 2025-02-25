@@ -223,6 +223,7 @@ public class BaseAndroidEntity extends PathAwareEntity {
     @Override
     protected void dropInventory() {
         this.dropCPU();
+        this.dropStack(ItemRegistry.REDSTONE_REACTOR.getDefaultStack());
 
         for (ItemStack stack : this.inventory.clearToList()) {
             this.dropStack(stack);

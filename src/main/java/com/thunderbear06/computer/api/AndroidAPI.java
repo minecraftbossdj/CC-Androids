@@ -207,7 +207,7 @@ public class AndroidAPI implements ILuaAPI {
     public final MethodResult getItemInStash(int index) {
         ItemStack storedStack = this.brain.getAndroid().getStashItem(index, false);
 
-        if (storedStack.isEmpty())
+        if (storedStack == null || storedStack.isEmpty())
             return MethodResult.of("empty");
         return Result(false, storedStack.getItem().getName().getString());
     }

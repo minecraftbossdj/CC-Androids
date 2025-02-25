@@ -5,6 +5,7 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.mob.PathAwareEntity;
+import net.minecraft.item.Items;
 import net.minecraft.world.World;
 
 public class AdvancedAndroidEntity extends AndroidEntity{
@@ -30,5 +31,10 @@ public class AdvancedAndroidEntity extends AndroidEntity{
     @Override
     public int getBlockSearchRadius() {
         return super.getBlockSearchRadius() * 3;
+    }
+
+    @Override
+    protected void dropIngots() {
+        this.dropStack(Items.GOLD_INGOT.getDefaultStack().copyWithCount(AndroidFrame.maxIngotsNeeded/2));
     }
 }
