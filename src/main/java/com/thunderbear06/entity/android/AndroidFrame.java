@@ -239,15 +239,15 @@ public class AndroidFrame extends MobEntity {
                 this.lastHitTime = l;
             } else {
                 this.onBreak();
-                this.kill();
             }
         }
 
         return true;
     }
 
-    private void onBreak() {
+    public void onBreak() {
         this.dropInventory();
+        kill();
     }
 
     @Override

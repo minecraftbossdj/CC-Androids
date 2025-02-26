@@ -34,7 +34,7 @@ public class AdvancedAndroidEntity extends AndroidEntity{
     }
 
     @Override
-    protected void dropIngots() {
-        this.dropStack(Items.GOLD_INGOT.getDefaultStack().copyWithCount(AndroidFrame.maxIngotsNeeded/2));
+    protected void dropIngots(boolean full) {
+        this.dropStack(Items.GOLD_INGOT.getDefaultStack().copyWithCount((int) (AndroidFrame.maxIngotsNeeded * (full ? 1.0 : 0.5))));
     }
 }

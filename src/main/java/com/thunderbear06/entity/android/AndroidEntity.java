@@ -3,6 +3,7 @@ package com.thunderbear06.entity.android;
 import com.thunderbear06.ai.AndroidBrain;
 import com.thunderbear06.ai.task.TaskManager;
 import com.thunderbear06.ai.task.tasks.*;
+import com.thunderbear06.entity.EntityRegistry;
 import com.thunderbear06.item.AndroidFrameItem;
 import com.thunderbear06.item.ItemRegistry;
 import com.thunderbear06.sounds.SoundRegistry;
@@ -12,6 +13,9 @@ import net.minecraft.entity.ai.goal.LookAtEntityGoal;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.entity.data.DataTracker;
+import net.minecraft.entity.data.TrackedData;
+import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
@@ -32,7 +36,7 @@ import javax.annotation.Nullable;
 
 public class AndroidEntity extends BaseAndroidEntity {
     protected final TaskManager taskManager;
-    private boolean isLocked = false;
+    private static final TrackedData<Boolean> IS_LOCKED = DataTracker.registerData(AndroidEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
 
     public AndroidEntity(EntityType<? extends PathAwareEntity> entityType, World world) {
         super(entityType, world);
@@ -43,6 +47,12 @@ public class AndroidEntity extends BaseAndroidEntity {
 
         addAndroidTasks();
         initAndroidGoals();
+    }
+
+    @Override
+    protected void initDataTracker() {
+        super.initDataTracker();
+        this.dataTracker.startTracking(IS_LOCKED, false);
     }
 
     public static DefaultAttributeContainer.Builder createAndroidAttributes() {
@@ -79,7 +89,7 @@ public class AndroidEntity extends BaseAndroidEntity {
 
     @Override
     protected ActionResult interactMob(PlayerEntity player, Hand hand) {
-        if (this.isLocked && !this.brain.isOwningPlayer(player)) {
+        if (isLocked() && !this.brain.isOwningPlayer(player)) {
             this.getWorld().playSound(null, this.getBlockPos(), SoundEvents.BLOCK_IRON_TRAPDOOR_CLOSE, SoundCategory.NEUTRAL, 1.0f, 1.0f);
             player.sendMessage(Text.translatable("entity.cc-androids.android.locked"), true);
             return ActionResult.FAIL;
@@ -90,17 +100,23 @@ public class AndroidEntity extends BaseAndroidEntity {
             return ActionResult.SUCCESS;
         }
 
-        if (player.getStackInHand(hand).isOf(Items.TRIPWIRE_HOOK) && this.brain.isOwningPlayer(player)) {
-            this.isLocked = !this.isLocked;
-            return ActionResult.SUCCESS;
+        ItemStack playerHandStack = player.getStackInHand(hand);
+
+        if (playerHandStack.isOf(ItemRegistry.WRENCH)) {
+            return ActionResult.PASS;
         }
 
-        if (player.getStackInHand(hand).isOf(ItemRegistry.COMPONENTS) && this.repair()) {
-            player.getStackInHand(hand).decrement(1);
+        if (playerHandStack.isOf(ItemRegistry.COMPONENTS)) {
+            repair(playerHandStack);
             return ActionResult.SUCCESS;
         }
 
         if (!getWorld().isClient()) {
+            if (playerHandStack.isOf(Items.TRIPWIRE_HOOK) && this.brain.isOwningPlayer(player)) {
+                setLocked(!isLocked());
+                return ActionResult.SUCCESS;
+            }
+
             if (this.brain.getOwningPlayerProfile() == null)
                 this.brain.setOwningPlayer(player.getGameProfile());
 
@@ -108,6 +124,24 @@ public class AndroidEntity extends BaseAndroidEntity {
         }
 
         return ActionResult.CONSUME;
+    }
+
+    public boolean isLocked() {
+        return this.dataTracker.get(IS_LOCKED);
+    }
+
+    public void setLocked(boolean locked) {
+        this.dataTracker.set(IS_LOCKED, locked);
+    }
+
+    public void deconstruct() {
+        super.dropInventory();
+        this.dropComponents(true);
+        this.dropIngots(true);
+
+        AndroidFrame frame = this.convertTo(EntityRegistry.ANDROID_FRAME_ENTITY, false);
+        frame.copyPositionAndRotation(this);
+        this.getWorld().playSound(null, getBlockPos(), SoundEvents.BLOCK_ANVIL_DESTROY, SoundCategory.NEUTRAL, 1.0f, 1.0f);
     }
 
     protected ItemStack swapHandStack(ItemStack stack) {
@@ -124,10 +158,11 @@ public class AndroidEntity extends BaseAndroidEntity {
         return this.taskManager;
     }
 
-    public boolean repair() {
+    public boolean repair(ItemStack stack) {
         if (this.getHealth() < this.getMaxHealth()) {
             this.getWorld().playSoundFromEntity(null, this, SoundEvents.ENTITY_IRON_GOLEM_REPAIR, SoundCategory.NEUTRAL, 1.0f, 1.0f);
             this.heal(5);
+            stack.decrement(1);
             return true;
         }
         return false;
@@ -159,11 +194,15 @@ public class AndroidEntity extends BaseAndroidEntity {
     protected void dropInventory() {
         super.dropInventory();
 
-        this.dropStack(ItemRegistry.COMPONENTS.getDefaultStack().copyWithCount(AndroidFrame.maxComponentsNeeded/2));
-        dropIngots();
+        dropIngots(false);
+        dropComponents(false);
     }
 
-    protected void dropIngots() {
-        this.dropStack(Items.IRON_INGOT.getDefaultStack().copyWithCount(AndroidFrame.maxIngotsNeeded/2));
+    protected void dropIngots(boolean full) {
+        this.dropStack(Items.IRON_INGOT.getDefaultStack().copyWithCount((int) (AndroidFrame.maxIngotsNeeded * (full ? 1.0 : 0.5))));
+    }
+
+    protected void dropComponents(boolean full) {
+        this.dropStack(ItemRegistry.COMPONENTS.getDefaultStack().copyWithCount((int) (AndroidFrame.maxComponentsNeeded * (full ? 1.0 : 0.5))));
     }
 }

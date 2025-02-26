@@ -17,27 +17,11 @@ import net.minecraft.util.Identifier;
 
 public class ItemRegistry {
 
-    public static final Item COMPONENTS = Registry.register(
-            Registries.ITEM,
-            new Identifier(CCAndroids.MOD_ID, "components"),
-            new Item(new FabricItemSettings())
-    );
-
-    public static final Item ANDROID_CPU = Registry.register(
-            Registries.ITEM,
-            new Identifier(CCAndroids.MOD_ID,"android_cpu"),
-            new Item(new FabricItemSettings())
-    );
-    public static final Item REDSTONE_REACTOR = Registry.register(
-            Registries.ITEM,
-            new Identifier(CCAndroids.MOD_ID,"redstone_reactor"),
-            new Item(new FabricItemSettings())
-    );
-    public static final Item ANDROID_FRAME = Registry.register(
-            Registries.ITEM,
-            new Identifier(CCAndroids.MOD_ID,"android_frame"),
-            new AndroidFrameItem(new FabricItemSettings())
-    );
+    public static final Item COMPONENTS = registerItem("components", new Item(new FabricItemSettings()));
+    public static final Item ANDROID_CPU = registerItem("android_cpu", new Item(new FabricItemSettings()));
+    public static final Item REDSTONE_REACTOR = registerItem("redstone_reactor", new Item(new FabricItemSettings()));
+    public static final Item ANDROID_FRAME = registerItem("android_frame", new AndroidFrameItem(new FabricItemSettings()));
+    public static final Item WRENCH = registerItem("wrench", new WrenchItem(new FabricItemSettings().maxDamage(100)));
 
     public static final Item ANDROID_SPAWN_EGG = registerEgg(EntityRegistry.ANDROID_ENTITY, 0xb2b2b2,0x8a8c8b, "android_spawn");
     public static final Item ANDROID_ADVANCED_SPAWN_EGG = registerEgg(EntityRegistry.ADVANCED_ANDROID_ENTITY, 0xb2b2b2,0xa5a333, "android_advanced_spawn");
@@ -46,18 +30,20 @@ public class ItemRegistry {
 
     public static final ItemGroup ANDROIDS_ITEM_GROUP = FabricItemGroup.builder()
             .displayName(Text.translatable("itemGroup.cc-androids.android_item_group"))
-            .icon(() -> new ItemStack(ANDROID_CPU))
+            .icon(() -> new ItemStack(WRENCH))
             .entries((displayContext, entries) -> getGroupEntries(entries))
             .build();
 
-    private static Item registerEgg(EntityType<? extends MobEntity> entityType, int color1, int color2, String path) {
-        SpawnEggItem eggItem = new SpawnEggItem(entityType, color1, color2, new FabricItemSettings());
+    private static <I extends Item> Item registerItem(String name, I item) {
+        return Registry.register(Registries.ITEM, new Identifier(CCAndroids.MOD_ID, name), item);
+    }
 
-        Registry.register(Registries.ITEM, new Identifier(CCAndroids.MOD_ID, path), eggItem);
-        return eggItem;
+    private static Item registerEgg(EntityType<? extends MobEntity> entityType, int color1, int color2, String path) {
+        return registerItem(path, new SpawnEggItem(entityType, color1, color2, new FabricItemSettings()));
     }
 
     private static void getGroupEntries(ItemGroup.Entries entries) {
+        entries.add(WRENCH);
         entries.add(COMPONENTS);
         entries.add(ANDROID_CPU);
         entries.add(REDSTONE_REACTOR);
@@ -71,5 +57,4 @@ public class ItemRegistry {
     public static void register() {
         Registry.register(Registries.ITEM_GROUP, new Identifier(CCAndroids.MOD_ID, "androids_item_group"), ANDROIDS_ITEM_GROUP);
     }
-
 }

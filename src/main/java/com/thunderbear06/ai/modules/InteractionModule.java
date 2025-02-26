@@ -36,10 +36,8 @@ public class InteractionModule extends AbstractAndroidModule {
         this.android.swingHand(hand);
 
         if (entity instanceof AndroidEntity android && handStack.isOf(ItemRegistry.COMPONENTS)) {
-            if (android.repair()) {
-                handStack.decrement(1);
+            if (android.repair(handStack))
                 return;
-            }
         }
 
         if (entity instanceof MobEntity mob) {

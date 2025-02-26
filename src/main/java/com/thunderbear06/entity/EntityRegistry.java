@@ -31,7 +31,7 @@ public class EntityRegistry {
     public static final EntityType<AndroidFrame> ANDROID_FRAME_ENTITY = Registry.register(
             Registries.ENTITY_TYPE,
             Identifier.of(CCAndroids.MOD_ID, "unfinished_android"),
-            EntityType.Builder.create(AndroidFrame::new, SpawnGroup.MISC).build("unfinished_android")
+            EntityType.Builder.create(AndroidFrame::new, SpawnGroup.MISC).build("android_frame")
     );
 
     public static final EntityType<RogueDroidEntity> ROGUE_ANDROID_ENTITY = Registry.register(
