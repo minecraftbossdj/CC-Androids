@@ -17,30 +17,6 @@ public class MiningModule extends AbstractAndroidModule {
         super(owner, brain);
     }
 
-    public boolean mineTowards(BlockPos pos) {
-        if (!canMineBlock(pos))
-            return false;
-
-        ServerWorld world = (ServerWorld) this.android.getWorld();
-
-        BlockStateRaycastContext context = new BlockStateRaycastContext(this.android.getEyePos(), pos.toCenterPos(), state -> !state.isAir());
-
-        BlockHitResult result = world.raycast(context);
-
-        BlockPos hitPos = result.getBlockPos();
-
-        if (canMineBlock(hitPos)) {
-            mine(hitPos);
-            return true;
-        }
-
-        if (this.breakProgress > 0) {
-            resetBreakProgress(hitPos);
-        }
-
-        return false;
-    }
-
     public void mine(BlockPos pos) {
         BlockState state = this.android.getWorld().getBlockState(pos);
 

@@ -5,7 +5,6 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 
 public class BreakBlockTask extends MoveToBlockTask{
-    private boolean cancel = false;
 
     public BreakBlockTask(AndroidEntity android, double moveSpeed) {
         super(android, moveSpeed);
@@ -18,7 +17,7 @@ public class BreakBlockTask extends MoveToBlockTask{
 
     @Override
     public boolean shouldTick() {
-        return !this.android.getWorld().isAir(getPos()) && !this.cancel;
+        return !this.android.getWorld().isAir(getPos());
     }
 
     @Override
@@ -27,9 +26,9 @@ public class BreakBlockTask extends MoveToBlockTask{
         this.android.getLookControl().lookAt(pos.getX(), pos.getY(), pos.getZ());
         this.android.swingHand(Hand.MAIN_HAND);
 
-        if (isInRange(5)) {
+        if (isInRange(3)) {
             this.android.swingHand(Hand.MAIN_HAND);
-            this.cancel = !this.android.brain.getModules().miningModule.mineTowards(pos);
+            this.android.brain.getModules().miningModule.mine(getPos());
         }
         else
             super.tick();
