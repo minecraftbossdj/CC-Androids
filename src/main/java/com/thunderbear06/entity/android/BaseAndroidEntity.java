@@ -45,7 +45,7 @@ public class BaseAndroidEntity extends PathAwareEntity {
     public final AndroidInventory inventory;
 
     protected final AndroidComputerContainer computerContainer;
-    protected final int maxFuel = 1000;
+    protected final int maxFuel = 10000;
     protected int fuel = 0;
 
     public boolean isOn = false;
