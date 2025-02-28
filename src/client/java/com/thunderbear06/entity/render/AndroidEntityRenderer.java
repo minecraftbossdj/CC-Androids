@@ -22,7 +22,12 @@ public class AndroidEntityRenderer extends BipedEntityRenderer<AndroidEntity, Pl
         super(context, new PlayerEntityModel<>(context.getPart(EntityModelLayers.PLAYER), false), 0.5f);
         this.addFeature(new AndroidScreenFeatureRenderer(this) {
             @Override
-            public RenderLayer getEyesTexture(ComputerFamily family) {
+            public RenderLayer getEyesTexture(AndroidEntity entity) {
+                if (entity.hasVariant())
+                    return RenderLayer.getEyes(getVariantTexture(entity.getVariant(), true));
+
+                ComputerFamily family = entity.getComputer().getFamily();
+
                 return RenderLayer.getEyes(switch (family) {
                     case NORMAL -> androidNormalE;
                     case ADVANCED -> androidAdvancedE;
@@ -34,11 +39,26 @@ public class AndroidEntityRenderer extends BipedEntityRenderer<AndroidEntity, Pl
 
     @Override
     public Identifier getTexture(AndroidEntity entity) {
+        if (entity.hasVariant())
+            return getVariantTexture(entity.getVariant(), false);
+
         ComputerFamily family = entity.getComputer().family;
         if (family == ComputerFamily.ADVANCED)
             return androidAdvanced;
         if (family == ComputerFamily.COMMAND)
             return androidCommand;
         return androidNormal;
+    }
+
+    private Identifier getVariantTexture(byte b, boolean emissive) {
+        String path = emissive ? "textures/entity/emissive/variant/" : "textures/entity/variant/";
+
+        String name = switch (b) {
+            case 1 -> "android_kaylon.png";
+            case 2 -> "android_pinky.png";
+            default -> throw new IllegalArgumentException();
+        };
+
+        return new Identifier(CCAndroids.MOD_ID,path+name);
     }
 }

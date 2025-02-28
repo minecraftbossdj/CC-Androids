@@ -19,9 +19,9 @@ public abstract class AndroidScreenFeatureRenderer extends FeatureRenderer<Andro
 
     @Override
     public void render(MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, AndroidEntity entity, float limbAngle, float limbDistance, float tickDelta, float animationProgress, float headYaw, float headPitch) {
-        VertexConsumer vertexConsumer = vertexConsumers.getBuffer(this.getEyesTexture(entity.getComputer().getFamily()));
+        VertexConsumer vertexConsumer = vertexConsumers.getBuffer(this.getEyesTexture(entity));
         this.getContextModel().render(matrices, vertexConsumer, 1, OverlayTexture.DEFAULT_UV, 1.0F, 1.0F, 1.0F, 1.0F);
     }
 
-    public abstract RenderLayer getEyesTexture(ComputerFamily family);
+    public abstract RenderLayer getEyesTexture(AndroidEntity entity);
 }

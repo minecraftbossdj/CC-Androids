@@ -18,7 +18,7 @@ public class MoveToEntityTask extends EntityBasedTask{
 
     @Override
     public boolean shouldTick() {
-        return super.shouldTick() && !isInRange(1);
+        return super.shouldTick() && !isInRange(2);
     }
 
     @Override

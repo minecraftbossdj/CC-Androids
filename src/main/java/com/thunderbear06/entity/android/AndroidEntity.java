@@ -4,6 +4,7 @@ import com.thunderbear06.ai.AndroidBrain;
 import com.thunderbear06.ai.task.TaskManager;
 import com.thunderbear06.ai.task.tasks.*;
 import com.thunderbear06.entity.EntityRegistry;
+import com.thunderbear06.entity.android.variants.AndroidVariants;
 import com.thunderbear06.item.AndroidFrameItem;
 import com.thunderbear06.item.ItemRegistry;
 import com.thunderbear06.sounds.SoundRegistry;
@@ -20,6 +21,7 @@ import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.registry.tag.ItemTags;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -37,6 +39,7 @@ import javax.annotation.Nullable;
 public class AndroidEntity extends BaseAndroidEntity {
     protected final TaskManager taskManager;
     private static final TrackedData<Boolean> IS_LOCKED = DataTracker.registerData(AndroidEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
+    private static final TrackedData<Byte> VARIANT = DataTracker.registerData(AndroidEntity.class, TrackedDataHandlerRegistry.BYTE);
 
     public AndroidEntity(EntityType<? extends PathAwareEntity> entityType, World world) {
         super(entityType, world);
@@ -53,6 +56,7 @@ public class AndroidEntity extends BaseAndroidEntity {
     protected void initDataTracker() {
         super.initDataTracker();
         this.dataTracker.startTracking(IS_LOCKED, false);
+        this.dataTracker.startTracking(VARIANT, (byte) 0);
     }
 
     public static DefaultAttributeContainer.Builder createAndroidAttributes() {
@@ -102,14 +106,10 @@ public class AndroidEntity extends BaseAndroidEntity {
 
         ItemStack playerHandStack = player.getStackInHand(hand);
 
-        if (playerHandStack.isOf(ItemRegistry.WRENCH)) {
-            return ActionResult.PASS;
-        }
+        ActionResult itemUseResult = handleItemUse(playerHandStack);
 
-        if (playerHandStack.isOf(ItemRegistry.COMPONENTS)) {
-            repair(playerHandStack);
-            return ActionResult.SUCCESS;
-        }
+        if (itemUseResult != null)
+            return itemUseResult;
 
         if (!getWorld().isClient()) {
             if (playerHandStack.isOf(Items.TRIPWIRE_HOOK) && this.brain.isOwningPlayer(player)) {
@@ -126,12 +126,47 @@ public class AndroidEntity extends BaseAndroidEntity {
         return ActionResult.CONSUME;
     }
 
+    private ActionResult handleItemUse(ItemStack stack) {
+        if (stack.isOf(ItemRegistry.WRENCH)) {
+            return ActionResult.PASS;
+        }
+
+        if (stack.isOf(ItemRegistry.COMPONENTS)) {
+            repair(stack);
+            return ActionResult.SUCCESS;
+        }
+
+        if (stack.isOf(Items.GRAY_DYE)) {
+            setVariant((byte) 1);
+            return ActionResult.SUCCESS;
+        }
+
+        if (stack.isOf(Items.PINK_DYE)) {
+            setVariant((byte) 2);
+            return ActionResult.SUCCESS;
+        }
+
+        return null;
+    }
+
     public boolean isLocked() {
         return this.dataTracker.get(IS_LOCKED);
     }
 
     public void setLocked(boolean locked) {
         this.dataTracker.set(IS_LOCKED, locked);
+    }
+
+    public byte getVariant() {
+        return this.dataTracker.get(VARIANT);
+    }
+
+    public void setVariant(byte variant) {
+        this.dataTracker.set(VARIANT, variant);
+    }
+
+    public boolean hasVariant() {
+        return getVariant() > 0;
     }
 
     public void deconstruct() {
@@ -204,5 +239,17 @@ public class AndroidEntity extends BaseAndroidEntity {
 
     protected void dropComponents(boolean full) {
         this.dropStack(ItemRegistry.COMPONENTS.getDefaultStack().copyWithCount((int) (AndroidFrame.maxComponentsNeeded * (full ? 1.0 : 0.5))));
+    }
+
+    @Override
+    public void writeCustomDataToNbt(NbtCompound nbt) {
+        super.writeCustomDataToNbt(nbt);
+        nbt.putByte("Variant", this.getVariant());
+    }
+
+    @Override
+    public void readCustomDataFromNbt(NbtCompound nbt) {
+        super.readCustomDataFromNbt(nbt);
+        this.dataTracker.set(VARIANT, nbt.getByte("Variant"));
     }
 }

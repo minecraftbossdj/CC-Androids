@@ -3,13 +3,21 @@ package com.thunderbear06.item;
 import com.thunderbear06.entity.android.AndroidEntity;
 import com.thunderbear06.entity.android.AndroidFrame;
 import com.thunderbear06.entity.android.CommandAndroidEntity;
+import net.minecraft.client.item.TooltipContext;
+import net.minecraft.client.item.TooltipData;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
+import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.List;
+import java.util.Optional;
 
 public class WrenchItem extends Item {
     public WrenchItem(Settings settings) {
@@ -49,5 +57,10 @@ public class WrenchItem extends Item {
         }
 
         return ActionResult.PASS;
+    }
+
+    @Override
+    public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context) {
+        tooltip.add(Text.translatable("gui.cc-androids.tooltip.wrench"));
     }
 }

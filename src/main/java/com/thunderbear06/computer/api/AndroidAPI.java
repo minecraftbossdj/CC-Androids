@@ -1,7 +1,6 @@
 package com.thunderbear06.computer.api;
 
 import com.thunderbear06.ai.AndroidBrain;
-import com.thunderbear06.util.PathReachChecker;
 import dan200.computercraft.api.lua.ILuaAPI;
 import dan200.computercraft.api.lua.LuaFunction;
 import dan200.computercraft.api.lua.MethodResult;
@@ -16,8 +15,6 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 
 public class AndroidAPI implements ILuaAPI {
-    private final String NO_FUEL_REASON = "Insufficient redstone fuel for this action";
-
     private final AndroidBrain brain;
 
     public AndroidAPI(AndroidBrain android) {
@@ -119,12 +116,6 @@ public class AndroidAPI implements ILuaAPI {
         if (!this.brain.getAndroid().getWorld().isInBuildLimit(pos))
             return Result(true, "Block position must be in world build limit");
 
-        BlockPos closest = PathReachChecker.getClosestPosition(this.brain.getAndroid().getBlockPos(), pos, (ServerWorld) this.brain.getAndroid().getWorld());
-        if (closest != null) {
-            if (!closest.isWithinDistance(pos, 2))
-                return Result(true, "Could not find path to a position within 3 blocks of target");
-        }
-
         this.brain.getTargeting().setBlockTarget(pos);
         this.brain.setTask("usingBlock");
         return MethodResult.of();
@@ -221,6 +212,8 @@ public class AndroidAPI implements ILuaAPI {
 
         if (!this.brain.getAndroid().addFuel(amt.orElse(heldStack.getCount()), heldStack))
             return Result(true, "Held item stack cannot be used for fuel");
+
+        this.brain.getAndroid().setStackInHand(Hand.MAIN_HAND, heldStack);
 
         return Result(false, "Fuel level increased to "+ brain.getAndroid().getFuel());
     }
