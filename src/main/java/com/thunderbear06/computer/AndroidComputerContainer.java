@@ -5,8 +5,11 @@ import com.thunderbear06.component.ComputerComponents;
 import com.thunderbear06.entity.android.BaseAndroidEntity;
 import dan200.computercraft.api.ComputerCraftAPI;
 import dan200.computercraft.api.peripheral.IPeripheral;
-import dan200.computercraft.api.peripheral.PeripheralType;
+import dan200.computercraft.api.pocket.IPocketAccess;
+import dan200.computercraft.api.pocket.IPocketUpgrade;
+import dan200.computercraft.api.upgrades.UpgradeData;
 import dan200.computercraft.core.computer.ComputerSide;
+import dan200.computercraft.impl.PocketUpgrades;
 import dan200.computercraft.shared.ModRegistry;
 import dan200.computercraft.shared.computer.core.ComputerFamily;
 import dan200.computercraft.shared.computer.core.ServerComputer;
@@ -15,6 +18,7 @@ import dan200.computercraft.shared.computer.inventory.ComputerMenuWithoutInvento
 import dan200.computercraft.shared.config.Config;
 import dan200.computercraft.shared.network.container.ComputerContainerData;
 import dan200.computercraft.shared.platform.PlatformHelper;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
@@ -27,12 +31,16 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
+import net.minecraft.util.Hand;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.math.Vec3d;
 
 import javax.annotation.Nullable;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
-public class AndroidComputerContainer implements NamedScreenHandlerFactory {
+public class AndroidComputerContainer implements IPocketAccess, NamedScreenHandlerFactory {
     private final BaseAndroidEntity android;
 
     public String label = "";
@@ -44,6 +52,9 @@ public class AndroidComputerContainer implements NamedScreenHandlerFactory {
     private int computerID = -1;
     private boolean startOn = false;
     public ComputerFamily family;
+
+    private UpgradeData<IPocketUpgrade> leftUpgrade;
+    private UpgradeData<IPocketUpgrade> rightUpgrade;
 
     public AndroidComputerContainer(BaseAndroidEntity android) {
         this.android = android;
@@ -65,6 +76,8 @@ public class AndroidComputerContainer implements NamedScreenHandlerFactory {
 
             updateOwnerLabel(computer);
 
+            tickPeripherals();
+
             computer.keepAlive();
         }
 
@@ -79,6 +92,8 @@ public class AndroidComputerContainer implements NamedScreenHandlerFactory {
             this.computerID = computer.getID();
             this.on = true;
             this.android.isOn = true;
+            this.onHandItemChanged(Hand.MAIN_HAND);
+            this.onHandItemChanged(Hand.OFF_HAND);
         }
     }
 
@@ -116,7 +131,7 @@ public class AndroidComputerContainer implements NamedScreenHandlerFactory {
         }
     }
 
-    public final ServerComputer getOrCreateServerComputer() {
+    public final EntityComputer getOrCreateServerComputer() {
         MinecraftServer server = this.android.getWorld().getServer();
         if (server == null) {
             throw new IllegalStateException("Cannot access server computer on the client.");
@@ -192,5 +207,93 @@ public class AndroidComputerContainer implements NamedScreenHandlerFactory {
 
     public void readNbt(NbtCompound computerCompound) {
         this.setComputerID(computerCompound.getInt("ComputerID"));
+    }
+
+    public void getPeripherals() {
+        setPeripheral(ComputerSide.LEFT, this.leftUpgrade == null ? null : this.leftUpgrade.upgrade().createPeripheral(this));
+        setPeripheral(ComputerSide.RIGHT, this.rightUpgrade == null ? null : this.rightUpgrade.upgrade().createPeripheral(this));
+    }
+
+    private void tickPeripherals() {
+        if (this.leftUpgrade != null) leftUpgrade.upgrade().update(this, this.getServerComputer().getPeripheral(ComputerSide.LEFT));
+        if (this.rightUpgrade != null) rightUpgrade.upgrade().update(this, this.getServerComputer().getPeripheral(ComputerSide.RIGHT));
+    }
+
+    public boolean hasUpgrade(ComputerSide side) {
+        return (side == ComputerSide.LEFT && this.leftUpgrade != null) || (side == ComputerSide.RIGHT && this.rightUpgrade != null);
+    }
+
+    public void onHandItemChanged(Hand hand) {
+        ItemStack handItem = this.android.getStackInHand(hand);
+
+        if (hand == Hand.OFF_HAND) {
+            this.leftUpgrade = PocketUpgrades.instance().get(handItem);
+            return;
+        }
+
+        this.rightUpgrade = PocketUpgrades.instance().get(handItem);
+    }
+
+    @Override
+    public ServerWorld getLevel() {
+        return (ServerWorld) this.android.getWorld();
+    }
+
+    @Override
+    public Vec3d getPosition() {
+        return this.android.getPos();
+    }
+
+    @Override
+    public @Nullable Entity getEntity() {
+        return this.android;
+    }
+
+    @Deprecated
+    @Override
+    public int getColour() {
+        return 0;
+    }
+
+    @Deprecated
+    @Override
+    public void setColour(int i) {}
+
+    @Deprecated
+    @Override
+    public int getLight() {
+        return 0;
+    }
+
+    @Deprecated
+    @Override
+    public void setLight(int i) {}
+
+    @Deprecated
+    @Override
+    public @Nullable UpgradeData<IPocketUpgrade> getUpgrade() {
+        return null;
+    }
+
+    @Deprecated
+    @Override
+    public void setUpgrade(@org.jetbrains.annotations.Nullable UpgradeData<IPocketUpgrade> upgradeData) {}
+
+    @Override
+    public NbtCompound getUpgradeNBTData() {
+        return null;
+    }
+
+    @Deprecated
+    @Override
+    public void updateUpgradeNBTData() {}
+
+    @Deprecated
+    @Override
+    public void invalidatePeripheral() {}
+
+    @Override
+    public Map<Identifier, IPeripheral> getUpgrades() {
+        return Map.of();
     }
 }

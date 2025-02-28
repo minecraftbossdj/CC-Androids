@@ -56,9 +56,7 @@ public class BaseAndroidEntity extends PathAwareEntity {
         ((MobNavigation)this.getNavigation()).setCanPathThroughDoors(true);
 
         this.inventory = new AndroidInventory(9);
-
         this.computerContainer = new AndroidComputerContainer(this);
-
     }
 
     public void shutdown() {
@@ -106,10 +104,23 @@ public class BaseAndroidEntity extends PathAwareEntity {
             if (direction == Direction.UP)
                 continue;
 
+            if (this.getComputer().hasUpgrade(ComputerSide.valueOf(direction.ordinal())))
+                continue;
+
             IPeripheral peripheral = PeripheralLookup.get().find(this.getWorld(), this.getBlockPos().offset(direction), direction);
 
             this.computerContainer.setPeripheral(ComputerSide.valueOf(direction.getId()), peripheral);
         }
+    }
+
+    @Override
+    public void setStackInHand(Hand hand, ItemStack stack) {
+        super.setStackInHand(hand, stack);
+
+        this.getComputer().onHandItemChanged(hand);
+
+        if (this.getComputer().on)
+            this.getComputer().getPeripherals();
     }
 
     protected void consumeFuel() {
@@ -290,6 +301,12 @@ public class BaseAndroidEntity extends PathAwareEntity {
             this.inventory.setStack(index, ItemStack.EMPTY);
 
         return storedStack;
+    }
+
+    public void swapOffHandStack() {
+        ItemStack mainHandStack = this.getMainHandStack().copy();
+        this.setStackInHand(Hand.MAIN_HAND, this.getOffHandStack().copy());
+        this.setStackInHand(Hand.OFF_HAND, mainHandStack);
     }
 
     public @Nullable MethodResult canStash(ItemStack itemStack, int index) {

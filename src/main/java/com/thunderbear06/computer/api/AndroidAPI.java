@@ -136,6 +136,23 @@ public class AndroidAPI implements ILuaAPI {
         return MethodResult.of();
     }
 
+    @LuaFunction
+    public final MethodResult startUsingItem(String handName) {
+        if (handName.equals("right") || handName.equals("main"))
+            this.brain.getAndroid().setCurrentHand(Hand.MAIN_HAND);
+        else if (handName.equals("left") || handName.equals("off"))
+            this.brain.getAndroid().setCurrentHand(Hand.OFF_HAND);
+        else
+            return Result(true, "Invalid hand name");
+        return MethodResult.of();
+    }
+
+    @LuaFunction
+    public final MethodResult stopUsingItem() {
+        this.brain.getAndroid().clearActiveItem();
+        return MethodResult.of();
+    }
+
     /*
     * Inventory
     */
@@ -192,6 +209,12 @@ public class AndroidAPI implements ILuaAPI {
 
         this.brain.getAndroid().setStackInHand(Hand.MAIN_HAND, storedItemstack);
         return Result(false, "Equipped stack from index "+index);
+    }
+
+    @LuaFunction(mainThread = true)
+    public final MethodResult swapHandItems() {
+        this.brain.getAndroid().swapOffHandStack();
+        return MethodResult.of();
     }
 
     @LuaFunction(mainThread = true)
