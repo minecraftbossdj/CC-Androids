@@ -1,5 +1,6 @@
 package com.thunderbear06.entity.android;
 
+import com.thunderbear06.CCAndroids;
 import dan200.computercraft.shared.computer.core.ComputerFamily;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
@@ -16,7 +17,11 @@ public class CommandAndroidEntity extends AdvancedAndroidEntity{
     }
 
     public static DefaultAttributeContainer.Builder createAndroidAttributes() {
-        return createMobAttributes().add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 1.0);
+        return createMobAttributes()
+                .add(EntityAttributes.GENERIC_MAX_HEALTH, CCAndroids.Config.ComAndroidMaxHealth)
+                .add(EntityAttributes.GENERIC_ATTACK_DAMAGE, CCAndroids.Config.ComAndroidDamage)
+                .add(EntityAttributes.GENERIC_MOVEMENT_SPEED, CCAndroids.Config.ComAndroidSpeed)
+                .add(EntityAttributes.GENERIC_ARMOR, CCAndroids.Config.ComAndroidArmor);
     }
 
     @Override

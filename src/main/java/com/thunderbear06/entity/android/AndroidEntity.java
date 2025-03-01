@@ -1,5 +1,6 @@
 package com.thunderbear06.entity.android;
 
+import com.thunderbear06.CCAndroids;
 import com.thunderbear06.ai.AndroidBrain;
 import com.thunderbear06.ai.task.TaskManager;
 import com.thunderbear06.ai.task.tasks.*;
@@ -60,7 +61,11 @@ public class AndroidEntity extends BaseAndroidEntity {
     }
 
     public static DefaultAttributeContainer.Builder createAndroidAttributes() {
-        return createMobAttributes().add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 1.0);
+        return createMobAttributes()
+                .add(EntityAttributes.GENERIC_MAX_HEALTH, CCAndroids.Config.AndroidMaxHealth)
+                .add(EntityAttributes.GENERIC_ATTACK_DAMAGE, CCAndroids.Config.AndroidDamage)
+                .add(EntityAttributes.GENERIC_MOVEMENT_SPEED, CCAndroids.Config.AndroidSpeed)
+                .add(EntityAttributes.GENERIC_ARMOR, CCAndroids.Config.AndroidArmor);
     }
 
     protected void addAndroidTasks() {
@@ -234,11 +239,11 @@ public class AndroidEntity extends BaseAndroidEntity {
     }
 
     protected void dropIngots(boolean full) {
-        this.dropStack(Items.IRON_INGOT.getDefaultStack().copyWithCount((int) (AndroidFrame.maxIngotsNeeded * (full ? 1.0 : 0.5))));
+        this.dropStack(Items.IRON_INGOT.getDefaultStack().copyWithCount((int) (CCAndroids.Config.IngotsForConstruction * (full ? 1.0 : CCAndroids.Config.IngotsDroppedOnDeathPercentage))));
     }
 
     protected void dropComponents(boolean full) {
-        this.dropStack(ItemRegistry.COMPONENTS.getDefaultStack().copyWithCount((int) (AndroidFrame.maxComponentsNeeded * (full ? 1.0 : 0.5))));
+        this.dropStack(ItemRegistry.COMPONENTS.getDefaultStack().copyWithCount((int) (CCAndroids.Config.CompsForConstruction * (full ? 1.0 : CCAndroids.Config.CompsDroppedOnDeathPercentage))));
     }
 
     @Override

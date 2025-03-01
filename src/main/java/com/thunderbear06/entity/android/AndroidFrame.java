@@ -1,5 +1,6 @@
 package com.thunderbear06.entity.android;
 
+import com.thunderbear06.CCAndroids;
 import com.thunderbear06.entity.EntityRegistry;
 import com.thunderbear06.item.ItemRegistry;
 import dan200.computercraft.shared.computer.core.ComputerFamily;
@@ -29,9 +30,6 @@ public class AndroidFrame extends MobEntity {
     private static final TrackedData<Byte> INGOTS_NEEDED = DataTracker.registerData(AndroidFrame.class, TrackedDataHandlerRegistry.BYTE);
     private static final TrackedData<Boolean> HAS_CORE = DataTracker.registerData(AndroidFrame.class, TrackedDataHandlerRegistry.BOOLEAN);
 
-    public static final byte maxComponentsNeeded = 8;
-    public static final byte maxIngotsNeeded = 10;
-
     private boolean isAdvanced = false;
     private long lastHitTime = 0;
 
@@ -42,8 +40,8 @@ public class AndroidFrame extends MobEntity {
     @Override
     protected void initDataTracker() {
         super.initDataTracker();
-        this.dataTracker.startTracking(COMPONENTS_NEEDED, maxComponentsNeeded);
-        this.dataTracker.startTracking(INGOTS_NEEDED, maxIngotsNeeded);
+        this.dataTracker.startTracking(COMPONENTS_NEEDED, CCAndroids.Config.CompsForConstruction);
+        this.dataTracker.startTracking(INGOTS_NEEDED, CCAndroids.Config.IngotsForConstruction);
         this.dataTracker.startTracking(HAS_CORE, false);
     }
 
@@ -114,7 +112,7 @@ public class AndroidFrame extends MobEntity {
             return false;
 
         if (isGold && !this.isAdvanced) {
-            if (getIngotsNeeded() < this.maxIngotsNeeded)
+            if (getIngotsNeeded() < CCAndroids.Config.IngotsForConstruction)
                 return false;
             this.isAdvanced = true;
         }
@@ -263,13 +261,13 @@ public class AndroidFrame extends MobEntity {
 
     @Override
     protected void dropInventory() {
-        byte components_dropped = (byte) (maxComponentsNeeded - getComponentsNeeded());
+        byte components_dropped = (byte) (CCAndroids.Config.CompsForConstruction - getComponentsNeeded());
 
         for (int i = 0; i < components_dropped; i++) {
             this.dropStack(new ItemStack(ItemRegistry.COMPONENTS));
         }
 
-        int ingots_dropped = maxIngotsNeeded - getIngotsNeeded();
+        int ingots_dropped = CCAndroids.Config.IngotsForConstruction - getIngotsNeeded();
 
         for (int j = 0; j < ingots_dropped; j++) {
             this.dropStack(new ItemStack(this.isAdvanced ? Items.GOLD_INGOT : Items.IRON_INGOT));

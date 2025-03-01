@@ -1,5 +1,6 @@
 package com.thunderbear06.entity.android;
 
+import com.thunderbear06.CCAndroids;
 import dan200.computercraft.shared.computer.core.ComputerFamily;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
@@ -16,11 +17,11 @@ public class AdvancedAndroidEntity extends AndroidEntity{
     }
 
     public static DefaultAttributeContainer.Builder createAndroidAttributes() {
-        return AndroidEntity.createAndroidAttributes()
-                .add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 3.0)
-                .add(EntityAttributes.GENERIC_MAX_HEALTH, 25.0)
-                .add(EntityAttributes.GENERIC_ARMOR, 2.0)
-                .add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.9);
+        return createMobAttributes()
+                .add(EntityAttributes.GENERIC_MAX_HEALTH, CCAndroids.Config.AdvAndroidMaxHealth)
+                .add(EntityAttributes.GENERIC_ATTACK_DAMAGE, CCAndroids.Config.AdvAndroidDamage)
+                .add(EntityAttributes.GENERIC_MOVEMENT_SPEED, CCAndroids.Config.AdvAndroidSpeed)
+                .add(EntityAttributes.GENERIC_ARMOR, CCAndroids.Config.AdvAndroidArmor);
     }
 
     @Override
@@ -35,6 +36,6 @@ public class AdvancedAndroidEntity extends AndroidEntity{
 
     @Override
     protected void dropIngots(boolean full) {
-        this.dropStack(Items.GOLD_INGOT.getDefaultStack().copyWithCount((int) (AndroidFrame.maxIngotsNeeded * (full ? 1.0 : 0.5))));
+        this.dropStack(Items.GOLD_INGOT.getDefaultStack().copyWithCount((int) (CCAndroids.Config.IngotsForConstruction * (full ? 1.0 : 0.5))));
     }
 }

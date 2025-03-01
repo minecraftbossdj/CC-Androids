@@ -3,6 +3,8 @@ package com.thunderbear06;
 import com.thunderbear06.ai.AndroidBrain;
 import com.thunderbear06.component.ComputerComponents;
 import com.thunderbear06.computer.api.AndroidAPI;
+import com.thunderbear06.config.CCAndroidsConfig;
+import com.thunderbear06.config.ConfigLoader;
 import com.thunderbear06.entity.EntityRegistry;
 import com.thunderbear06.item.ItemRegistry;
 import com.thunderbear06.sounds.SoundRegistry;
@@ -16,12 +18,16 @@ public class CCAndroids implements ModInitializer {
 
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
+	public static CCAndroidsConfig Config;
+
 	@Override
 	public void onInitialize() {
 		ComputerCraftAPI.registerAPIFactory(computer -> {
 			AndroidBrain brain = computer.getComponent(ComputerComponents.ANDROID_COMPUTER);
 			return brain == null ? null : new AndroidAPI(brain);
 		});
+
+		Config = ConfigLoader.loadConfig(MOD_ID, new CCAndroidsConfig());
 
 		ItemRegistry.register();
 		EntityRegistry.register();

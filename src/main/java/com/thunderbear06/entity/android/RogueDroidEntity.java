@@ -1,5 +1,6 @@
 package com.thunderbear06.entity.android;
 
+import com.thunderbear06.CCAndroids;
 import com.thunderbear06.sounds.SoundRegistry;
 import net.minecraft.entity.EntityData;
 import net.minecraft.entity.EntityType;
@@ -29,14 +30,17 @@ public class RogueDroidEntity extends HostileEntity {
 
     public static DefaultAttributeContainer.Builder createAndroidAttributes() {
         return createMobAttributes()
-                .add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 5.0)
-                .add(EntityAttributes.GENERIC_MAX_HEALTH, 25.0)
-                .add(EntityAttributes.GENERIC_ARMOR, 5.0);
+                .add(EntityAttributes.GENERIC_MAX_HEALTH, CCAndroids.Config.RogueMaxHealth)
+                .add(EntityAttributes.GENERIC_ATTACK_DAMAGE, CCAndroids.Config.RogueDamage)
+                .add(EntityAttributes.GENERIC_MOVEMENT_SPEED, CCAndroids.Config.RogueSpeed)
+                .add(EntityAttributes.GENERIC_ARMOR, CCAndroids.Config.RogueArmor);
     }
 
     @Override
     public boolean canSpawn(WorldAccess world, SpawnReason spawnReason) {
         if (spawnReason == SpawnReason.NATURAL) {
+            if (!CCAndroids.Config.RoguesSpawnNaturally)
+                return false;
             if (world.isSkyVisible(this.getBlockPos()))
                 return false;
             if (world.getLightLevel(this.getBlockPos()) > 3)
@@ -48,7 +52,7 @@ public class RogueDroidEntity extends HostileEntity {
 
     @Override
     public @Nullable EntityData initialize(ServerWorldAccess world, LocalDifficulty difficulty, SpawnReason spawnReason, @Nullable EntityData entityData, @Nullable NbtCompound entityNbt) {
-        if (spawnReason.equals(SpawnReason.NATURAL)) {
+        if (spawnReason.equals(SpawnReason.NATURAL) && CCAndroids.Config.RoguesSpawnWithTools) {
             int rng = this.getRandom().nextInt(10);
 
             ItemStack handStack = switch (rng) {

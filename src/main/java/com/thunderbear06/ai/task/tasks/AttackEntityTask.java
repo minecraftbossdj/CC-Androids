@@ -17,6 +17,11 @@ public class AttackEntityTask extends MoveToEntityTask {
     }
 
     @Override
+    public boolean shouldTick() {
+        return this.android.brain.getTargeting().hasEntityTarget();
+    }
+
+    @Override
     public void tick() {
         if (this.attackCooldown-- > 0)
             return;
