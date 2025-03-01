@@ -27,8 +27,6 @@ import net.minecraft.screen.ScreenHandler;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.Hand;
 
@@ -41,7 +39,6 @@ public class AndroidComputerContainer implements NamedScreenHandlerFactory {
 
     public String label = "";
     public boolean on = false;
-    public boolean locked = false;
 
     @Nullable
     private UUID instanceID = null;
@@ -89,20 +86,19 @@ public class AndroidComputerContainer implements NamedScreenHandlerFactory {
     public void turnOn(ServerComputer computer) {
         if (!computer.isOn()) {
             computer.turnOn();
+
             this.computerID = computer.getID();
             this.on = true;
             this.android.isOn = true;
+
             this.onHandItemChanged(Hand.MAIN_HAND);
             this.onHandItemChanged(Hand.OFF_HAND);
+
+            getUpgradePeripherals();
         }
     }
 
     public void openComputer(ServerPlayerEntity player) {
-        if (this.locked && !player.getGameProfile().equals(this.android.brain.getOwningPlayerProfile())) {
-            player.getWorld().playSoundFromEntity(null, this.android, SoundEvents.BLOCK_CHEST_LOCKED, SoundCategory.NEUTRAL, 1.0f, 1.0f);
-            return;
-        }
-
         ServerComputer computer = getOrCreateServerComputer();
 
         if (!this.on) {
@@ -213,7 +209,7 @@ public class AndroidComputerContainer implements NamedScreenHandlerFactory {
         this.setComputerID(computerCompound.getInt("ComputerID"));
     }
 
-    public void getPeripherals() {
+    public void getUpgradePeripherals() {
         setPeripheral(ComputerSide.LEFT, this.leftUpgrade == null ? null : this.leftUpgrade.upgrade().createPeripheral(this.dummyPocket));
         setPeripheral(ComputerSide.RIGHT, this.rightUpgrade == null ? null : this.rightUpgrade.upgrade().createPeripheral(this.dummyPocket));
     }

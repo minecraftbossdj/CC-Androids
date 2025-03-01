@@ -1,15 +1,11 @@
 package com.thunderbear06.computer.peripherals;
 
-import com.mojang.authlib.minecraft.client.MinecraftClient;
-import com.thunderbear06.ai.AndroidBrain;
-import com.thunderbear06.computer.AndroidComputerContainer;
 import com.thunderbear06.entity.android.BaseAndroidEntity;
 import dan200.computercraft.api.peripheral.IPeripheral;
 import dan200.computercraft.api.pocket.IPocketAccess;
 import dan200.computercraft.api.pocket.IPocketUpgrade;
 import dan200.computercraft.api.upgrades.UpgradeData;
 import dan200.computercraft.impl.PocketUpgrades;
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;

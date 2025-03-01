@@ -12,7 +12,8 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.Optional;
+import java.util.UUID;
 
 public class AndroidAPI implements ILuaAPI {
     private final AndroidBrain brain;

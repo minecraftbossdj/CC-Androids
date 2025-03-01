@@ -5,8 +5,6 @@ import com.thunderbear06.ai.AndroidBrain;
 import com.thunderbear06.ai.task.TaskManager;
 import com.thunderbear06.ai.task.tasks.*;
 import com.thunderbear06.entity.EntityRegistry;
-import com.thunderbear06.entity.android.variants.AndroidVariants;
-import com.thunderbear06.item.AndroidFrameItem;
 import com.thunderbear06.item.ItemRegistry;
 import com.thunderbear06.sounds.SoundRegistry;
 import dan200.computercraft.shared.computer.core.ComputerFamily;
