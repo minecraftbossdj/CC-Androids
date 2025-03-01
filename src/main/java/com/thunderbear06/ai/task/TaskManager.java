@@ -30,6 +30,8 @@ public class TaskManager {
     }
 
     public void clearCurrentTask() {
+        if (this.currentTask == null)
+            return;
         this.currentTask.lastTick();
         this.currentTask = null;
     }

@@ -72,6 +72,8 @@ public class AndroidComputerContainer implements NamedScreenHandlerFactory {
                 return;
             }
 
+            this.on = computer.isOn();
+
             updateOwnerLabel(computer);
 
             tickPeripherals();

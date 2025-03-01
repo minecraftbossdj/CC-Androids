@@ -5,7 +5,6 @@ import com.thunderbear06.CCAndroids;
 import com.thunderbear06.ai.modules.AndroidModules;
 import com.thunderbear06.entity.android.AndroidEntity;
 import com.thunderbear06.entity.player.AndroidPlayer;
-import dan200.computercraft.api.turtle.ITurtleUpgrade;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.world.ServerWorld;
@@ -33,7 +32,7 @@ public class AndroidBrain {
 
     public void onShutdown() {
         this.targeting.clearTargets();
-        this.android.getTaskManager().setCurrentTask("idle");
+        this.android.getTaskManager().clearCurrentTask();
     }
 
     public void setTask(String taskName) {
