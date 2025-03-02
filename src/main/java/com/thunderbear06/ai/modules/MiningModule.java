@@ -4,6 +4,7 @@ import com.thunderbear06.ai.AndroidBrain;
 import com.thunderbear06.entity.android.BaseAndroidEntity;
 import com.thunderbear06.entity.player.AndroidPlayer;
 import net.minecraft.block.BlockState;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 
@@ -15,13 +16,10 @@ public class MiningModule extends AbstractAndroidModule {
     }
 
     public void mine(BlockPos pos) {
-        BlockState state = this.android.getWorld().getBlockState(pos);
-
-        this.breakProgress = tickBreakProgress(pos, state, this.breakProgress);
+        this.breakProgress = tickBreakProgress(pos, this.breakProgress);
 
         if (this.breakProgress >= 10.0f) {
             breakBlock(pos);
-            this.resetBreakProgress(pos);
         }
     }
 
@@ -29,24 +27,31 @@ public class MiningModule extends AbstractAndroidModule {
         AndroidPlayer.get(this.brain).player().interactionManager.tryBreakBlock(pos);
     }
 
-    public boolean canMineBlock(BlockPos pos) {
-        if (this.android.getWorld().isClient() || !pos.isWithinDistance(this.android.getBlockPos(), 2))
-            return false;
+    public void resetBreakProgress(BlockPos pos) {
+        this.android.getWorld().setBlockBreakingInfo(this.android.getId(), pos, 0);
+        this.breakProgress = 0.0f;
+    }
 
+    public boolean canMineBlock(BlockPos pos) {
         BlockState state = this.android.getWorld().getBlockState(pos);
 
         return !state.isAir() && state.getHardness(this.android.getWorld(), pos) > -1;
     }
 
-    private float tickBreakProgress(BlockPos pos, BlockState state, float progress) {
-        this.android.swingHand(Hand.MAIN_HAND);
+    private float tickBreakProgress(BlockPos pos, float progress) {
         this.android.getWorld().setBlockBreakingInfo(this.android.getId(), pos, (int) progress);
-        progress += AndroidPlayer.get(this.brain).player().getBlockBreakingSpeed(state);
+        progress += getBreakSpeed(pos);
         return progress;
     }
 
-    private void resetBreakProgress(BlockPos pos) {
-        this.android.getWorld().setBlockBreakingInfo(this.android.getId(), pos, 0);
-        this.breakProgress = 0.0f;
+    private float getBreakSpeed(BlockPos pos) {
+        BlockState state = android.getWorld().getBlockState(pos);
+
+        ServerPlayerEntity player = AndroidPlayer.get(brain).player();
+
+        float hardnessMod = state.getHardness(android.getWorld(), pos);
+        int canHarvestMod = player.canHarvest(state) ? 30 : 100;
+
+        return (player.getBlockBreakingSpeed(state) / hardnessMod / canHarvestMod) * 100.0f;
     }
 }

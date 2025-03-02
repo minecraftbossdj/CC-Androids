@@ -1,9 +1,7 @@
 package com.thunderbear06.computer.api;
 
 import com.thunderbear06.ai.AndroidBrain;
-import dan200.computercraft.api.lua.ILuaAPI;
-import dan200.computercraft.api.lua.LuaFunction;
-import dan200.computercraft.api.lua.MethodResult;
+import dan200.computercraft.api.lua.*;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
@@ -12,6 +10,7 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -32,13 +31,31 @@ public class AndroidAPI implements ILuaAPI {
         return "android";
     }
 
-
-    public static MethodResult Result(boolean failure, String reason) {
-        return MethodResult.of(failure, reason);
+    private boolean missingFuel() {
+        return !this.brain.getAndroid().hasFuel();
     }
 
-    private boolean checkFuel() {
-        return this.brain.getAndroid().hasFuel();
+    private BlockPos getPosFromArgs(IArguments args) throws LuaException {
+        int x,y,z;
+
+        Object o = args.get(0);
+
+        if (o instanceof Map<?,?> pos) {
+            if (!pos.containsKey("x") || !pos.containsKey("y") || !pos.containsKey("z"))
+                throw new LuaException("x,y,z keys expected");
+
+            x = ((Double) pos.get("x")).intValue();
+            y = ((Double) pos.get("y")).intValue();
+            z = ((Double) pos.get("z")).intValue();
+
+            return new BlockPos(x,y,z);
+        }
+
+        x = args.getInt(0);
+        y = args.getInt(1);
+        z = args.getInt(2);
+
+        return new BlockPos(x,y,z);
     }
 
     /*
@@ -46,7 +63,7 @@ public class AndroidAPI implements ILuaAPI {
     */
 
     @LuaFunction
-    public final MethodResult getState() {
+    public final MethodResult currentTask() {
         return MethodResult.of(this.brain.getAndroid().getTaskManager().getCurrentTaskName());
     }
 
@@ -61,13 +78,13 @@ public class AndroidAPI implements ILuaAPI {
 
     @LuaFunction
     public final MethodResult attack(String entityUUID) {
-        if (!checkFuel())
-            return Result(true, "No fuel!");
+        if (missingFuel())
+            return MethodResult.of(true, "No fuel!");
 
         LivingEntity target = (LivingEntity) ((ServerWorld)this.brain.getAndroid().getWorld()).getEntity(UUID.fromString(entityUUID));
 
         if (target == null)
-            return Result(true, "Unknown entity or invalid UUID");
+            return MethodResult.of(true, "Unknown entity or invalid UUID");
 
         this.brain.getTargeting().setEntityTarget(target);
         this.brain.setTask("attacking");
@@ -76,32 +93,32 @@ public class AndroidAPI implements ILuaAPI {
 
     @LuaFunction
     public final MethodResult goTo(String entityUUID) {
-        if (!checkFuel())
-            return Result(true, "No fuel!");
+        if (missingFuel())
+            return MethodResult.of(true, "No fuel!");
 
         return this.brain.getModules().navigationModule.MoveToEntity(entityUUID);
     }
 
     @LuaFunction
-    public final MethodResult moveTo(int x, int y, int z) {
-        if (!checkFuel())
-            return Result(true, "No fuel!");
+    public final MethodResult moveTo(IArguments args) throws LuaException {
+        if (missingFuel())
+            return MethodResult.of(true, "No fuel!");
 
-        return this.brain.getModules().navigationModule.MoveToBlock(new BlockPos(x,y,z));
+        return this.brain.getModules().navigationModule.MoveToBlock(getPosFromArgs(args));
     }
 
     @LuaFunction
-    public final MethodResult breakBlock(int x, int y, int z) {
-        if (!checkFuel())
-            return Result(true, "No fuel!");
+    public final MethodResult breakBlock(IArguments args) throws LuaException {
+        if (missingFuel())
+            return MethodResult.of(true, "No fuel!");
 
-        BlockPos pos = new BlockPos(x,y,z);
+        BlockPos pos = getPosFromArgs(args);
 
         if (!pos.isWithinDistance(this.brain.getAndroid().getBlockPos(), 100))
-            return Result(true, "Block position must be within a 100 block radius");
+            return MethodResult.of(true, "Block position must be within a 100 block radius");
 
         if (!this.brain.getAndroid().getWorld().isInBuildLimit(pos))
-            return Result(true, "Block position must be in world build limit");
+            return MethodResult.of(true, "Block position must be in world build limit");
 
         this.brain.getTargeting().setBlockTarget(pos);
         this.brain.setTask("breakingBlock");
@@ -109,13 +126,13 @@ public class AndroidAPI implements ILuaAPI {
     }
 
     @LuaFunction
-    public final MethodResult useBlock(int x, int y, int z) {
-        if (!checkFuel())
-            return Result(true, "No fuel!");
+    public final MethodResult useBlock(IArguments args) throws LuaException {
+        if (missingFuel())
+            return MethodResult.of(true, "No fuel!");
 
-        BlockPos pos = new BlockPos(x,y,z);
+        BlockPos pos = getPosFromArgs(args);
         if (!this.brain.getAndroid().getWorld().isInBuildLimit(pos))
-            return Result(true, "Block position must be in world build limit");
+            return MethodResult.of(true, "Block position must be in world build limit");
 
         this.brain.getTargeting().setBlockTarget(pos);
         this.brain.setTask("usingBlock");
@@ -124,19 +141,20 @@ public class AndroidAPI implements ILuaAPI {
 
     @LuaFunction
     public final MethodResult useEntity(String entityUUID) {
-        if (!checkFuel())
-            return Result(true, "No fuel!");
+        if (missingFuel())
+            return MethodResult.of(true, "No fuel!");
 
         LivingEntity target = (LivingEntity) ((ServerWorld)this.brain.getAndroid().getWorld()).getEntity(UUID.fromString(entityUUID));
 
         if (target == null || target.isRemoved())
-            return Result(true, "Unknown entity or invalid UUID");
+            return MethodResult.of(true, "Unknown entity or invalid UUID");
 
         this.brain.getTargeting().setEntityTarget(target);
         this.brain.setTask("usingEntity");
         return MethodResult.of();
     }
 
+    /* Disabled for now as they really don't work as expected
     @LuaFunction
     public final MethodResult startUsingItem(String handName) {
         if (handName.equals("right") || handName.equals("main"))
@@ -144,7 +162,7 @@ public class AndroidAPI implements ILuaAPI {
         else if (handName.equals("left") || handName.equals("off"))
             this.brain.getAndroid().setCurrentHand(Hand.OFF_HAND);
         else
-            return Result(true, "Invalid hand name");
+            return MethodResult.of(true, "Invalid hand name");
         return MethodResult.of();
     }
 
@@ -153,6 +171,7 @@ public class AndroidAPI implements ILuaAPI {
         this.brain.getAndroid().clearActiveItem();
         return MethodResult.of();
     }
+    */
 
     /*
     * Inventory
@@ -165,28 +184,28 @@ public class AndroidAPI implements ILuaAPI {
         ItemEntity itemEntity = (ItemEntity) world.getEntity(UUID.fromString(entityUUID));
 
         if (itemEntity == null)
-            return Result(true, "Unknown item or invalid UUID");
+            return MethodResult.of(true, "Unknown item or invalid UUID");
 
         if (this.brain.getAndroid().distanceTo(itemEntity) > 2)
-            return Result(true, "Item is too far to pick up");
+            return MethodResult.of(true, "Item is too far to pick up");
 
         if (!this.brain.getAndroid().getMainHandStack().isEmpty())
-            return Result(true, "Cannot pickup item without an empty hand");
+            return MethodResult.of(true, "Cannot pickup item without an empty hand");
 
         return this.brain.getAndroid().pickupGroundItem(itemEntity);
     }
 
     @LuaFunction(mainThread = true)
-    public final MethodResult dropHeldItem() {
+    public final MethodResult dropItem() {
         return this.brain.getAndroid().dropHandItem();
     }
 
     @LuaFunction(mainThread = true)
-    public final MethodResult stashHeldItem(int index) {
+    public final MethodResult storeItem(int index) {
         ItemStack itemStack = this.brain.getAndroid().getMainHandStack();
 
         if (itemStack.isEmpty())
-            return Result(true, "No item in hand to stash");
+            return MethodResult.of(true, "No item in hand to stash");
 
         MethodResult result = this.brain.getAndroid().canStash(itemStack, index);
 
@@ -196,11 +215,16 @@ public class AndroidAPI implements ILuaAPI {
         itemStack = this.brain.getAndroid().stashStack(itemStack, index);
         this.brain.getAndroid().setStackInHand(Hand.MAIN_HAND, itemStack);
 
-        return Result(false, "Stashed held item at index "+index);
+        return MethodResult.of(false, "Stashed held item at index "+index);
     }
 
     @LuaFunction(mainThread = true)
-    public final MethodResult equipFromStash(int index) {
+    public final MethodResult equipSlot(int index) {
+        int size = brain.getAndroid().inventory.size()-1;
+
+        if (index < 0 || index > size)
+            return MethodResult.of(true, String.format("Index must be between 0 and %d", size));
+
         ItemStack storedItemstack = this.brain.getAndroid().getStashItem(index, true);
 
         if (storedItemstack == null || storedItemstack.isEmpty())
@@ -209,41 +233,62 @@ public class AndroidAPI implements ILuaAPI {
             return MethodResult.of("Cannot equip item while holding an item");
 
         this.brain.getAndroid().setStackInHand(Hand.MAIN_HAND, storedItemstack);
-        return Result(false, "Equipped stack from index "+index);
+        return MethodResult.of(false, "Equipped stack from index "+index);
     }
 
     @LuaFunction(mainThread = true)
-    public final MethodResult swapHandItems() {
+    public final MethodResult swapHands() {
         this.brain.getAndroid().swapOffHandStack();
         return MethodResult.of();
     }
 
     @LuaFunction(mainThread = true)
-    public final MethodResult getItemInStash(int index) {
+    public final MethodResult getHandInfo(String handName) {
+        ItemStack stack;
+
+        if (handName.equals("right") || handName.equals("main")) {
+            stack = brain.getAndroid().getMainHandStack();
+        }
+        else if (handName.equals("left") || handName.equals("off"))
+            stack = brain.getAndroid().getOffHandStack();
+        else
+            return MethodResult.of(true, "Invalid hand name");
+        return MethodResult.of(stack.getName().getString(), stack.getCount());
+    }
+
+    @LuaFunction(mainThread = true)
+    public final MethodResult getSlotInfo(int index) {
+        int size = brain.getAndroid().inventory.size()-1;
+
+        if (index < 0 || index > size)
+            return MethodResult.of(true, String.format("Index must be between 0 and %d", size));
+
         ItemStack storedStack = this.brain.getAndroid().getStashItem(index, false);
 
         if (storedStack == null || storedStack.isEmpty())
             return MethodResult.of("empty");
-        return Result(false, storedStack.getItem().getName().getString());
+        return MethodResult.of(false, storedStack.getItem().getName().getString());
     }
 
     @LuaFunction(mainThread = true)
-    public final MethodResult refuel(Optional<Integer> amt) {
+    public final MethodResult refuel(IArguments args) throws LuaException {
+        Optional<Integer> amt = args.optInt(0);
+
         ItemStack heldStack = this.brain.getAndroid().getMainHandStack();
 
         if (heldStack.isEmpty())
-            return Result(true, "Hand it empty");
+            return MethodResult.of(true, "Hand it empty");
 
         if (!this.brain.getAndroid().addFuel(amt.orElse(heldStack.getCount()), heldStack))
-            return Result(true, "Held item stack cannot be used for fuel");
+            return MethodResult.of(true, "Held item stack cannot be used for fuel");
 
         this.brain.getAndroid().setStackInHand(Hand.MAIN_HAND, heldStack);
 
-        return Result(false, "Fuel level increased to "+ brain.getAndroid().getFuel());
+        return MethodResult.of(false, "Fuel level increased to "+ brain.getAndroid().getFuel());
     }
 
     @LuaFunction(mainThread = true)
-    public final MethodResult getFuelLevel() {
+    public final MethodResult fuelLevel() {
         return MethodResult.of(this.brain.getAndroid().getFuel());
     }
 
@@ -257,17 +302,24 @@ public class AndroidAPI implements ILuaAPI {
     }
 
     @LuaFunction(mainThread = true)
-    public final MethodResult getNearbyMobs(Optional<String> type) {
+    public final MethodResult getNearbyMobs(IArguments args) throws LuaException {
+        Optional<String> type = args.optString(0);
+
         return MethodResult.of(brain.getModules().sensorModule.getMobs(type.orElse(null)));
     }
 
     @LuaFunction(mainThread = true)
-    public final MethodResult getClosestMob(Optional<String> type) {
+    public final MethodResult getClosestMob(IArguments args) throws LuaException {
+        Optional<String> type = args.optString(0);
+
         return MethodResult.of(brain.getModules().sensorModule.getClosestMobOfType(type.orElse(null)));
     }
 
     @LuaFunction(mainThread = true)
-    public final MethodResult getGroundItems(Optional<String> type, Optional<Integer> max) {
+    public final MethodResult getGroundItems(IArguments args) throws LuaException {
+        Optional<String> type = args.optString(0);
+        Optional<Integer> max = args.optInt(0);
+
         return MethodResult.of(brain.getModules().sensorModule.getGroundItem(type.orElse(null), max.orElse(Integer.MAX_VALUE)));
     }
 

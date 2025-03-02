@@ -3,30 +3,32 @@ package com.thunderbear06.inventory;
 import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtList;
 
 public class AndroidInventory extends SimpleInventory {
     public AndroidInventory(int size) {
         super(size);
     }
 
-    @Override
-    public NbtList toNbtList() {
-        NbtList list = new NbtList();
+    public NbtCompound toNbtCompound() {
+        NbtCompound compound = new NbtCompound();
 
         for (int i = 0; i < this.size(); i++) {
-            list.add(getStack(i).writeNbt(new NbtCompound()));
+            ItemStack stack = getStack(i);
+            if (stack.isEmpty())
+                continue;
+
+            compound.put(Integer.toString(i), stack.writeNbt(new NbtCompound()));
         }
 
-        return list;
+        return compound;
     }
 
-    @Override
-    public void readNbtList(NbtList nbtList) {
-        for (int i = 0; i < nbtList.size(); i++) {
-            NbtCompound compound = nbtList.getCompound(i);
-
-            this.addStack(ItemStack.fromNbt(compound));
+    public void fromNbtCompound(NbtCompound compound) {
+        for (int i = 0; i < this.size(); i++) {
+            String key = Integer.toString(i);
+            if (compound.contains(key)) {
+                setStack(i, ItemStack.fromNbt(compound.getCompound(key)));
+            }
         }
     }
 }

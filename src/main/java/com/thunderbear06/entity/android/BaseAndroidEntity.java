@@ -13,10 +13,7 @@ import dan200.computercraft.shared.computer.core.ComputerFamily;
 import dan200.computercraft.shared.computer.core.ServerComputer;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.DoorBlock;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.entity.ItemEntity;
+import net.minecraft.entity.*;
 import net.minecraft.entity.ai.pathing.MobNavigation;
 import net.minecraft.entity.ai.pathing.PathNode;
 import net.minecraft.entity.damage.DamageSource;
@@ -26,12 +23,13 @@ import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
 import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.text.Text;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+import net.minecraft.world.LocalDifficulty;
+import net.minecraft.world.ServerWorldAccess;
 import net.minecraft.world.World;
 
 import javax.annotation.Nullable;
@@ -56,10 +54,10 @@ public class BaseAndroidEntity extends PathAwareEntity {
         this.computerContainer = new AndroidComputerContainer(this);
     }
 
-    public void shutdown() {
-        this.isOn = false;
-
-        this.brain.onShutdown();
+    // Disables random attributes on spawn (hopefully)
+    @Override
+    public @Nullable EntityData initialize(ServerWorldAccess world, LocalDifficulty difficulty, SpawnReason spawnReason, @org.jetbrains.annotations.Nullable EntityData entityData, @org.jetbrains.annotations.Nullable NbtCompound entityNbt) {
+        return entityData;
     }
 
     @Override
@@ -93,8 +91,14 @@ public class BaseAndroidEntity extends PathAwareEntity {
         return true;
     }
 
+    public void shutdown() {
+        this.isOn = false;
+
+        this.brain.onShutdown();
+    }
+
     private void updatePeripherals() {
-        if (this.computerContainer.getComputerID() < 0 || !this.computerContainer.on)
+        if (this.computerContainer.getComputerID() < 0 || !this.computerContainer.isOn)
             return;
 
         for (Direction direction : Direction.stream().toList()) {
@@ -116,7 +120,7 @@ public class BaseAndroidEntity extends PathAwareEntity {
 
         this.getComputer().onHandItemChanged(hand);
 
-        if (this.getComputer().on)
+        if (this.getComputer().isOn)
             this.getComputer().getUpgradePeripherals();
     }
 
@@ -290,8 +294,6 @@ public class BaseAndroidEntity extends PathAwareEntity {
     }
 
     public ItemStack getStashItem(int index, boolean remove) {
-        if (index < 0 || index >= this.inventory.size()-1)
-            return null;
         ItemStack storedStack = this.inventory.getStack(index);
 
         if (remove)
@@ -307,8 +309,8 @@ public class BaseAndroidEntity extends PathAwareEntity {
     }
 
     public @Nullable MethodResult canStash(ItemStack itemStack, int index) {
-        if (index < 0 || index >= this.inventory.size())
-            return MethodResult.of(String.format("Index out of bounds! Must be between 1 and %d", index));
+        if (index < 0 || index > this.inventory.size()-1)
+            return MethodResult.of(String.format("Index must be between 0 and %d", inventory.size()));
 
         ItemStack storedStack = this.inventory.getStack(index);
 
@@ -322,7 +324,7 @@ public class BaseAndroidEntity extends PathAwareEntity {
 
     @Override
     public void writeCustomDataToNbt(NbtCompound nbt) {
-        nbt.put("Items", this.inventory.toNbtList());
+        nbt.put("Items", this.inventory.toNbtCompound());
 
         nbt.putInt("Fuel", this.getFuel());
 
@@ -337,7 +339,7 @@ public class BaseAndroidEntity extends PathAwareEntity {
 
     @Override
     public void readCustomDataFromNbt(NbtCompound nbt) {
-        this.inventory.readNbtList(nbt.getList("Items", NbtElement.COMPOUND_TYPE));
+        this.inventory.fromNbtCompound(nbt.getCompound("Items"));
 
         if (nbt.contains("Fuel"))
             setFuel(nbt.getInt("Fuel"));
@@ -375,8 +377,8 @@ public class BaseAndroidEntity extends PathAwareEntity {
 
     // Robots don't drown now, do they?
     @Override
-    public int getAir() {
-        return 10;
+    public boolean canBreatheInWater() {
+        return true;
     }
 
     @Override

@@ -5,8 +5,8 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.math.BlockPos;
 
 public class AndroidTargets {
-    public LivingEntity entityTarget = null;
-    public BlockPos blockTarget = null;
+    private LivingEntity entityTarget = null;
+    private BlockPos blockTarget = null;
 
     public void setEntityTarget(LivingEntity entity) {
         CCAndroids.LOGGER.info("Set android entity target to {}", entity == null ? "null" : entity.getName().getString());
@@ -24,6 +24,10 @@ public class AndroidTargets {
 
     public boolean hasBlockTarget() {
         return this.blockTarget != null;
+    }
+
+    public boolean hasAnyTarget() {
+        return this.entityTarget != null || this.blockTarget != null;
     }
 
     public LivingEntity getEntityTarget() {

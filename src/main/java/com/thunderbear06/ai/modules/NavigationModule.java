@@ -17,7 +17,7 @@ public class NavigationModule extends AbstractAndroidModule {
 
     public MethodResult MoveToBlock(BlockPos pos) {
         if (!this.android.getWorld().isInBuildLimit(pos))
-            return AndroidAPI.Result(true, "Block pos must be within build limit");
+            return MethodResult.of(true, "Block pos must be within build limit");
 
         this.brain.getTargeting().setBlockTarget(pos);
         this.brain.setTask("movingToBlock");
@@ -29,7 +29,7 @@ public class NavigationModule extends AbstractAndroidModule {
         LivingEntity target = (LivingEntity) ((ServerWorld)this.brain.getAndroid().getWorld()).getEntity(UUID.fromString(entityUUID));
 
         if (target == null || target.isRemoved())
-            return AndroidAPI.Result(true, "Unknown entity or invalid UUID");
+            return MethodResult.of(true, "Unknown entity or invalid UUID");
 
         this.brain.getTargeting().setEntityTarget(target);
         this.brain.setTask("movingToEntity");

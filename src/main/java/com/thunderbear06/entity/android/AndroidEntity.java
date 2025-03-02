@@ -2,6 +2,7 @@ package com.thunderbear06.entity.android;
 
 import com.thunderbear06.CCAndroids;
 import com.thunderbear06.ai.AndroidBrain;
+import com.thunderbear06.ai.AndroidLookAtEntityGoal;
 import com.thunderbear06.ai.task.TaskManager;
 import com.thunderbear06.ai.task.tasks.*;
 import com.thunderbear06.entity.EntityRegistry;
@@ -76,7 +77,7 @@ public class AndroidEntity extends BaseAndroidEntity {
     }
 
     protected void initAndroidGoals() {
-        this.goalSelector.add(0, new LookAtEntityGoal(this, PlayerEntity.class, 10));
+        this.goalSelector.add(0, new AndroidLookAtEntityGoal(this, PlayerEntity.class, 10));
     }
 
     @Override

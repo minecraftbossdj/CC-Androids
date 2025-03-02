@@ -3,6 +3,7 @@ package com.thunderbear06.ai.task.tasks;
 import com.thunderbear06.entity.android.AndroidEntity;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 
 public class BreakBlockTask extends MoveToBlockTask{
 
@@ -17,14 +18,13 @@ public class BreakBlockTask extends MoveToBlockTask{
 
     @Override
     public boolean shouldTick() {
-        return !this.android.getWorld().isAir(getPos());
+        return android.brain.getModules().miningModule.canMineBlock(getPos());
     }
 
     @Override
     public void tick() {
-        BlockPos pos = getPos();
+        Vec3d pos = getPos().toCenterPos();
         this.android.getLookControl().lookAt(pos.getX(), pos.getY(), pos.getZ());
-        this.android.swingHand(Hand.MAIN_HAND);
 
         if (isInRange(3)) {
             this.android.swingHand(Hand.MAIN_HAND);
@@ -32,5 +32,10 @@ public class BreakBlockTask extends MoveToBlockTask{
         }
         else
             super.tick();
+    }
+
+    @Override
+    public void lastTick() {
+        this.android.brain.getModules().miningModule.resetBreakProgress(getPos());
     }
 }
