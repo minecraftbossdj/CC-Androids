@@ -28,4 +28,9 @@ public class CommandAndroidEntity extends AdvancedAndroidEntity{
     public boolean damage(DamageSource source, float amount) {
         return source.isSourceCreativePlayer() && super.damage(source, amount);
     }
+
+    @Override
+    public boolean hasFuel() {
+        return true;
+    }
 }
