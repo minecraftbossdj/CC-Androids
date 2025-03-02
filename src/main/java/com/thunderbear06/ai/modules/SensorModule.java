@@ -2,13 +2,17 @@ package com.thunderbear06.ai.modules;
 
 import com.thunderbear06.ai.AndroidBrain;
 import com.thunderbear06.entity.android.BaseAndroidEntity;
+import dan200.computercraft.shared.computer.items.AbstractComputerItem;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.TargetPredicate;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registries;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
@@ -70,7 +74,7 @@ public class SensorModule extends AbstractAndroidModule {
         return collectEntityInfo(player);
     }
 
-    public List<HashMap<String, Object>> getGroundItem(@Nullable String type, int max) {
+    public List<HashMap<String, Object>> getGroundItems(@Nullable String type, int max) {
         List<ItemEntity> list = this.android.getWorld().getNonSpectatingEntities(ItemEntity.class, this.android.getBoundingBox().expand(5));
         List<HashMap<String, Object>> results = new ArrayList<>();
 
@@ -83,6 +87,17 @@ public class SensorModule extends AbstractAndroidModule {
         }
 
         return results;
+    }
+
+    public @Nullable ItemEntity getGroundItem(@Nullable String type) {
+        List<ItemEntity> items = this.android.getWorld().getNonSpectatingEntities(ItemEntity.class, this.android.getBoundingBox().expand(5));
+
+        for (ItemEntity entity : items) {
+            if (type == null || Registries.ITEM.getId(entity.getStack().getItem()).toString().contains(type))
+                return entity;
+        }
+
+        return null;
     }
 
     public List<HashMap<String, Integer>> getBlocksOfType(BlockPos origin, Vec3d eyePos, World world, String type) {

@@ -178,16 +178,13 @@ public class AndroidAPI implements ILuaAPI {
     */
 
     @LuaFunction(mainThread = true)
-    public final MethodResult pickup(String entityUUID) {
-        ServerWorld world = (ServerWorld) this.brain.getAndroid().getWorld();
+    public final MethodResult pickup(IArguments args) throws LuaException {
+        String type = args.optString(0).orElse(null);
 
-        ItemEntity itemEntity = (ItemEntity) world.getEntity(UUID.fromString(entityUUID));
+        ItemEntity itemEntity = brain.getModules().sensorModule.getGroundItem(type);
 
         if (itemEntity == null)
-            return MethodResult.of(true, "Unknown item or invalid UUID");
-
-        if (this.brain.getAndroid().distanceTo(itemEntity) > 2)
-            return MethodResult.of(true, "Item is too far to pick up");
+            return MethodResult.of(true, "Could not find item");
 
         if (!this.brain.getAndroid().getMainHandStack().isEmpty())
             return MethodResult.of(true, "Cannot pickup item without an empty hand");
@@ -313,14 +310,6 @@ public class AndroidAPI implements ILuaAPI {
         Optional<String> type = args.optString(0);
 
         return MethodResult.of(brain.getModules().sensorModule.getClosestMobOfType(type.orElse(null)));
-    }
-
-    @LuaFunction(mainThread = true)
-    public final MethodResult getGroundItems(IArguments args) throws LuaException {
-        Optional<String> type = args.optString(0);
-        Optional<Integer> max = args.optInt(0);
-
-        return MethodResult.of(brain.getModules().sensorModule.getGroundItem(type.orElse(null), max.orElse(Integer.MAX_VALUE)));
     }
 
     @LuaFunction(mainThread = true)
