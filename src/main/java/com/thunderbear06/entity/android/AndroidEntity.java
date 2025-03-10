@@ -49,6 +49,7 @@ public class AndroidEntity extends BaseAndroidEntity {
         this.computerContainer.setFamily(ComputerFamily.NORMAL);
 
         addAndroidTasks();
+        addAndroidTasks();
         initAndroidGoals();
     }
 
