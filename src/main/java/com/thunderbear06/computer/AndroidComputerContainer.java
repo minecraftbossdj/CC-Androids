@@ -1,27 +1,34 @@
 package com.thunderbear06.computer;
 
 import com.thunderbear06.CCAndroids;
-import com.thunderbear06.ai.AndroidBrain;
 import com.thunderbear06.component.ComputerComponents;
 import com.thunderbear06.computer.peripherals.DummyPocket;
 import com.thunderbear06.entity.android.BaseAndroidEntity;
-import com.thunderbear06.menu.AndroidMenu;
 import dan200.computercraft.api.ComputerCraftAPI;
 import dan200.computercraft.api.peripheral.IPeripheral;
+import dan200.computercraft.api.peripheral.PeripheralType;
 import dan200.computercraft.api.pocket.IPocketUpgrade;
 import dan200.computercraft.api.upgrades.UpgradeData;
 import dan200.computercraft.core.computer.ComputerSide;
+import dan200.computercraft.shared.ModRegistry;
 import dan200.computercraft.shared.computer.core.ComputerFamily;
 import dan200.computercraft.shared.computer.core.ServerComputer;
 import dan200.computercraft.shared.computer.core.ServerContext;
+import dan200.computercraft.shared.computer.inventory.ComputerMenuWithoutInventory;
 import dan200.computercraft.shared.config.Config;
 import dan200.computercraft.shared.network.container.ComputerContainerData;
-import dan200.computercraft.shared.platform.PlatformHelper;
+import dan200.computercraft.shared.util.ComponentMap;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.screen.NamedScreenHandlerFactory;
+import net.minecraft.screen.ScreenHandler;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.Hand;
 
@@ -29,19 +36,19 @@ import javax.annotation.Nullable;
 import java.util.Objects;
 import java.util.UUID;
 
-public class AndroidComputerContainer {
+public class AndroidComputerContainer implements NamedScreenHandlerFactory {
     private final BaseAndroidEntity android;
 
-    public String label = "";
-    public boolean isOn = false;
-    public boolean fresh = false;
+    @Nullable
+    public String label;
+    public boolean on = false;
+    public boolean locked = false;
 
     @Nullable
     private UUID instanceID = null;
     private int computerID = -1;
     private boolean startOn = false;
     public ComputerFamily family;
-
     private UpgradeData<IPocketUpgrade> leftUpgrade;
     private UpgradeData<IPocketUpgrade> rightUpgrade;
     private final DummyPocket dummyPocket;
@@ -52,96 +59,91 @@ public class AndroidComputerContainer {
     }
 
     public void onTick() {
-        if (computerID < 0 && !startOn)
-            return;
-
-        EntityComputer computer = getOrCreateServerComputer();
-
-        if (startOn || (fresh && isOn)) {
-            turnOn(computer);
-            startOn = false;
+        if (this.startOn) {
+            this.turnOn(getOrCreateServerComputer());
+            this.startOn = false;
         }
 
-        fresh = false;
-        computerID = computer.getID();
-        isOn = computer.isOn();
+        if (this.on && this.computerID >= 0) {
+            ServerComputer computer = getServerComputer();
 
-        updateOwnerLabel(computer);
+            if (computer == null) {
+                CCAndroids.LOGGER.error("Android is on but has no associated ServerComputer");
+                return;
+            }
 
-        tickPeripherals();
+            updateOwnerLabel(computer);
 
-        computer.keepAlive();
+            computer.keepAlive();
+        }
 
-        if (!isOn && android.isOn) {
-            android.shutdown();
+        if (!this.on && this.android.isOn) {
+            this.android.shutdown();
         }
     }
 
     public void turnOn(ServerComputer computer) {
-        computer.turnOn();
-
-        computerID = computer.getID();
-        android.isOn = true;
-
-        onHandItemChanged(Hand.MAIN_HAND);
-        onHandItemChanged(Hand.OFF_HAND);
-
-        getUpgradePeripherals();
+        if (!computer.isOn()) {
+            computer.turnOn();
+            this.computerID = computer.getID();
+            this.on = true;
+            this.android.isOn = true;
+        }
     }
 
     public void openComputer(ServerPlayerEntity player) {
+        if (this.locked && !player.getGameProfile().equals(this.android.brain.getOwningPlayerProfile())) {
+            player.getWorld().playSoundFromEntity(null, this.android, SoundEvents.BLOCK_CHEST_LOCKED, SoundCategory.NEUTRAL, 1.0f, 1.0f);
+            return;
+        }
+
         ServerComputer computer = getOrCreateServerComputer();
 
-        if (!isOn)
+        if (!this.on) {
             turnOn(computer);
+        }
 
-        PlatformHelper.get().openMenu(
-                player,
-                Text.literal(label),
-                (syncId, playerInventory, player1) -> AndroidMenu.ofBrain(syncId, playerInventory, getBrain()),
-                new ComputerContainerData(computer, ItemStack.EMPTY)
-        );
+        (new ComputerContainerData(computer, ItemStack.EMPTY)).open(player, this);
     }
 
     protected void updateOwnerLabel(ServerComputer computer) {
-        if (!Objects.equals(label, computer.getLabel())) {
-            label = computer.getLabel();
+        if (!Objects.equals(this.label, computer.getLabel())) {
+            this.label = computer.getLabel();
 
-            if (label == null || label.isEmpty()){
-                android.setCustomName(Text.empty());
-                android.setCustomNameVisible(false);
+            if (this.label == null || this.label.isEmpty()){
+                this.android.setCustomName(Text.empty());
+                this.android.setCustomNameVisible(false);
             } else {
-                android.setCustomName(Text.literal(label));
-                android.setCustomNameVisible(true);
+                this.android.setCustomName(Text.literal(this.label));
+                this.android.setCustomNameVisible(true);
             }
         }
     }
 
-    public final EntityComputer getOrCreateServerComputer() {
-        MinecraftServer server = android.getWorld().getServer();
+    public final ServerComputer getOrCreateServerComputer() {
+        MinecraftServer server = this.android.getWorld().getServer();
         if (server == null) {
             throw new IllegalStateException("Cannot access server computer on the client.");
-        }
+        } else {
+            EntityComputer computer = (EntityComputer) ServerContext.get(server).registry().get(this.instanceID);
+            if (computer == null) {
+                if (this.computerID < 0) {
+                    this.computerID = ComputerCraftAPI.createUniqueNumberedSaveDir(server, "computer");
+                }
 
-        EntityComputer computer = (EntityComputer) ServerContext.get(server).registry().get(instanceID);
-        if (computer == null) {
-            if (computerID < 0) {
-                computerID = ComputerCraftAPI.createUniqueNumberedSaveDir(server, "computer");
+                computer = this.createComputer(this.computerID);
+                this.instanceID = computer.register();
             }
 
-            computer = createComputer(computerID);
-            instanceID = computer.register();
-            fresh = true;
+            return computer;
         }
-
-        return computer;
     }
 
     public void setPeripheral(ComputerSide side, IPeripheral peripheral) {
         ServerComputer computer = getServerComputer();
 
         if (computer == null) {
-            CCAndroids.LOGGER.error("Failed to set peripheral of type {} on side {} of computer container owned by {}. Reason: Failed to get ServerComputer (It was null)", peripheral.getType(), side.getName(), android.getName());
+            CCAndroids.LOGGER.error("Failed to set peripheral of type {} on side {} of computer container owned by {}. Reason: Failed to get ServerComputer (It was null)", peripheral.getType(), side.getName(), this.android.getName());
             return;
         }
 
@@ -149,11 +151,11 @@ public class AndroidComputerContainer {
     }
 
     public ComputerFamily getFamily() {
-        return family;
+        return this.family;
     }
 
     public int getComputerID() {
-        return computerID;
+        return this.computerID;
     }
 
     public void setFamily(ComputerFamily family) {
@@ -161,33 +163,34 @@ public class AndroidComputerContainer {
     }
 
     public void setComputerID (int id) {
-        computerID = id;
-    }
-
-    public AndroidBrain getBrain() {
-        return android.brain;
+        this.computerID = id;
     }
 
     protected EntityComputer createComputer(int id) {
-        ServerComputer.Properties properties = ServerComputer.properties(id, getFamily())
-                .addComponent(ComputerComponents.ANDROID_COMPUTER, android.brain)
-                .label(label)
-                .terminalSize(Config.TURTLE_TERM_WIDTH, Config.TURTLE_TERM_HEIGHT);
+        return new EntityComputer((ServerWorld)this.android.getWorld(), this.android, id, this.label, this.getFamily(), Config.computerTermWidth, Config.computerTermHeight, ComponentMap.builder().add(ComputerComponents.ANDROID_COMPUTER, this.android.brain).build());
+    }
 
-        return new EntityComputer((ServerWorld)android.getWorld(), android, properties);
+    @Override
+    public @Nullable ScreenHandler createMenu(int id, PlayerInventory inventory, PlayerEntity player) {
+        return new ComputerMenuWithoutInventory(ModRegistry.Menus.COMPUTER.get(), id, inventory, player1 -> true, this.getOrCreateServerComputer());
     }
 
     @Nullable
     public ServerComputer getServerComputer() {
-        return !android.getWorld().isClient && android.getWorld().getServer() != null ? ServerContext.get(android.getWorld().getServer()).registry().get(instanceID) : null;
+        return !this.android.getWorld().isClient && this.android.getWorld().getServer() != null ? ServerContext.get(this.android.getWorld().getServer()).registry().get(this.instanceID) : null;
+    }
+
+    @Override
+    public Text getDisplayName() {
+        return Text.literal("Android terminal");
     }
 
     public void writeNbt(NbtCompound computerCompound) {
-        computerCompound.putInt("ComputerID", getComputerID());
+        computerCompound.putInt("ComputerID", this.getComputerID());
     }
 
     public void readNbt(NbtCompound computerCompound) {
-        setComputerID(computerCompound.getInt("ComputerID"));
+        this.setComputerID(computerCompound.getInt("ComputerID"));
     }
 
     public void getUpgradePeripherals() {
@@ -218,4 +221,5 @@ public class AndroidComputerContainer {
 
         rightUpgrade = dummyPocket.createUpgrade(handItem);
     }
+
 }

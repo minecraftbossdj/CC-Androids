@@ -98,12 +98,13 @@ public class BaseAndroidEntity extends PathAwareEntity {
     }
 
     private void updatePeripherals() {
-        if (this.computerContainer.getComputerID() < 0 || !this.computerContainer.isOn)
+        if (this.computerContainer.getComputerID() < 0 || !this.computerContainer.on)
             return;
 
         for (Direction direction : Direction.stream().toList()) {
             if (direction == Direction.UP)
                 continue;
+
 
             if (this.getComputer().hasUpgrade(ComputerSide.valueOf(direction.ordinal())))
                 continue;
@@ -120,7 +121,7 @@ public class BaseAndroidEntity extends PathAwareEntity {
 
         this.getComputer().onHandItemChanged(hand);
 
-        if (this.getComputer().isOn)
+        if (this.getComputer().on)
             this.getComputer().getUpgradePeripherals();
     }
 
