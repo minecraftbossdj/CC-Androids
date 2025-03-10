@@ -23,7 +23,7 @@ public class AndroidMenu extends AbstractComputerMenu {
     public static final int ANDROID_START_X = SIDEBAR_WIDTH + 175;
 
     public AndroidMenu(int id, Predicate<PlayerEntity> canUse, ComputerFamily family, @Nullable ServerComputer computer, @Nullable ComputerContainerData containerData, PlayerInventory playerInventory, SimpleInventory inventory, Inventory container) {
-        super(MenuRegistry.ANDROID.get(), id, canUse, family, computer, containerData);
+        super(MenuRegistryAndroid.ANDROID.get(), id, canUse, family, computer, containerData);
 
         // Android Inventory
         for (int y = 0; y < 3; y++) {

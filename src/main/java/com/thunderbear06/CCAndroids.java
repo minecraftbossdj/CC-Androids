@@ -7,7 +7,7 @@ import com.thunderbear06.config.CCAndroidsConfig;
 import com.thunderbear06.config.ConfigLoader;
 import com.thunderbear06.entity.EntityRegistry;
 import com.thunderbear06.item.ItemRegistry;
-import com.thunderbear06.menu.MenuRegistry;
+import com.thunderbear06.menu.MenuRegistryAndroid;
 import com.thunderbear06.sounds.SoundRegistry;
 import dan200.computercraft.api.ComputerCraftAPI;
 import net.fabricmc.api.ModInitializer;
@@ -30,7 +30,7 @@ public class CCAndroids implements ModInitializer {
 
 		Config = ConfigLoader.loadConfig(MOD_ID, new CCAndroidsConfig());
 
-		MenuRegistry.register();
+		MenuRegistryAndroid.register();
 		ItemRegistry.register();
 		EntityRegistry.register();
 		SoundRegistry.register();

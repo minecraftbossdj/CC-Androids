@@ -8,7 +8,7 @@ import dan200.computercraft.shared.platform.RegistryEntry;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.screen.ScreenHandlerType;
 
-public class MenuRegistry {
+public class MenuRegistryAndroid {
     private static final RegistrationHelper<ScreenHandlerType<?>> REGISTRY = PlatformHelper.get().createRegistrationHelper(RegistryKeys.SCREEN_HANDLER);
 
     public static final RegistryEntry<ScreenHandlerType<AndroidMenu>> ANDROID = REGISTRY.register("android",

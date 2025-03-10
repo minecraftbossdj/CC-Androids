@@ -4,7 +4,7 @@ import com.thunderbear06.entity.EntityRegistry;
 import com.thunderbear06.entity.render.AndroidEntityRenderer;
 import com.thunderbear06.entity.render.AndroidFrameEntityRenderer;
 import com.thunderbear06.entity.render.RogueAndroidEntityRenderer;
-import com.thunderbear06.menu.MenuRegistry;
+import com.thunderbear06.menu.MenuRegistryAndroid;
 import com.thunderbear06.screen.AndroidScreen;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
@@ -20,6 +20,6 @@ public class CCAndroidsClient implements ClientModInitializer {
 		EntityRendererRegistry.register(EntityRegistry.ROGUE_ANDROID_ENTITY, (RogueAndroidEntityRenderer::new));
 		EntityRendererRegistry.register(EntityRegistry.ANDROID_FRAME_ENTITY, (AndroidFrameEntityRenderer::new));
 
-		HandledScreens.register(MenuRegistry.ANDROID.get(), AndroidScreen::new);
+		HandledScreens.register(MenuRegistryAndroid.ANDROID.get(), AndroidScreen::new);
 	}
 }
