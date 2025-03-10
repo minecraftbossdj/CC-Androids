@@ -1,9 +1,11 @@
 package com.thunderbear06.computer;
 
 import com.thunderbear06.CCAndroids;
+import com.thunderbear06.ai.AndroidBrain;
 import com.thunderbear06.component.ComputerComponents;
 import com.thunderbear06.computer.peripherals.DummyPocket;
 import com.thunderbear06.entity.android.BaseAndroidEntity;
+import com.thunderbear06.menu.AndroidMenu;
 import dan200.computercraft.api.ComputerCraftAPI;
 import dan200.computercraft.api.peripheral.IPeripheral;
 import dan200.computercraft.api.peripheral.PeripheralType;
@@ -17,7 +19,7 @@ import dan200.computercraft.shared.computer.core.ServerContext;
 import dan200.computercraft.shared.computer.inventory.ComputerMenuWithoutInventory;
 import dan200.computercraft.shared.config.Config;
 import dan200.computercraft.shared.network.container.ComputerContainerData;
-import dan200.computercraft.shared.util.ComponentMap;
+import dan200.computercraft.shared.platform.PlatformHelper;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
@@ -36,11 +38,14 @@ import javax.annotation.Nullable;
 import java.util.Objects;
 import java.util.UUID;
 
-public class AndroidComputerContainer implements NamedScreenHandlerFactory {
+public class AndroidComputerContainer {
     private final BaseAndroidEntity android;
 
     @Nullable
     public String label;
+    public boolean isOn = false;
+    public boolean fresh = false;
+
     public boolean on = false;
     public boolean locked = false;
 
@@ -59,37 +64,44 @@ public class AndroidComputerContainer implements NamedScreenHandlerFactory {
     }
 
     public void onTick() {
-        if (this.startOn) {
-            this.turnOn(getOrCreateServerComputer());
-            this.startOn = false;
+        if (computerID < 0 && !startOn)
+            return;
+
+        EntityComputer computer = getOrCreateServerComputer();
+
+        if (startOn || (fresh && isOn)) {
+            turnOn(computer);
+            startOn = false;
         }
 
-        if (this.on && this.computerID >= 0) {
-            ServerComputer computer = getServerComputer();
+        fresh = false;
+        computerID = computer.getID();
+        isOn = computer.isOn();
 
-            if (computer == null) {
-                CCAndroids.LOGGER.error("Android is on but has no associated ServerComputer");
-                return;
-            }
+        updateOwnerLabel(computer);
 
-            updateOwnerLabel(computer);
+        tickPeripherals();
 
-            computer.keepAlive();
-        }
+        computer.keepAlive();
 
-        if (!this.on && this.android.isOn) {
-            this.android.shutdown();
+        if (!isOn && android.isOn) {
+            android.shutdown();
         }
     }
+
 
     public void turnOn(ServerComputer computer) {
-        if (!computer.isOn()) {
-            computer.turnOn();
-            this.computerID = computer.getID();
-            this.on = true;
-            this.android.isOn = true;
-        }
+        computer.turnOn();
+
+        computerID = computer.getID();
+        android.isOn = true;
+
+        onHandItemChanged(Hand.MAIN_HAND);
+        onHandItemChanged(Hand.OFF_HAND);
+
+        getUpgradePeripherals();
     }
+
 
     public void openComputer(ServerPlayerEntity player) {
         if (this.locked && !player.getGameProfile().equals(this.android.brain.getOwningPlayerProfile())) {
@@ -103,7 +115,17 @@ public class AndroidComputerContainer implements NamedScreenHandlerFactory {
             turnOn(computer);
         }
 
-        (new ComputerContainerData(computer, ItemStack.EMPTY)).open(player, this);
+        Text text = Text.literal("CCAndroid");
+
+
+        PlatformHelper.get().openMenu(
+                player,
+                text,
+                (syncId, playerInventory, player1) -> AndroidMenu.ofBrain(syncId, playerInventory, getBrain()),
+                new ComputerContainerData(computer, ItemStack.EMPTY)
+        );
+
+        CCAndroids.LOGGER.info(String.valueOf(text));
     }
 
     protected void updateOwnerLabel(ServerComputer computer) {
@@ -120,23 +142,24 @@ public class AndroidComputerContainer implements NamedScreenHandlerFactory {
         }
     }
 
-    public final ServerComputer getOrCreateServerComputer() {
-        MinecraftServer server = this.android.getWorld().getServer();
+    public final EntityComputer getOrCreateServerComputer() {
+        MinecraftServer server = android.getWorld().getServer();
         if (server == null) {
             throw new IllegalStateException("Cannot access server computer on the client.");
-        } else {
-            EntityComputer computer = (EntityComputer) ServerContext.get(server).registry().get(this.instanceID);
-            if (computer == null) {
-                if (this.computerID < 0) {
-                    this.computerID = ComputerCraftAPI.createUniqueNumberedSaveDir(server, "computer");
-                }
+        }
 
-                computer = this.createComputer(this.computerID);
-                this.instanceID = computer.register();
+        EntityComputer computer = (EntityComputer) ServerContext.get(server).registry().get(instanceID);
+        if (computer == null) {
+            if (computerID < 0) {
+                computerID = ComputerCraftAPI.createUniqueNumberedSaveDir(server, "computer");
             }
 
-            return computer;
+            computer = createComputer(computerID);
+            instanceID = computer.register();
+            fresh = true;
         }
+
+        return computer;
     }
 
     public void setPeripheral(ComputerSide side, IPeripheral peripheral) {
@@ -166,23 +189,22 @@ public class AndroidComputerContainer implements NamedScreenHandlerFactory {
         this.computerID = id;
     }
 
-    protected EntityComputer createComputer(int id) {
-        return new EntityComputer((ServerWorld)this.android.getWorld(), this.android, id, this.label, this.getFamily(), Config.computerTermWidth, Config.computerTermHeight, ComponentMap.builder().add(ComputerComponents.ANDROID_COMPUTER, this.android.brain).build());
+    public AndroidBrain getBrain() {
+        return android.brain;
     }
 
-    @Override
-    public @Nullable ScreenHandler createMenu(int id, PlayerInventory inventory, PlayerEntity player) {
-        return new ComputerMenuWithoutInventory(ModRegistry.Menus.COMPUTER.get(), id, inventory, player1 -> true, this.getOrCreateServerComputer());
+    protected EntityComputer createComputer(int id) {
+        ServerComputer.Properties properties = ServerComputer.properties(id, getFamily())
+                .addComponent(ComputerComponents.ANDROID_COMPUTER, android.brain)
+                .label(label)
+                .terminalSize(Config.TURTLE_TERM_WIDTH, Config.TURTLE_TERM_HEIGHT);
+
+        return new EntityComputer((ServerWorld)android.getWorld(), android, properties);
     }
 
     @Nullable
     public ServerComputer getServerComputer() {
         return !this.android.getWorld().isClient && this.android.getWorld().getServer() != null ? ServerContext.get(this.android.getWorld().getServer()).registry().get(this.instanceID) : null;
-    }
-
-    @Override
-    public Text getDisplayName() {
-        return Text.literal("Android terminal");
     }
 
     public void writeNbt(NbtCompound computerCompound) {
